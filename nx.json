@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "targetDefaults": {
+    "start": {
+      "cache": true
+    },
+    "android": {
+      "cache": true
+    },
+    "ios": {
+      "cache": true
+    },
+    "web": {
+      "cache": true
+    },
+    "lint": {
+      "cache": true
+    }
+  },
+  "nxCloudId": "68d1cdaa4113eb6be7665ce4"
+}
