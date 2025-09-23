@@ -42,8 +42,6 @@ app-example
 /ios
 /android
 
-
-
 .nx/cache
 .nx/workspace-data
 .cursor/rules/nx-rules.mdc
