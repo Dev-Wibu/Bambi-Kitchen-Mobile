@@ -1,7 +1,8 @@
 import "@/global.css";
 
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { NAV_THEME } from "@/lib/theme";
-import { ThemeProvider } from "@react-navigation/native";
+import { ThemeProvider as NavigationThemeProvider } from "@react-navigation/native";
 import { PortalHost } from "@rn-primitives/portal";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -16,10 +17,16 @@ export default function RootLayout() {
   const { colorScheme } = useColorScheme();
 
   return (
-    <ThemeProvider value={NAV_THEME[colorScheme ?? "light"]}>
-      <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
-      <Stack />
-      <PortalHost />
+    <ThemeProvider>
+      <NavigationThemeProvider value={NAV_THEME[colorScheme ?? "light"]}>
+        <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+        <Stack>
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="auth/login" options={{ headerShown: false }} />
+          <Stack.Screen name="auth/signup" options={{ headerShown: false }} />
+        </Stack>
+        <PortalHost />
+      </NavigationThemeProvider>
     </ThemeProvider>
   );
 }

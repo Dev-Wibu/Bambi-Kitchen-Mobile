@@ -1,10 +1,50 @@
-import { Text, View } from "react-native";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { Text } from "@/components/ui/text";
+import { Link } from "expo-router";
+import { Pressable, SafeAreaView, View } from "react-native";
 import "../global.css";
 
 export default function index() {
   return (
-    <View className="flex-1 items-center justify-center bg-slate-950">
-      <Text className="text-xl font-bold text-blue-500">Welcome to Nativewinsd!</Text>
-    </View>
+    <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">
+      <View className="flex-1 items-center justify-center px-6">
+        {/* Theme Toggle */}
+        <View className="absolute right-6 top-12">
+          <ThemeToggle />
+        </View>
+
+        {/* Welcome Content */}
+        <View className="mb-12 items-center">
+          <Text className="mb-4 text-3xl font-bold text-gray-900 dark:text-white">
+            Welcome to Our App!
+          </Text>
+          <Text className="mb-8 text-center text-lg text-gray-600 dark:text-gray-300">
+            Get started by logging in or creating a new account
+          </Text>
+        </View>
+
+        {/* Navigation Buttons */}
+        <View className="w-full max-w-sm space-y-4">
+          <Link href="/auth/login" asChild>
+            <Pressable className="w-full rounded-3xl bg-gradient-to-r from-[#8BC34A] to-[#4CAF50] py-4 shadow-sm">
+              <Text className="text-center text-lg font-bold text-white">Login to Account</Text>
+            </Pressable>
+          </Link>
+
+          <Link href="/auth/signup" asChild>
+            <Pressable className="w-full rounded-3xl border-2 border-[#4CAF50] bg-white py-4 shadow-sm">
+              <Text className="text-center text-lg font-bold text-[#4CAF50]">Create Account</Text>
+            </Pressable>
+          </Link>
+        </View>
+
+        {/* Additional Content */}
+        <View className="mt-12">
+          <Text className="text-center text-sm text-gray-500 dark:text-gray-400">
+            Join thousands of users who trust our platform
+          </Text>
+        </View>
+      </View>
+    </SafeAreaView>
   );
 }
