@@ -1,7 +1,7 @@
 import { Icon } from "@/components/ui/icon";
 import { NativeOnlyAnimatedView } from "@/components/ui/native-only-animated-view";
 import { TextClassContext } from "@/components/ui/text";
-import { cn } from "@/lib/utils";
+import { cn } from "@/libs/utils";
 import * as MenubarPrimitive from "@rn-primitives/menubar";
 import { Portal } from "@rn-primitives/portal";
 import { Check, ChevronDown, ChevronRight, ChevronUp } from "lucide-react-native";
