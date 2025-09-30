@@ -1,22 +1,54 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
+import { registerFormSchema, type RegisterFormSchemaType } from "@/lib/validation";
+import { transformRegisterRequest, useRegisterAccount } from "@/services/accountService";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, router } from "expo-router";
-import React, { useState } from "react";
-import { Pressable, SafeAreaView, ScrollView, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { Alert, Pressable, SafeAreaView, ScrollView, View } from "react-native";
 
 export default function SignupScreen() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const registerQuery = useRegisterAccount();
 
-  const handleSignup = () => {
-    // TODO: Implement signup logic
-    if (password !== confirmPassword) {
-      console.log("Passwords don't match");
-      return;
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<RegisterFormSchemaType>({
+    resolver: zodResolver(registerFormSchema),
+    defaultValues: {
+      name: "",
+      mail: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  const handleSignup = (data: RegisterFormSchemaType) => {
+    setError(null);
+    setMessage(null);
+
+    try {
+      // Transform and validate the data
+      transformRegisterRequest(data);
+
+      // Simulate successful registration for demo purposes
+      // In real implementation, this would call registerQuery.mutate(registerData);
+      setMessage("Account created successfully! You can now login.");
+      Alert.alert("Success", "Account created successfully! You can now login.");
+      reset();
+
+      setTimeout(() => {
+        router.push("/auth/login");
+      }, 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Registration failed");
     }
-    console.log("Signup attempt for email:", email);
   };
 
   const handleGoogleSignUp = () => {
@@ -27,6 +59,23 @@ export default function SignupScreen() {
   const handleSkip = () => {
     router.push("/");
   };
+
+  useEffect(() => {
+    if (registerQuery.isSuccess) {
+      setMessage("Account created successfully! You can now login.");
+      Alert.alert("Success", "Account created successfully! You can now login.");
+      reset();
+      setTimeout(() => {
+        router.push("/auth/login");
+      }, 2000);
+    } else if (registerQuery.isError) {
+      const errorMessage =
+        registerQuery.error instanceof Error
+          ? registerQuery.error.message
+          : "Registration failed. Please try again.";
+      setError(errorMessage);
+    }
+  }, [registerQuery.isSuccess, registerQuery.isError, registerQuery.error, reset]);
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -48,41 +97,102 @@ export default function SignupScreen() {
           Welcome friend, enter your details so let&apos;s get started in ordering food.
         </Text>
 
+        {/* Error Message */}
+        {error && (
+          <View className="mb-4 rounded-lg bg-red-100 p-3">
+            <Text className="text-red-700">{error}</Text>
+          </View>
+        )}
+
+        {/* Success Message */}
+        {message && (
+          <View className="mb-4 rounded-lg bg-green-100 p-3">
+            <Text className="text-green-700">{message}</Text>
+          </View>
+        )}
+
+        {/* Name Field */}
+        <View className="mb-5">
+          <Text className="mb-1 text-base font-normal text-black">Full Name</Text>
+          <Controller
+            control={control}
+            name="name"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <Input
+                placeholder="Enter your full name"
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                className="rounded-lg border border-gray-200"
+              />
+            )}
+          />
+          {errors.name && <Text className="mt-1 text-sm text-red-600">{errors.name.message}</Text>}
+        </View>
+
         {/* Email Field */}
         <View className="mb-5">
           <Text className="mb-1 text-base font-normal text-black">Email Address</Text>
-          <Input
-            placeholder="Enter email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            className="rounded-lg border border-gray-200"
+          <Controller
+            control={control}
+            name="mail"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <Input
+                placeholder="Enter email"
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                className="rounded-lg border border-gray-200"
+              />
+            )}
           />
+          {errors.mail && <Text className="mt-1 text-sm text-red-600">{errors.mail.message}</Text>}
         </View>
 
         {/* Password Field */}
         <View className="mb-5">
           <Text className="mb-1 text-base font-normal text-black">Password</Text>
-          <Input
-            placeholder="Enter password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            className="rounded-lg border border-gray-200"
+          <Controller
+            control={control}
+            name="password"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <Input
+                placeholder="Enter password"
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                secureTextEntry
+                className="rounded-lg border border-gray-200"
+              />
+            )}
           />
+          {errors.password && (
+            <Text className="mt-1 text-sm text-red-600">{errors.password.message}</Text>
+          )}
         </View>
 
         {/* Confirm Password Field */}
         <View className="mb-12">
           <Text className="mb-1 text-base font-normal text-black">Confirm Password</Text>
-          <Input
-            placeholder="Confirm Password"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            secureTextEntry
-            className="rounded-lg border border-gray-200"
+          <Controller
+            control={control}
+            name="confirmPassword"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <Input
+                placeholder="Confirm Password"
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                secureTextEntry
+                className="rounded-lg border border-gray-200"
+              />
+            )}
           />
+          {errors.confirmPassword && (
+            <Text className="mt-1 text-sm text-red-600">{errors.confirmPassword.message}</Text>
+          )}
         </View>
 
         {/* Google Sign-Up Button */}
@@ -99,7 +209,7 @@ export default function SignupScreen() {
         {/* Create Account Button */}
         <View className="mb-5">
           <Button
-            onPress={handleSignup}
+            onPress={handleSubmit(handleSignup)}
             className="w-full rounded-3xl bg-gradient-to-r from-[#8BC34A] to-[#4CAF50] py-4 shadow-sm">
             <Text className="text-lg font-bold text-white">Create an account</Text>
           </Button>

@@ -1,17 +1,63 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
+import { useAuth } from "@/contexts/AuthContext";
+import { loginFormSchema, type LoginFormSchemaType } from "@/lib/validation";
+import { transformLoginRequest, useAuthCheck } from "@/services/accountService";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, router } from "expo-router";
-import React, { useState } from "react";
-import { Pressable, SafeAreaView, ScrollView, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { Alert, Pressable, SafeAreaView, ScrollView, View } from "react-native";
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const authCheckQuery = useAuthCheck();
+  const { login } = useAuth();
 
-  const handleLogin = () => {
-    // TODO: Implement login logic
-    console.log("Login attempt for email:", email);
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormSchemaType>({
+    resolver: zodResolver(loginFormSchema),
+    defaultValues: {
+      mail: "",
+      password: "",
+    },
+  });
+
+  const handleLogin = (data: LoginFormSchemaType) => {
+    setError(null);
+    setMessage(null);
+
+    try {
+      const loginData = transformLoginRequest(data);
+      console.log("Login attempt for email:", loginData.mail);
+
+      // Simulate successful login for demo purposes
+      // In real implementation, this would be after successful API call
+      const mockAccount = {
+        id: 1,
+        name: "Demo User",
+        mail: loginData.mail,
+        role: "USER" as const,
+        createAt: new Date().toISOString(),
+        updateAt: new Date().toISOString(),
+        active: true,
+      };
+
+      login(mockAccount);
+      setMessage("Login successful!");
+      Alert.alert("Success", `Welcome back, ${mockAccount.name}!`);
+
+      setTimeout(() => {
+        router.push("/");
+      }, 1500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Login failed");
+    }
   };
 
   const handleGoogleSignIn = () => {
@@ -22,6 +68,21 @@ export default function LoginScreen() {
   const handleSkip = () => {
     router.push("/");
   };
+
+  useEffect(() => {
+    if (authCheckQuery.isSuccess) {
+      setMessage("Authentication successful!");
+      setTimeout(() => {
+        router.push("/");
+      }, 2000);
+    } else if (authCheckQuery.isError) {
+      const errorMessage =
+        authCheckQuery.error instanceof Error
+          ? authCheckQuery.error.message
+          : "Authentication failed. Please try again.";
+      setError(errorMessage);
+    }
+  }, [authCheckQuery.isSuccess, authCheckQuery.isError, authCheckQuery.error]);
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -42,32 +103,64 @@ export default function LoginScreen() {
 
         {/* Subtitle */}
         <Text className="mb-8 text-base font-normal text-[#333333]">
-          Good to see you again, enter your details below to continue ordering.
+          Welcome back, enter your credentials to access your account.
         </Text>
+
+        {/* Error Message */}
+        {error && (
+          <View className="mb-4 rounded-lg bg-red-100 p-3">
+            <Text className="text-red-700">{error}</Text>
+          </View>
+        )}
+
+        {/* Success Message */}
+        {message && (
+          <View className="mb-4 rounded-lg bg-green-100 p-3">
+            <Text className="text-green-700">{message}</Text>
+          </View>
+        )}
 
         {/* Email Field */}
         <View className="mb-5">
           <Text className="mb-1 text-base font-normal text-black">Email Address</Text>
-          <Input
-            placeholder="Enter email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            className="rounded-lg border border-gray-200"
+          <Controller
+            control={control}
+            name="mail"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <Input
+                placeholder="Enter email"
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                className="rounded-lg border border-gray-200"
+              />
+            )}
           />
+          {errors.mail && <Text className="mt-1 text-sm text-red-600">{errors.mail.message}</Text>}
         </View>
 
         {/* Password Field */}
         <View className="mb-12">
           <Text className="mb-1 text-base font-normal text-black">Password</Text>
-          <Input
-            placeholder="Enter password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            className="rounded-lg border border-gray-200"
+          <Controller
+            control={control}
+            name="password"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <Input
+                placeholder="Enter password"
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                secureTextEntry
+                className="rounded-lg border border-gray-200"
+              />
+            )}
           />
+          {errors.password && (
+            <Text className="mt-1 text-sm text-red-600">{errors.password.message}</Text>
+          )}
         </View>
 
         {/* Google Sign-In Button */}
@@ -84,7 +177,7 @@ export default function LoginScreen() {
         {/* Login Button */}
         <View className="mb-5">
           <Button
-            onPress={handleLogin}
+            onPress={handleSubmit(handleLogin)}
             className="w-full rounded-3xl bg-gradient-to-r from-[#8BC34A] to-[#4CAF50] py-4 shadow-sm">
             <Text className="text-lg font-bold text-white">Login to my account</Text>
           </Button>
