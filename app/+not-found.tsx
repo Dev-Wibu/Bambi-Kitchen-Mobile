@@ -1,7 +1,8 @@
 import { Text } from "@/components/ui/text";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { Pressable, SafeAreaView, View } from "react-native";
+import { Pressable, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import "../global.css";
 
 export default function NotFound() {

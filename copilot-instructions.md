@@ -7,7 +7,7 @@
 1. **App Structure** – all source code lives under the root directory. Features should be organized in logical folders (`components/`, `services/`, `contexts/`, `hooks/`, etc.).
 2. **Routing** – Uses Expo Router with file-based routing. Routes are defined in the `app/` directory.
 3. **Networking** – API integration through `@tanstack/react-query` with OpenAPI TypeScript generation (`schema-from-be.d.ts`).
-4. **State Management** – Zustand for global state, React Query for server state, and MMKV for persistent storage.
+4. **State Management** – Zustand for global state, React Query for server state, and AsyncStorage for persistent storage.
 5. **UI Components** – TailwindCSS via NativeWind + RN Primitives. Styled components in `components/` directory.
 6. **Type Safety** – Full TypeScript integration with backend schema generation via `openapi-typescript`.
 
@@ -55,7 +55,7 @@ Before running any command, ensure dependencies are installed and synchronized.
 - Use `@expo/vector-icons` for consistent iconography
 - Leverage `expo-*` packages for native functionality (camera, storage, etc.)
 - Handle platform differences with `Platform.OS` when necessary
-- Use `SafeAreaView` or `useSafeAreaInsets` for proper screen boundaries
+- Use `SafeAreaView` from `react-native-safe-area-context` for proper screen boundaries
 - Optimize lists with `@shopify/flash-list` instead of standard FlatList
 
 ### Styling & UI
@@ -69,7 +69,7 @@ Before running any command, ensure dependencies are installed and synchronized.
 
 - **API Calls** = Always use React Query hooks, never direct fetch calls
 - **State Management** = Use Zustand for global app state
-- **Persistence** = Use MMKV for fast, secure local storage
+- **Persistence** = Use AsyncStorage from `@react-native-async-storage/async-storage` for local storage
 - **Forms** = Leverage `react-hook-form` for form validation and management
 
 ### Performance
@@ -121,7 +121,7 @@ Before running any command, ensure dependencies are installed and synchronized.
 
 ### Security
 
-- Secure sensitive data with proper encryption (MMKV supports encryption)
+- Store sensitive data securely using platform-specific secure storage when needed
 - Validate all user inputs and API responses
 - Implement proper authentication and authorization flows
 - Keep dependencies updated for security patches
@@ -171,3 +171,41 @@ This template is designed to be flexible and adaptable. Common areas for customi
 - **Feature Modules** = Organize components and services by business domain
 
 _Update this file when project structure, dependencies, or workflows change._
+
+---
+
+## Recent Changes
+
+### 2024 Updates
+
+#### Navigation Flow Standardization
+
+- Connected onboarding flow to authentication flow in a logical left-to-right sequence:
+  - `welcome.tsx` → `intro-1.tsx` → `intro-2.tsx` → `intro-3.tsx` → authentication pages
+- Final onboarding screen (intro-3) now directs users to main app entry point
+- Authentication pages (login/register) are accessible from main index screen
+
+#### Internationalization
+
+- Converted all Vietnamese language content to English throughout the application
+- Updated authentication pages (`login.tsx`, `register.tsx`) with English UI text
+- Modified all user-facing labels, placeholders, and messages to English
+- Updated documentation to reflect English-only interface
+
+#### Color Scheme Updates
+
+- Standardized color palette across onboarding and authentication flows
+- Primary action color: `#FF6D00` (bright orange) for positive actions (buttons like NEXT, SKIP, Create an account)
+  - Active/gradient state: `#FF8A00` to `#FF4D00` for gradients or `#FF4D00` for active state
+- App screen background: `#FFFFFF` (white) for forms and cards
+  - Light gradient option: `#E8F5E9` (light mint green) at the bottom of home pages (optional)
+- Main title and description text: `#000000` (black) for high contrast and readability
+- Secondary text (labels): `#757575` (medium gray) for form labels like "Email", "Password"
+- Link text and secondary buttons: `#FF6D00` (orange) for "SKIP", "Create an account", etc.
+- Dark mode support maintained with appropriate color contrasts
+
+#### Documentation Cleanup
+
+- Removed legacy `OLD/README.md` to reduce repository clutter
+- Maintained project-specific READMEs in relevant subdirectories
+- Consolidated primary documentation in `NEW/README.md`

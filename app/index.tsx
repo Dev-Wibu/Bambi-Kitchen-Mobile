@@ -1,10 +1,15 @@
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { Link } from "expo-router";
-import { Pressable, SafeAreaView, View } from "react-native";
+import { Image } from "expo-image";
+import { useRouter } from "expo-router";
+import { View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import "../global.css";
 
-export default function index() {
+export default function Index() {
+  const router = useRouter();
+
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">
       <View className="flex-1 items-center justify-center px-6">
@@ -13,29 +18,41 @@ export default function index() {
           <ThemeToggle />
         </View>
 
+        {/* Logo/Image */}
+        <View className="mb-8 items-center">
+          <Image
+            source={require("@/assets/images/icon.png")}
+            style={{ width: 120, height: 120 }}
+            contentFit="contain"
+            accessibilityLabel="App Icon"
+          />
+        </View>
+
         {/* Welcome Content */}
         <View className="mb-12 items-center">
-          <Text className="mb-4 text-3xl font-bold text-gray-900 dark:text-white">
-            Welcome to Our App!
+          <Text className="mb-4 text-center text-4xl font-bold text-[#000000] dark:text-white">
+            Welcome to Our App
           </Text>
-          <Text className="mb-8 text-center text-lg text-gray-600 dark:text-gray-300">
-            Get started by logging in or creating a new account
+          <Text className="text-center text-lg text-[#757575] dark:text-gray-300">
+            Discover amazing features and seamless experience designed just for you
           </Text>
         </View>
 
-        {/* Navigation Buttons */}
-        <View className="w-full max-w-sm space-y-4">
-          <Link href="/auth/login" asChild>
-            <Pressable className="w-full rounded-3xl bg-gradient-to-r from-[#8BC34A] to-[#4CAF50] py-4 shadow-sm">
-              <Text className="text-center text-lg font-bold text-white">Login to Account</Text>
-            </Pressable>
-          </Link>
+        {/* Main Navigation Button */}
+        <View className="w-full max-w-sm">
+          <Button
+            className="w-full bg-[#FF6D00] py-6 active:bg-[#FF4D00]"
+            onPress={() => router.push("/welcome")}>
+            <Text className="text-lg font-bold text-white">Get Started</Text>
+          </Button>
+        </View>
 
-          <Link href="/auth/signup" asChild>
-            <Pressable className="w-full rounded-3xl border-2 border-[#4CAF50] bg-white py-4 shadow-sm">
-              <Text className="text-center text-lg font-bold text-[#4CAF50]">Create Account</Text>
-            </Pressable>
-          </Link>
+        {/* Quick Access Options */}
+        <View className="mt-8 flex-row items-center justify-center gap-1">
+          <Text className="text-sm text-gray-600 dark:text-gray-300">Already have an account?</Text>
+          <Button variant="ghost" onPress={() => router.push("/login")}>
+            <Text className="text-sm font-semibold text-[#FF6D00]">Sign in</Text>
+          </Button>
         </View>
 
         {/* Additional Content */}

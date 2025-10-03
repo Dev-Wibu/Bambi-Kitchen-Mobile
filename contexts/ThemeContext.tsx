@@ -1,9 +1,6 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useColorScheme } from "nativewind";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { MMKV } from "react-native-mmkv";
-
-// Initialize MMKV storage
-const storage = new MMKV();
 
 type Theme = "light" | "dark" | "system";
 
@@ -21,18 +18,21 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Load saved theme on mount
   useEffect(() => {
-    const savedTheme = storage.getString("theme") as Theme;
-    if (savedTheme) {
-      setThemeState(savedTheme);
-      if (savedTheme !== "system") {
-        setColorScheme(savedTheme);
+    const loadTheme = async () => {
+      const savedTheme = (await AsyncStorage.getItem("theme")) as Theme;
+      if (savedTheme) {
+        setThemeState(savedTheme);
+        if (savedTheme !== "system") {
+          setColorScheme(savedTheme);
+        }
       }
-    }
+    };
+    loadTheme();
   }, [setColorScheme]);
 
-  const setTheme = (newTheme: Theme) => {
+  const setTheme = async (newTheme: Theme) => {
     setThemeState(newTheme);
-    storage.set("theme", newTheme);
+    await AsyncStorage.setItem("theme", newTheme);
 
     if (newTheme === "system") {
       // Reset to system default
