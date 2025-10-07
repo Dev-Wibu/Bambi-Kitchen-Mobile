@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
-import { transformRegisterRequest, useRegister } from "@/services/accountService";
+import { useAuth } from "@/hooks/useAuth";
+import type { ROLE_TYPE } from "@/interfaces/role.interface";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { Eye, EyeOff } from "lucide-react-native";
@@ -12,7 +13,7 @@ import Toast from "react-native-toast-message";
 
 export default function Register() {
   const router = useRouter();
-  const registerMutation = useRegister();
+  const { register } = useAuth();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -20,14 +21,58 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // MOCKAPI: This form uses mock API for registration
+  // All new accounts are saved to mock storage (accountMockApi.ts)
+
+  const validatePhone = (phoneNumber: string) => {
+    // Vietnamese phone format: starts with +84 or 0, followed by 3/5/7/8/9 and 8 more digits
+    const phoneRegex = /^(\+84|0)[35789]\d{8}$/;
+    return phoneRegex.test(phoneNumber);
+  };
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const getPostAuthRoute = (role: ROLE_TYPE | undefined) => {
+    switch (role) {
+      case "ADMIN":
+      case "STAFF":
+        return "/manager" as const;
+      case "USER":
+      default:
+        return "/home" as const;
+    }
+  };
 
   const handleRegister = async () => {
     // Basic validation
-    if (!fullName || !email || !password || !confirmPassword) {
+    if (!fullName || !email || !phone || !password || !confirmPassword) {
       Toast.show({
         type: "error",
         text1: "Validation Error",
         text2: "Please fill in all required fields",
+      });
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      Toast.show({
+        type: "error",
+        text1: "Validation Error",
+        text2: "Please enter a valid email address",
+      });
+      return;
+    }
+
+    if (!validatePhone(phone)) {
+      Toast.show({
+        type: "error",
+        text1: "Validation Error",
+        text2: "Please enter a valid Vietnamese phone number (e.g., 0912345678)",
       });
       return;
     }
@@ -50,36 +95,19 @@ export default function Register() {
       return;
     }
 
+    setIsLoading(true);
     try {
-      const requestData = transformRegisterRequest({
-        name: fullName,
-        email,
-        phone,
-        password,
-        confirmPassword,
-      });
-
-      await registerMutation.mutateAsync({
-        body: requestData,
-      });
+      const authData = await register(fullName, email, password, phone);
 
       Toast.show({
         type: "success",
         text1: "Registration Successful",
-        text2: "You can now log in with your credentials",
+        text2: "Welcome! You are now logged in.",
       });
 
-      // Clear form
-      setFullName("");
-      setEmail("");
-      setPhone("");
-      setPassword("");
-      setConfirmPassword("");
-
-      // Navigate to login page after a short delay
-      setTimeout(() => {
-        router.push("/login");
-      }, 1500);
+      // Navigate to main app after successful registration and auto-login
+      const targetRoute = getPostAuthRoute(authData?.role);
+      router.replace(targetRoute);
     } catch (error) {
       console.error("Registration error:", error);
       Toast.show({
@@ -87,6 +115,8 @@ export default function Register() {
         text1: "Registration Failed",
         text2: error instanceof Error ? error.message : "Please try again later",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -142,9 +172,11 @@ export default function Register() {
 
             {/* Phone Input */}
             <View className="gap-2">
-              <Text className="text-sm font-medium text-[#757575]">Phone Number</Text>
+              <Text className="text-sm font-medium text-[#757575]">
+                Phone Number <Text className="text-red-500">*</Text>
+              </Text>
               <Input
-                placeholder="Enter your phone number"
+                placeholder="Enter your phone number (e.g., 0912345678)"
                 value={phone}
                 onChangeText={setPhone}
                 keyboardType="phone-pad"
@@ -201,10 +233,10 @@ export default function Register() {
           {/* Register Button */}
           <View className="mb-6">
             <Button
-              className="w-full bg-[#FF6D00] py-6 active:bg-[#FF4D00]"
+              className="w-full bg-[#FF6D00] active:bg-[#FF4D00]"
               onPress={handleRegister}
-              disabled={registerMutation.isPending}>
-              {registerMutation.isPending ? (
+              disabled={isLoading}>
+              {isLoading ? (
                 <ActivityIndicator color="white" />
               ) : (
                 <Text className="text-lg font-bold text-white">Register</Text>
