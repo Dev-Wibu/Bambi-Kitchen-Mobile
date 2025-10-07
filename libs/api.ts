@@ -3,7 +3,8 @@ import createFetchClient from "openapi-fetch";
 import createClient from "openapi-react-query";
 
 // Get the API base URL from environment or use default
-export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "https://bambi.kdz.asia/api";
+// Note: Do not include /api suffix here as it's already in the endpoint paths
+export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "https://bambi.kdz.asia";
 
 // Create the fetch client with base configuration
 const fetchClient = createFetchClient<paths>({
