@@ -52,22 +52,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/ingredient-details": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getAll"];
-        put: operations["update_2"];
-        post: operations["create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/ingredient-categories": {
         parameters: {
             query?: never;
@@ -84,22 +68,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/dish": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["findAll_1"];
-        put: operations["update_3"];
-        post: operations["save_1"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/dish-category": {
         parameters: {
             query?: never;
@@ -107,9 +75,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["findAll_2"];
-        put: operations["update_4"];
-        post: operations["save_2"];
+        get: operations["findAll_1"];
+        put: operations["update_2"];
+        post: operations["save_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -123,9 +91,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["findAll_3"];
-        put: operations["update_5"];
-        post: operations["save_3"];
+        get: operations["findAll_2"];
+        put: operations["update_3"];
+        post: operations["save_2"];
         delete?: never;
         options?: never;
         head?: never;
@@ -139,9 +107,57 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["findAll_4"];
-        put: operations["update_6"];
-        post: operations["save_4"];
+        get: operations["findAll_3"];
+        put: operations["update_4"];
+        post: operations["save_3"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/user/reset-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resetPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/mail/verify-otp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["verifyOtp"];
         delete?: never;
         options?: never;
         head?: never;
@@ -155,9 +171,61 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        get: operations["findAll_4"];
+        put?: never;
+        post: operations["save_4"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/dish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sài chung cho create & update, nếu update thì gửi id, còn create thì ko cần
+         * @description Tạo món ăn mới kèm nguyên liệu và thông tin chi tiết, gửi kèm 1 map chứa Id Ingredient và số lượng. Account chỉ cần gửi Id, mấy field khác để trống
+         */
+        post: operations["save_5"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/dish-templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         get: operations["findAll_5"];
         put?: never;
-        post: operations["save_5"];
+        post: operations["create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/account/register": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["register"];
         delete?: never;
         options?: never;
         head?: never;
@@ -180,20 +248,20 @@ export interface paths {
         patch: operations["markAsRead"];
         trace?: never;
     };
-    "/api/ingredient-details/toggle-active/{id}": {
+    "/demo": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        get: operations["demo"];
         put?: never;
         post?: never;
-        delete?: never;
+        delete: operations["deleteRecipe"];
         options?: never;
         head?: never;
-        patch: operations["toggleActive"];
+        patch?: never;
         trace?: never;
     };
     "/api/user/me": {
@@ -212,14 +280,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/user/debug-principal": {
+    "/api/user/google": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["debug"];
+        get: operations["googleLogin"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/user/forgot-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["forgotPassword"];
         put?: never;
         post?: never;
         delete?: never;
@@ -308,6 +392,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/mail/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["sendMail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/ingredient/{id}": {
         parameters: {
             query?: never;
@@ -340,38 +440,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/ingredient-details/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getById"];
-        put?: never;
-        post?: never;
-        delete: operations["delete_2"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/ingredient-details/ingredient/{ingredientId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getByIngredientId"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/ingredient-categories/{id}": {
         parameters: {
             query?: never;
@@ -388,7 +456,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/dish/{id}": {
+    "/api/dish-templates/{sizeCode}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["findBySizeCode"];
+        put?: never;
+        post?: never;
+        delete: operations["delete_2"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/dish-category/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -404,7 +488,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/dish-category/{id}": {
+    "/api/discount/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -420,7 +504,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/discount/{id}": {
+    "/api/account/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -431,22 +515,6 @@ export interface paths {
         put?: never;
         post?: never;
         delete: operations["delete_5"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/account/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["findById_6"];
-        put?: never;
-        post?: never;
-        delete: operations["delete_6"];
         options?: never;
         head?: never;
         patch?: never;
@@ -489,6 +557,8 @@ export interface components {
             /** @enum {string} */
             unit?: "GRAM" | "KILOGRAM" | "LITER" | "PCS";
             active?: boolean;
+            imgUrl?: string;
+            publicId?: string;
         };
         IngredientCategory: {
             /** Format: int32 */
@@ -510,7 +580,6 @@ export interface components {
         Orders: {
             /** Format: int32 */
             id?: number;
-            name?: string;
             /** Format: date-time */
             createAt?: string;
             /** Format: int32 */
@@ -523,7 +592,7 @@ export interface components {
             staffId?: number;
             note?: string;
             /** Format: int32 */
-            raking?: number;
+            ranking?: number;
             /** Format: int32 */
             comment?: number;
         };
@@ -536,64 +605,18 @@ export interface components {
             /** @enum {string} */
             unit?: "GRAM" | "KILOGRAM" | "LITER" | "PCS";
             active?: boolean;
-        };
-        IngredientDetail: {
-            /** Format: int32 */
-            id?: number;
-            ingredient?: components["schemas"]["Ingredient"];
-            /** Format: date-time */
-            entryDate?: string;
-            /** Format: date-time */
-            expireDate?: string;
-            /** Format: int32 */
-            quantity?: number;
-            active?: boolean;
-        };
-        DishUpdateRequest: {
-            /** Format: int32 */
-            id: number;
-            name?: string;
-            description?: string;
-            /** Format: int32 */
-            price?: number;
-            imageUrl?: string;
-            /** Format: int32 */
-            accountId?: number;
-            /** Format: int32 */
-            categoryId?: number;
-            /** @enum {string} */
-            dishType?: "PRESET" | "CUSTOM";
-            isActive?: boolean;
-            isPublic?: boolean;
-            /** Format: int32 */
-            usedQuantity?: number;
-        };
-        Dish: {
-            /** Format: int32 */
-            id?: number;
-            name?: string;
-            description?: string;
-            /** Format: int32 */
-            price?: number;
-            imageUrl?: string;
-            account?: components["schemas"]["Account"];
-            category?: components["schemas"]["DishCategory"];
-            /** @enum {string} */
-            dishType?: "PRESET" | "CUSTOM";
-            /** Format: int32 */
-            usedQuantity?: number;
-            public?: boolean;
-            active?: boolean;
-        };
-        DishCategory: {
-            /** Format: int32 */
-            id?: number;
-            name: string;
-            description?: string;
+            /** Format: binary */
+            file?: string;
         };
         DishCategoryUpdateRequest: {
             /** Format: int32 */
             id: number;
+            name: string;
+            description?: string;
+        };
+        DishCategory: {
+            /** Format: int32 */
+            id?: number;
             name: string;
             description?: string;
         };
@@ -631,9 +654,34 @@ export interface components {
             id: number;
             name: string;
             /** @enum {string} */
-            role: "ADMIN" | "STAFF" | "USER";
+            role?: "ADMIN" | "STAFF" | "USER";
             mail: string;
             active?: boolean;
+        };
+        MakeOrderRequest: {
+            /** Format: int32 */
+            accountId?: number;
+            paymentMethod?: string;
+            note?: string;
+            items?: components["schemas"]["OrderItemDTO"][];
+        };
+        OrderItemDTO: {
+            /** Format: int32 */
+            dishId?: number;
+            /** Format: int32 */
+            basedOnId?: number;
+            name?: string;
+            /** Format: int32 */
+            quantity?: number;
+            recipe?: components["schemas"]["RecipeItemDTO"][];
+        };
+        RecipeItemDTO: {
+            /** Format: int32 */
+            ingredientId?: number;
+            /** Format: int32 */
+            quantity?: number;
+            /** @enum {string} */
+            sourceType?: "BASE" | "ADDON" | "REMOVED";
         };
         IngredientCreateRequest: {
             name: string;
@@ -641,23 +689,56 @@ export interface components {
             categoryId: number;
             /** @enum {string} */
             unit: "GRAM" | "KILOGRAM" | "LITER" | "PCS";
+            /** Format: binary */
+            file?: string;
         };
         DishCreateRequest: {
+            /** Format: int32 */
+            id?: number;
             name: string;
             description?: string;
             /** Format: int32 */
             price?: number;
             imageUrl?: string;
-            /** Format: int32 */
-            accountId: number;
-            /** Format: int32 */
-            categoryId: number;
+            account: components["schemas"]["Account"];
             /** @enum {string} */
             dishType: "PRESET" | "CUSTOM";
+            ingredients: {
+                [key: string]: number;
+            };
+            public?: boolean;
+            active?: boolean;
+        };
+        Dish: {
+            /** Format: int32 */
+            id?: number;
+            name?: string;
+            description?: string;
+            /** Format: int32 */
+            price?: number;
+            imageUrl?: string;
+            account?: components["schemas"]["Account"];
+            /** @enum {string} */
+            dishType?: "PRESET" | "CUSTOM";
             /** Format: int32 */
             usedQuantity?: number;
             public?: boolean;
             active?: boolean;
+        };
+        DishTemplate: {
+            /** @enum {string} */
+            size?: "S" | "M" | "L";
+            name?: string;
+            /** Format: double */
+            priceRatio?: number;
+            /** Format: double */
+            quantityRatio?: number;
+            /** Format: int32 */
+            max_Carb?: number;
+            /** Format: int32 */
+            max_Protein?: number;
+            /** Format: int32 */
+            max_Vegetable?: number;
         };
         DishCategoryCreateRequest: {
             name: string;
@@ -679,7 +760,279 @@ export interface components {
         AccountCreateRequest: {
             name: string;
             mail: string;
+            /** @enum {string} */
+            role: "ADMIN" | "STAFF" | "USER";
             password: string;
+        };
+        UserDTO: {
+            /** Format: int32 */
+            id?: number;
+            name?: string;
+            /** Format: int32 */
+            age?: number;
+        };
+        WarpResponseUserDTO: {
+            /** Format: int32 */
+            statusCode?: number;
+            message?: string;
+            data?: components["schemas"]["UserDTO"];
+        };
+        ApplicationContext: {
+            parent?: unknown;
+            id?: string;
+            displayName?: string;
+            applicationName?: string;
+            /** Format: int64 */
+            startupDate?: number;
+            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
+            environment?: components["schemas"]["Environment"];
+            /** Format: int32 */
+            beanDefinitionCount?: number;
+            beanDefinitionNames?: string[];
+            parentBeanFactory?: components["schemas"]["BeanFactory"];
+            classLoader?: {
+                name?: string;
+                registeredAsParallelCapable?: boolean;
+                parent?: {
+                    name?: string;
+                    registeredAsParallelCapable?: boolean;
+                    unnamedModule?: {
+                        name?: string;
+                        classLoader?: {
+                            name?: string;
+                            registeredAsParallelCapable?: boolean;
+                            definedPackages?: {
+                                name?: string;
+                                annotations?: unknown[];
+                                declaredAnnotations?: unknown[];
+                                sealed?: boolean;
+                                specificationTitle?: string;
+                                specificationVersion?: string;
+                                specificationVendor?: string;
+                                implementationTitle?: string;
+                                implementationVersion?: string;
+                                implementationVendor?: string;
+                            }[];
+                            defaultAssertionStatus?: boolean;
+                        };
+                        descriptor?: {
+                            open?: boolean;
+                            automatic?: boolean;
+                        };
+                        named?: boolean;
+                        annotations?: unknown[];
+                        declaredAnnotations?: unknown[];
+                        packages?: string[];
+                        layer?: unknown;
+                    };
+                    definedPackages?: {
+                        name?: string;
+                        annotations?: unknown[];
+                        declaredAnnotations?: unknown[];
+                        sealed?: boolean;
+                        specificationTitle?: string;
+                        specificationVersion?: string;
+                        specificationVendor?: string;
+                        implementationTitle?: string;
+                        implementationVersion?: string;
+                        implementationVendor?: string;
+                    }[];
+                    defaultAssertionStatus?: boolean;
+                };
+                unnamedModule?: {
+                    name?: string;
+                    classLoader?: {
+                        name?: string;
+                        registeredAsParallelCapable?: boolean;
+                        definedPackages?: {
+                            name?: string;
+                            annotations?: unknown[];
+                            declaredAnnotations?: unknown[];
+                            sealed?: boolean;
+                            specificationTitle?: string;
+                            specificationVersion?: string;
+                            specificationVendor?: string;
+                            implementationTitle?: string;
+                            implementationVersion?: string;
+                            implementationVendor?: string;
+                        }[];
+                        defaultAssertionStatus?: boolean;
+                    };
+                    descriptor?: {
+                        open?: boolean;
+                        automatic?: boolean;
+                    };
+                    named?: boolean;
+                    annotations?: unknown[];
+                    declaredAnnotations?: unknown[];
+                    packages?: string[];
+                    layer?: unknown;
+                };
+                definedPackages?: {
+                    name?: string;
+                    annotations?: unknown[];
+                    declaredAnnotations?: unknown[];
+                    sealed?: boolean;
+                    specificationTitle?: string;
+                    specificationVersion?: string;
+                    specificationVendor?: string;
+                    implementationTitle?: string;
+                    implementationVersion?: string;
+                    implementationVendor?: string;
+                }[];
+                defaultAssertionStatus?: boolean;
+            };
+        };
+        AutowireCapableBeanFactory: unknown;
+        BeanFactory: unknown;
+        DefaultHttpStatusCode: components["schemas"]["HttpStatusCode"];
+        Environment: {
+            activeProfiles?: string[];
+            defaultProfiles?: string[];
+        };
+        FilterRegistration: {
+            servletNameMappings?: string[];
+            urlPatternMappings?: string[];
+            name?: string;
+            className?: string;
+            initParameters?: {
+                [key: string]: string;
+            };
+        };
+        /** @enum {unknown} */
+        HttpStatus: "100 CONTINUE" | "101 SWITCHING_PROTOCOLS" | "102 PROCESSING" | "103 EARLY_HINTS" | "103 CHECKPOINT" | "200 OK" | "201 CREATED" | "202 ACCEPTED" | "203 NON_AUTHORITATIVE_INFORMATION" | "204 NO_CONTENT" | "205 RESET_CONTENT" | "206 PARTIAL_CONTENT" | "207 MULTI_STATUS" | "208 ALREADY_REPORTED" | "226 IM_USED" | "300 MULTIPLE_CHOICES" | "301 MOVED_PERMANENTLY" | "302 FOUND" | "302 MOVED_TEMPORARILY" | "303 SEE_OTHER" | "304 NOT_MODIFIED" | "305 USE_PROXY" | "307 TEMPORARY_REDIRECT" | "308 PERMANENT_REDIRECT" | "400 BAD_REQUEST" | "401 UNAUTHORIZED" | "402 PAYMENT_REQUIRED" | "403 FORBIDDEN" | "404 NOT_FOUND" | "405 METHOD_NOT_ALLOWED" | "406 NOT_ACCEPTABLE" | "407 PROXY_AUTHENTICATION_REQUIRED" | "408 REQUEST_TIMEOUT" | "409 CONFLICT" | "410 GONE" | "411 LENGTH_REQUIRED" | "412 PRECONDITION_FAILED" | "413 PAYLOAD_TOO_LARGE" | "413 REQUEST_ENTITY_TOO_LARGE" | "414 URI_TOO_LONG" | "414 REQUEST_URI_TOO_LONG" | "415 UNSUPPORTED_MEDIA_TYPE" | "416 REQUESTED_RANGE_NOT_SATISFIABLE" | "417 EXPECTATION_FAILED" | "418 I_AM_A_TEAPOT" | "419 INSUFFICIENT_SPACE_ON_RESOURCE" | "420 METHOD_FAILURE" | "421 DESTINATION_LOCKED" | "422 UNPROCESSABLE_ENTITY" | "423 LOCKED" | "424 FAILED_DEPENDENCY" | "425 TOO_EARLY" | "426 UPGRADE_REQUIRED" | "428 PRECONDITION_REQUIRED" | "429 TOO_MANY_REQUESTS" | "431 REQUEST_HEADER_FIELDS_TOO_LARGE" | "451 UNAVAILABLE_FOR_LEGAL_REASONS" | "500 INTERNAL_SERVER_ERROR" | "501 NOT_IMPLEMENTED" | "502 BAD_GATEWAY" | "503 SERVICE_UNAVAILABLE" | "504 GATEWAY_TIMEOUT" | "505 HTTP_VERSION_NOT_SUPPORTED" | "506 VARIANT_ALSO_NEGOTIATES" | "507 INSUFFICIENT_STORAGE" | "508 LOOP_DETECTED" | "509 BANDWIDTH_LIMIT_EXCEEDED" | "510 NOT_EXTENDED" | "511 NETWORK_AUTHENTICATION_REQUIRED";
+        HttpStatusCode: {
+            error?: boolean;
+            is1xxInformational?: boolean;
+            is2xxSuccessful?: boolean;
+            is3xxRedirection?: boolean;
+            is4xxClientError?: boolean;
+            is5xxServerError?: boolean;
+        };
+        JspConfigDescriptor: {
+            taglibs?: components["schemas"]["TaglibDescriptor"][];
+            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
+        };
+        JspPropertyGroupDescriptor: {
+            buffer?: string;
+            elIgnored?: string;
+            errorOnELNotFound?: string;
+            pageEncoding?: string;
+            scriptingInvalid?: string;
+            isXml?: string;
+            includePreludes?: string[];
+            includeCodas?: string[];
+            deferredSyntaxAllowedAsLiteral?: string;
+            trimDirectiveWhitespaces?: string;
+            errorOnUndeclaredNamespace?: string;
+            defaultContentType?: string;
+            urlPatterns?: string[];
+        };
+        RedirectView: {
+            applicationContext?: components["schemas"]["ApplicationContext"];
+            servletContext?: components["schemas"]["ServletContext"];
+            contentType?: string;
+            requestContextAttribute?: string;
+            staticAttributes?: {
+                [key: string]: unknown;
+            };
+            exposePathVariables?: boolean;
+            exposeContextBeansAsAttributes?: boolean;
+            exposedContextBeanNames?: string[];
+            beanName?: string;
+            url?: string;
+            contextRelative?: boolean;
+            http10Compatible?: boolean;
+            exposeModelAttributes?: boolean;
+            encodingScheme?: string;
+            statusCode?: components["schemas"]["DefaultHttpStatusCode"] | components["schemas"]["HttpStatus"];
+            expandUriTemplateVariables?: boolean;
+            propagateQueryParams?: boolean;
+            hosts?: string[];
+            redirectView?: boolean;
+            propagateQueryProperties?: boolean;
+            attributesMap?: {
+                [key: string]: unknown;
+            };
+            attributes?: {
+                [key: string]: string;
+            };
+            attributesCSV?: string;
+        };
+        ServletContext: {
+            classLoader?: {
+                name?: string;
+                registeredAsParallelCapable?: boolean;
+                definedPackages?: {
+                    name?: string;
+                    annotations?: unknown[];
+                    declaredAnnotations?: unknown[];
+                    sealed?: boolean;
+                    specificationTitle?: string;
+                    specificationVersion?: string;
+                    specificationVendor?: string;
+                    implementationTitle?: string;
+                    implementationVersion?: string;
+                    implementationVendor?: string;
+                }[];
+                defaultAssertionStatus?: boolean;
+            };
+            /** Format: int32 */
+            majorVersion?: number;
+            /** Format: int32 */
+            minorVersion?: number;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            virtualServerName?: string;
+            attributeNames?: unknown;
+            /** Format: int32 */
+            sessionTimeout?: number;
+            contextPath?: string;
+            initParameterNames?: unknown;
+            servletRegistrations?: {
+                [key: string]: components["schemas"]["ServletRegistration"];
+            };
+            /** Format: int32 */
+            effectiveMajorVersion?: number;
+            /** Format: int32 */
+            effectiveMinorVersion?: number;
+            serverInfo?: string;
+            servletContextName?: string;
+            filterRegistrations?: {
+                [key: string]: components["schemas"]["FilterRegistration"];
+            };
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
+            requestCharacterEncoding?: string;
+            responseCharacterEncoding?: string;
+        };
+        ServletRegistration: {
+            runAsRole?: string;
+            mappings?: string[];
+            name?: string;
+            className?: string;
+            initParameters?: {
+                [key: string]: string;
+            };
+        };
+        SessionCookieConfig: {
+            name?: string;
+            path?: string;
+            attributes?: {
+                [key: string]: string;
+            };
+            /** @deprecated */
+            comment?: string;
+            /** Format: int32 */
+            maxAge?: number;
+            domain?: string;
+            httpOnly?: boolean;
+            secure?: boolean;
+        };
+        TaglibDescriptor: {
+            taglibURI?: string;
+            taglibLocation?: string;
         };
     };
     responses: never;
@@ -705,7 +1058,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Notification"][];
+                    "_/_": components["schemas"]["Notification"][];
                 };
             };
         };
@@ -729,7 +1082,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Notification"];
+                    "_/_": components["schemas"]["Notification"];
                 };
             };
         };
@@ -753,7 +1106,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Notification"];
+                    "_/_": components["schemas"]["Notification"];
                 };
             };
         };
@@ -841,62 +1194,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Ingredient"][];
+                    "_/_": components["schemas"]["Ingredient"][];
                 };
             };
         };
     };
     update_1: {
         parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["IngredientUpdateRequest"];
+            query: {
+                ingredient: components["schemas"]["IngredientUpdateRequest"];
             };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Ingredient"];
-                };
-            };
-        };
-    };
-    save: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["IngredientCreateRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Ingredient"];
-                };
-            };
-        };
-    };
-    getAll: {
-        parameters: {
-            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
@@ -909,23 +1216,21 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["IngredientDetail"][];
+                    "_/_": components["schemas"]["Ingredient"];
                 };
             };
         };
     };
-    update_2: {
+    save: {
         parameters: {
-            query?: never;
+            query: {
+                ingredient: components["schemas"]["IngredientCreateRequest"];
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["IngredientDetail"];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {
@@ -933,31 +1238,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["IngredientDetail"];
-                };
-            };
-        };
-    };
-    create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["IngredientDetail"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["IngredientDetail"];
+                    "_/_": components["schemas"]["Ingredient"];
                 };
             };
         };
@@ -1045,12 +1326,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Dish"][];
+                    "_/_": components["schemas"]["DishCategory"][];
                 };
             };
         };
     };
-    update_3: {
+    update_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -1059,7 +1340,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["DishUpdateRequest"];
+                "application/json": components["schemas"]["DishCategoryUpdateRequest"];
             };
         };
         responses: {
@@ -1069,7 +1350,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Dish"];
+                    "_/_": components["schemas"]["DishCategory"];
                 };
             };
         };
@@ -1083,7 +1364,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["DishCreateRequest"];
+                "application/json": components["schemas"]["DishCategoryCreateRequest"];
             };
         };
         responses: {
@@ -1093,7 +1374,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Dish"];
+                    "_/_": components["schemas"]["DishCategory"];
                 };
             };
         };
@@ -1113,80 +1394,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["DishCategory"][];
-                };
-            };
-        };
-    };
-    update_4: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DishCategoryUpdateRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["DishCategory"];
-                };
-            };
-        };
-    };
-    save_2: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DishCategoryCreateRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["DishCategory"];
-                };
-            };
-        };
-    };
-    findAll_3: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
                     "*/*": components["schemas"]["Discount"][];
                 };
             };
         };
     };
-    update_5: {
+    update_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -1210,7 +1423,7 @@ export interface operations {
             };
         };
     };
-    save_3: {
+    save_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -1234,7 +1447,7 @@ export interface operations {
             };
         };
     };
-    findAll_4: {
+    findAll_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -1249,12 +1462,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Account"][];
+                    "_/_": components["schemas"]["Account"][];
                 };
             };
         };
     };
-    update_6: {
+    update_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -1273,12 +1486,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Account"];
+                    "_/_": components["schemas"]["Account"];
                 };
             };
         };
     };
-    save_4: {
+    save_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -1297,7 +1510,144 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Account"];
+                    "_/_": components["schemas"]["Account"];
+                };
+            };
+        };
+    };
+    resetPassword: {
+        parameters: {
+            query: {
+                otp: string;
+                email: string;
+                newPassword: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+        };
+    };
+    createOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MakeOrderRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    verifyOtp: {
+        parameters: {
+            query: {
+                email: string;
+                otp: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "_/_": string;
+                };
+            };
+        };
+    };
+    findAll_4: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "_/_": components["schemas"]["InventoryTransaction"][];
+                };
+            };
+        };
+    };
+    save_4: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InventoryTransaction"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "_/_": components["schemas"]["InventoryTransaction"];
+                };
+            };
+        };
+    };
+    save_5: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DishCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "_/_": components["schemas"]["Dish"];
                 };
             };
         };
@@ -1317,12 +1667,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["InventoryTransaction"][];
+                    "*/*": components["schemas"]["DishTemplate"][];
                 };
             };
         };
     };
-    save_5: {
+    create: {
         parameters: {
             query?: never;
             header?: never;
@@ -1331,7 +1681,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["InventoryTransaction"];
+                "application/json": components["schemas"]["DishTemplate"];
             };
         };
         responses: {
@@ -1341,7 +1691,31 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["InventoryTransaction"];
+                    "*/*": components["schemas"]["DishTemplate"];
+                };
+            };
+        };
+    };
+    register: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Account"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Account"];
                 };
             };
         };
@@ -1366,13 +1740,38 @@ export interface operations {
             };
         };
     };
-    toggleActive: {
+    demo: {
         parameters: {
             query?: never;
             header?: never;
-            path: {
-                id: number;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserDTO"];
             };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WarpResponseUserDTO"];
+                };
+            };
+        };
+    };
+    deleteRecipe: {
+        parameters: {
+            query: {
+                DishId: number;
+                IngredientId: number;
+            };
+            header?: never;
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;
@@ -1401,14 +1800,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": {
+                    "_/_": {
                         [key: string]: unknown;
                     };
                 };
             };
         };
     };
-    debug: {
+    googleLogin: {
         parameters: {
             query?: never;
             header?: never;
@@ -1423,7 +1822,29 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": Record<string, never>;
+                    "*/*": components["schemas"]["RedirectView"];
+                };
+            };
+        };
+    };
+    forgotPassword: {
+        parameters: {
+            query: {
+                email: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
                 };
             };
         };
@@ -1564,6 +1985,26 @@ export interface operations {
             };
         };
     };
+    sendMail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+        };
+    };
     findById_1: {
         parameters: {
             query?: never;
@@ -1630,70 +2071,6 @@ export interface operations {
             };
         };
     };
-    getById: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["IngredientDetail"];
-                };
-            };
-        };
-    };
-    delete_2: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    getByIngredientId: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                ingredientId: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["IngredientDetail"][];
-                };
-            };
-        };
-    };
     findById_2: {
         parameters: {
             query?: never;
@@ -1736,6 +2113,48 @@ export interface operations {
             };
         };
     };
+    findBySizeCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sizeCode: "S" | "M" | "L";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DishTemplate"];
+                };
+            };
+        };
+    };
+    delete_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sizeCode: "S" | "M" | "L";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     findById_3: {
         parameters: {
             query?: never;
@@ -1753,7 +2172,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Dish"];
+                    "*/*": components["schemas"]["DishCategory"];
                 };
             };
         };
@@ -1797,7 +2216,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["DishCategory"];
+                    "*/*": components["schemas"]["Discount"];
                 };
             };
         };
@@ -1841,56 +2260,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Discount"];
-                };
-            };
-        };
-    };
-    delete_5: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": string;
-                };
-            };
-        };
-    };
-    findById_6: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
                     "*/*": components["schemas"]["Account"];
                 };
             };
         };
     };
-    delete_6: {
+    delete_5: {
         parameters: {
             query?: never;
             header?: never;
