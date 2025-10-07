@@ -8,5 +8,10 @@ module.exports = defineConfig([
   eslintPluginPrettierRecommended,
   {
     ignores: ["dist/*"],
+    rules: {
+      // Customize your rules here
+      "react/no-unescaped-entities": "off",
+      "no-undef": "off",
+    },
   },
 ]);
