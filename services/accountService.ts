@@ -1,4 +1,4 @@
-import type { AccountCreateRequest } from "@/interfaces/account.interface";
+import type { AccountCreateRequest, AccountUpdateRequest } from "@/interfaces/account.interface";
 import type { LoginRequest } from "@/interfaces/auth.interface";
 import { ROLES, type ROLE_TYPE } from "@/interfaces/role.interface";
 import { $api } from "@/libs/api";
@@ -10,10 +10,31 @@ import { $api } from "@/libs/api";
  * Uses POST /api/account/register endpoint
  */
 export const useRegister = () => {
-  // Since schema doesn't have /register endpoint exposed,
-  // we'll use the POST /api/account endpoint which maps to save()
-  // Note: BE has both save() and register() but only save() is in OpenAPI spec
+  return $api.useMutation("post", "/api/account/register");
+};
+
+/**
+ * Hook for creating a new account (admin/manager)
+ * Uses POST /api/account endpoint
+ */
+export const useCreateAccount = () => {
   return $api.useMutation("post", "/api/account");
+};
+
+/**
+ * Hook for updating an existing account
+ * Uses PUT /api/account endpoint
+ */
+export const useUpdateAccount = () => {
+  return $api.useMutation("put", "/api/account");
+};
+
+/**
+ * Hook for deleting an account
+ * Uses DELETE /api/account/{id} endpoint
+ */
+export const useDeleteAccount = () => {
+  return $api.useMutation("delete", "/api/account/{id}");
 };
 
 /**
@@ -44,7 +65,44 @@ export const useGetAccountById = (id: number) => {
 // ==================== TRANSFORM FUNCTIONS ====================
 
 /**
- * Transform register form data to AccountCreateRequest format
+ * Transform account form data to AccountCreateRequest format
+ */
+export const transformAccountCreateRequest = (data: {
+  name: string;
+  email: string;
+  password: string;
+  role: ROLE_TYPE;
+}): AccountCreateRequest => {
+  return {
+    name: data.name,
+    mail: data.email,
+    password: data.password,
+    role: data.role,
+  };
+};
+
+/**
+ * Transform account form data to AccountUpdateRequest format
+ */
+export const transformAccountUpdateRequest = (data: {
+  id: number;
+  name: string;
+  email: string;
+  role: ROLE_TYPE;
+  active: boolean;
+}): AccountUpdateRequest => {
+  return {
+    id: data.id,
+    name: data.name,
+    mail: data.email,
+    role: data.role,
+    active: data.active,
+  };
+};
+
+/**
+ * Transform register form data for /api/account/register endpoint
+ * Returns Account schema object with required fields
  */
 export const transformRegisterRequest = (data: {
   name: string;
@@ -52,7 +110,7 @@ export const transformRegisterRequest = (data: {
   phone?: string;
   password: string;
   confirmPassword?: string;
-}): AccountCreateRequest => {
+}) => {
   // Validate password match if confirmPassword is provided
   if (data.confirmPassword && data.password !== data.confirmPassword) {
     throw new Error("Passwords do not match");
@@ -62,6 +120,8 @@ export const transformRegisterRequest = (data: {
     name: data.name,
     mail: data.email,
     password: data.password,
+    phone: data.phone,
+    role: ROLES.USER as ROLE_TYPE, // Required field for Account schema
   };
 };
 
