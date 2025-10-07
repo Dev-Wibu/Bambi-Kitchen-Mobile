@@ -44,7 +44,7 @@ export default function IntroTwo() {
         {/* Navigation Buttons */}
         <View className="w-full max-w-sm gap-4">
           <Button
-            className="w-full bg-[#FF6D00] py-6 active:bg-[#FF4D00]"
+            className="w-full rounded-3xl bg-[#FF6D00] active:bg-[#FF4D00]"
             onPress={() => router.push("/intro-3")}>
             <Text className="text-lg font-bold text-white">Next</Text>
           </Button>
@@ -53,7 +53,7 @@ export default function IntroTwo() {
             <Button variant="ghost" onPress={() => router.back()}>
               <Text className="text-sm text-[#757575]">Back</Text>
             </Button>
-            <Button variant="ghost" onPress={() => router.push("/")}>
+            <Button variant="ghost" onPress={() => router.push("/login")}>
               <Text className="text-sm text-[#FF6D00]">Skip</Text>
             </Button>
           </View>

@@ -32,16 +32,16 @@ export default function Welcome() {
         </View>
 
         {/* Navigation Button */}
-        <View className="w-full max-w-sm">
+        <View className="w-full max-w-md">
           <Button
-            className="w-full bg-[#FF6D00] py-6 active:bg-[#FF4D00]"
+            className="w-full rounded-3xl bg-[#FF6D00] active:bg-[#FF4D00]"
             onPress={() => router.push("/intro-1")}>
             <Text className="text-lg font-bold text-white">Get Started</Text>
           </Button>
         </View>
 
         {/* Skip Option */}
-        <Button variant="ghost" className="mt-6" onPress={() => router.push("/")}>
+        <Button variant="ghost" className="mt-6" onPress={() => router.push("/login")}>
           <Text className="text-sm text-[#FF6D00]">Skip for now</Text>
         </Button>
       </View>

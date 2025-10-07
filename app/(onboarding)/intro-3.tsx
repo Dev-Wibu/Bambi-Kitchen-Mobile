@@ -44,7 +44,7 @@ export default function IntroThree() {
         {/* Navigation Buttons */}
         <View className="w-full max-w-sm gap-4">
           <Button
-            className="w-full bg-[#FF6D00] py-6 active:bg-[#FF4D00]"
+            className="w-full rounded-3xl bg-[#FF6D00] active:bg-[#FF4D00]"
             onPress={() => router.push("/login")}>
             <Text className="text-lg font-bold text-white">Get Started</Text>
           </Button>
