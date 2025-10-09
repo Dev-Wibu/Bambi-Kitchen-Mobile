@@ -6,7 +6,6 @@
   "scripts": {
     "android": "expo run:android",
     "build": "expo prebuild",
-    "check": " tsc --noEmit",
     "doctor": "npx expo-doctor",
     "format": "prettier --write .",
     "generate-schema": "npm exec openapi-typescript https://bambi.kdz.asia/v3/api-docs -o ./schema-from-be.d.ts",
