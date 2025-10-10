@@ -1,15 +1,25 @@
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { useAuth } from "@/hooks/useAuth";
+import { useCartStore } from "@/stores/cartStore";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { ScrollView, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
+
+// Sample products for demonstration
+const SAMPLE_PRODUCTS = [
+  { id: 1, name: "Grilled Chicken", price: 12.99, image: undefined },
+  { id: 2, name: "Beef Burger", price: 10.99, image: undefined },
+  { id: 3, name: "Caesar Salad", price: 8.99, image: undefined },
+];
 
 export default function HomeTab() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const { addItem, getTotalItems } = useCartStore();
+  const cartItemCount = getTotalItems();
 
   const handleLogout = async () => {
     try {
@@ -29,14 +39,41 @@ export default function HomeTab() {
     }
   };
 
+  const handleAddToCart = (product: (typeof SAMPLE_PRODUCTS)[0]) => {
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      quantity: 1,
+      image: product.image,
+    });
+    Toast.show({
+      type: "success",
+      text1: "Added to Cart",
+      text2: `${product.name} has been added to your cart`,
+    });
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">
       <ScrollView className="flex-1" contentContainerClassName="px-6 py-8">
-        {/* Header */}
+        {/* Header with Cart Badge */}
         <View className="mb-8">
-          <Text className="mb-2 text-3xl font-bold text-[#000000] dark:text-white">
-            Welcome, {user?.name || "User"}!
-          </Text>
+          <View className="mb-2 flex-row items-center justify-between">
+            <Text className="text-3xl font-bold text-[#000000] dark:text-white">
+              Welcome, {user?.name || "User"}!
+            </Text>
+            <Pressable
+              onPress={() => router.push("/(tabs)/cart")}
+              className="relative rounded-full bg-[#FF6D00] p-3">
+              <MaterialIcons name="shopping-cart" size={24} color="white" />
+              {cartItemCount > 0 && (
+                <View className="absolute -right-1 -top-1 h-5 w-5 items-center justify-center rounded-full bg-red-500">
+                  <Text className="text-xs font-bold text-white">{cartItemCount}</Text>
+                </View>
+              )}
+            </Pressable>
+          </View>
           <Text className="text-base text-gray-600 dark:text-gray-300">
             You are logged in as a User
           </Text>
@@ -67,6 +104,37 @@ export default function HomeTab() {
               <Text className="text-sm text-[#757575]">Role</Text>
               <Text className="text-base font-medium text-[#FF6D00]">{user?.role || "N/A"}</Text>
             </View>
+          </View>
+        </View>
+
+        {/* Featured Products */}
+        <View className="mb-6">
+          <Text className="mb-4 text-xl font-bold text-[#000000] dark:text-white">
+            Featured Items
+          </Text>
+          <View className="gap-4">
+            {SAMPLE_PRODUCTS.map((product) => (
+              <View
+                key={product.id}
+                className="flex-row items-center justify-between rounded-xl border border-gray-200 p-4 dark:border-gray-700">
+                <View className="mr-4 h-16 w-16 items-center justify-center rounded-xl bg-gray-200 dark:bg-gray-700">
+                  <MaterialIcons name="restaurant" size={32} color="#FF6D00" />
+                </View>
+                <View className="flex-1">
+                  <Text className="mb-1 text-base font-semibold text-[#000000] dark:text-white">
+                    {product.name}
+                  </Text>
+                  <Text className="text-lg font-bold text-[#FF6D00]">
+                    ${product.price.toFixed(2)}
+                  </Text>
+                </View>
+                <Pressable
+                  onPress={() => handleAddToCart(product)}
+                  className="rounded-full bg-[#FF6D00] p-2 active:bg-[#FF4D00]">
+                  <MaterialIcons name="add-shopping-cart" size={20} color="white" />
+                </Pressable>
+              </View>
+            ))}
           </View>
         </View>
 

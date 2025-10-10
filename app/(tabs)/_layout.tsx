@@ -1,3 +1,4 @@
+import { CustomTabBar } from "@/components/CustomTabBar";
 import { useAuth } from "@/hooks/useAuth";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Redirect, Tabs } from "expo-router";
@@ -20,47 +21,64 @@ export default function TabsLayout() {
     return <Redirect href="/(auth)/login" />;
   }
 
+  const hiddenRoutes = [
+    "index",
+    "cart",
+    "cart/index",
+    "manager/accounts",
+    "manager/accounts/index",
+    "manager/accounts/AccountForm",
+    "manager/discounts",
+    "manager/discounts/index",
+    "manager/discounts/DiscountForm",
+    "manager/dish-categories",
+    "manager/dish-categories/index",
+    "manager/dish-categories/DishCategoryForm",
+    "manager/ingredient-categories",
+    "manager/ingredient-categories/index",
+    "manager/ingredient-categories/IngredientCategoryForm",
+    "manager/inventory-transactions",
+    "manager/inventory-transactions/index",
+    "manager/notifications",
+    "manager/notifications/index",
+  ];
+
   return (
     <Tabs
+      tabBar={(props) => <CustomTabBar {...props} hiddenRoutes={hiddenRoutes} />}
       screenOptions={{
         tabBarActiveTintColor: "#FF6D00",
         tabBarInactiveTintColor: "#9CA3AF",
         headerShown: false,
-        tabBarStyle: {
-          backgroundColor: "#FFFFFF",
-          borderTopWidth: 1,
-          borderTopColor: "#E5E7EB",
-        },
       }}
-      initialRouteName="index">
+      initialRouteName="home/index">
       <Tabs.Screen
-        name="index"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="home"
+        name="home/index"
         options={{
           title: "Home",
           tabBarIcon: ({ color, size }) => <MaterialIcons name="home" size={size} color={color} />,
-          // Only show for USER role
-          href: user.role === "USER" ? "/(tabs)/home" : null,
         }}
       />
       <Tabs.Screen
-        name="manager"
+        name="menu/index"
         options={{
-          title: "Manager",
+          title: "Menu",
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="dashboard" size={size} color={color} />
+            <MaterialIcons name="restaurant-menu" size={size} color={color} />
           ),
-          // Only show for ADMIN and STAFF roles
-          href: user.role === "ADMIN" || user.role === "STAFF" ? "/(tabs)/manager" : null,
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="order/index"
+        options={{
+          title: "Order",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="receipt-long" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile/index"
         options={{
           title: "Profile",
           tabBarIcon: ({ color, size }) => (
@@ -68,6 +86,21 @@ export default function TabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="manager/index"
+        options={{
+          title: "Manager",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="dashboard" size={size} color={color} />
+          ),
+          // Hide for USER role, show for ADMIN and STAFF
+          href: user.role !== "USER" ? "/(tabs)/manager" : null,
+        }}
+      />
+      {/* Hidden routes to avoid duplicate tabs */}
+      {hiddenRoutes.map((route) => (
+        <Tabs.Screen key={route} name={route} options={{ href: null }} />
+      ))}
     </Tabs>
   );
 }
