@@ -64,7 +64,7 @@ Sau khi chạy lệnh trên, một **QR code** sẽ hiện ra trong terminal.
 # Chạy trên trình duyệt web
 npm run web
 # HOẶC
-npx expo start (Có sẵn link web)
+npx expo start
 ```
 
 Ứng dụng sẽ mở tự động trong trình duyệt tại `http://localhost:8081`
@@ -104,7 +104,7 @@ Dự án sử dụng **NativeWind** - một hệ thống styling giống hệt T
 </View>
 ```
 
-#### Màu Sắc Của Dự Án (tham khảo thôi):
+#### Màu Sắc Của Dự Án (mang tính tham khảo thôi):
 
 ```javascript
 // Màu chính (Primary)
@@ -477,14 +477,14 @@ Extension VS Code giúp quản lý và chạy các lệnh của dự án một c
    - Nhấn biểu tượng Nx trên thanh bên trái VS Code
    - Hoặc nhấn `Ctrl+Shift+P` và gõ "Nx Console"
 
-2. **Xem Danh Sách Scripts**: (Đoạn này không nhớ, thông thường sau khi npm i thì chỉ cần mở lại vscode -> bấm icon nx -> bấm refresh workplace là hoạt động)
+2. **Xem Danh Sách Scripts**: (thông thường sau khi npm i thì chỉ cần tắt rồi mở lại vscode -> bấm icon nx -> bấm refresh workplace là hoạt động, nếu không hoạt động thì hãy làm theo hướng dẫn)
    - Trong panel Nx Console, bạn sẽ thấy phần **"SCRIPTS"** hoặc **"TASKS"**
    - Mở rộng để xem tất cả scripts có sẵn trong `package.json`
 
 3. **Chạy Scripts**:
-   - **`start`** - Khởi động app (giống `npx expo start` nhưng chỉ có link web, không có mã QR, nên không khuyến khích chạy bằng, nên gõ lệnh ở terminal)
+   - **`start`** - Khởi động app (chạy lệnh `npx expo start` nhưng chỉ có link web, không có mã QR, nên không khuyến khích chạy ở nx, nên gõ lệnh ở terminal)
      -> Click vào script → Nhấn nút ▶️ (Run)
-   - **`start-clean`** - Khởi động app với cache xóa sạch (cũng không có mã QR, nên không khuyến khích chạy bằng nx, nên gõ lệnh ở terminal)
+   - **`start-clean`** - Khởi động app với cache xóa sạch (chạy lệnh `npx expo start -c` nhưng nó cũng không có mã QR, nên không khuyến khích chạy bằng nx, nên gõ lệnh ở terminal)
      -> Dùng khi gặp lỗi styling hoặc cần reset
    - **`android`** - Chạy trên Android emulator (phải cài sẵn Android Studio để thêm giả lập cho máy, chạy khá nặng)
    - **`ios`** - Chạy trên iOS simulator (Chỉ dùng được trên máy mac)
