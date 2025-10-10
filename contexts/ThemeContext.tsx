@@ -1,6 +1,6 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useThemeStore } from "@/stores/themeStore";
 import { useColorScheme } from "nativewind";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect } from "react";
 
 type Theme = "light" | "dark" | "system";
 
@@ -14,32 +14,19 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { colorScheme, setColorScheme } = useColorScheme();
-  const [theme, setThemeState] = useState<Theme>("system");
+  const { theme, setTheme: setThemeStore } = useThemeStore();
 
-  // Load saved theme on mount
+  // Apply theme changes to NativeWind
   useEffect(() => {
-    const loadTheme = async () => {
-      const savedTheme = (await AsyncStorage.getItem("theme")) as Theme;
-      if (savedTheme) {
-        setThemeState(savedTheme);
-        if (savedTheme !== "system") {
-          setColorScheme(savedTheme);
-        }
-      }
-    };
-    loadTheme();
-  }, [setColorScheme]);
-
-  const setTheme = async (newTheme: Theme) => {
-    setThemeState(newTheme);
-    await AsyncStorage.setItem("theme", newTheme);
-
-    if (newTheme === "system") {
-      // Reset to system default
+    if (theme === "system") {
       setColorScheme("system");
     } else {
-      setColorScheme(newTheme);
+      setColorScheme(theme);
     }
+  }, [theme, setColorScheme]);
+
+  const setTheme = async (newTheme: Theme) => {
+    setThemeStore(newTheme);
   };
 
   const isDark = colorScheme === "dark";

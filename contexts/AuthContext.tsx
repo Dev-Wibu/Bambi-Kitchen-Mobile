@@ -2,11 +2,8 @@ import type { AuthLoginData } from "@/interfaces/auth.interface";
 import { API_BASE_URL } from "@/libs/api";
 // MOCKAPI: Import mock API functions - REMOVE WHEN BE IS READY
 import { mockLogin, mockRegister } from "@/services/accountMockApi";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { createContext, useContext, useEffect, useState } from "react";
-
-// Storage keys
-const AUTH_STORAGE_KEY = "@auth_data";
+import { useAuthStore } from "@/stores/authStore";
+import React, { createContext, useContext } from "react";
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -26,33 +23,10 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState<AuthLoginData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Load auth state from storage on mount
-  useEffect(() => {
-    loadAuthState();
-  }, []);
-
-  const loadAuthState = async () => {
-    try {
-      const storedAuth = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
-      if (storedAuth) {
-        const authData: AuthLoginData = JSON.parse(storedAuth);
-        setUser(authData);
-        setIsLoggedIn(true);
-      }
-    } catch (error) {
-      console.error("Failed to load auth state:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { isLoggedIn, user, isLoading, setUser, setIsLoggedIn, clearAuth } = useAuthStore();
 
   const saveAuthState = async (authData: AuthLoginData) => {
     try {
-      await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authData));
       setUser(authData);
       setIsLoggedIn(true);
     } catch (error) {
@@ -63,9 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const clearAuthState = async () => {
     try {
-      await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
-      setUser(null);
-      setIsLoggedIn(false);
+      clearAuth();
     } catch (error) {
       console.error("Failed to clear auth state:", error);
     }
@@ -209,7 +181,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkAuth = async () => {
     try {
-      // MOCKAPI: Disabled check auth - using local storage only
+      // MOCKAPI: Disabled check auth - using Zustand store persistence
       // Uncomment the code below when backend CORS and session issues are fixed
       /*
       const response = await fetchClient.GET("/api/user/me", {
@@ -231,10 +203,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       */
 
-      // MOCKAPI: For now, just rely on local storage
+      // MOCKAPI: For now, just rely on Zustand store persistence
       // When BE is ready, uncomment the code above to validate session
-      const storedAuth = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
-      if (!storedAuth) {
+      if (!user) {
         await clearAuthState();
       }
       // END MOCKAPI

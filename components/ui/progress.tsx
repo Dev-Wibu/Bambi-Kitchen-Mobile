@@ -55,16 +55,16 @@ function WebIndicator({ value, className }: IndicatorProps) {
 }
 
 function NativeIndicator({ value, className }: IndicatorProps) {
-  const progress = useDerivedValue(() => value ?? 0);
+  const progress = useDerivedValue(() => {
+    const val = value ?? 0;
+    return interpolate(val, [0, 100], [1, 100], Extrapolation.CLAMP);
+  });
 
   const indicator = useAnimatedStyle(() => {
     return {
-      width: withSpring(
-        `${interpolate(progress.value, [0, 100], [1, 100], Extrapolation.CLAMP)}%`,
-        { overshootClamping: true }
-      ),
+      width: withSpring(`${progress.value}%`, { overshootClamping: true }),
     };
-  }, [value]);
+  });
 
   if (Platform.OS === "web") {
     return null;
