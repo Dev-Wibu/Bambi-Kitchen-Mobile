@@ -21,6 +21,8 @@ export default function TabsLayout() {
     return <Redirect href="/(auth)/login" />;
   }
 
+  const canAccessManager = user.role === "ADMIN" || user.role === "STAFF";
+
   const hiddenRoutes = [
     "index",
     "cart",
@@ -41,6 +43,7 @@ export default function TabsLayout() {
     "manager/inventory-transactions/index",
     "manager/notifications",
     "manager/notifications/index",
+    ...(canAccessManager ? [] : ["manager", "manager/index"]),
   ];
 
   return (
@@ -86,17 +89,17 @@ export default function TabsLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="manager/index"
-        options={{
-          title: "Manager",
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="dashboard" size={size} color={color} />
-          ),
-          // Hide for USER role, show for ADMIN and STAFF
-          href: user.role !== "USER" ? "/(tabs)/manager" : null,
-        }}
-      />
+      {canAccessManager && (
+        <Tabs.Screen
+          name="manager/index"
+          options={{
+            title: "Manager",
+            tabBarIcon: ({ color, size }) => (
+              <MaterialIcons name="dashboard" size={size} color={color} />
+            ),
+          }}
+        />
+      )}
       {/* Hidden routes to avoid duplicate tabs */}
       {hiddenRoutes.map((route) => (
         <Tabs.Screen key={route} name={route} options={{ href: null }} />

@@ -58,7 +58,7 @@ Sau khi chạy lệnh trên, một **QR code** sẽ hiện ra trong terminal.
 3. Ứng dụng sẽ tải và hiển thị trên điện thoại
 4. **Mọi thay đổi trong code sẽ tự động cập nhật trên điện thoại** (Hot Reload)
 
-### Bước 5: Xem Trên Web
+### Bước 5: Xem Trên Web (Không khuyến khích)
 
 ```bash
 # Chạy trên trình duyệt web
@@ -482,17 +482,17 @@ Extension VS Code giúp quản lý và chạy các lệnh của dự án một c
    - Mở rộng để xem tất cả scripts có sẵn trong `package.json`
 
 3. **Chạy Scripts**:
-   - **`start`** - Khởi động app (giống `npx expo start`)
+   - **`start`** - Khởi động app (giống `npx expo start` nhưng chỉ có link web, không có mã QR, nên không khuyến khích chạy bằng, nên gõ lệnh ở terminal)
      -> Click vào script → Nhấn nút ▶️ (Run)
-   - **`start-clean`** - Khởi động app với cache xóa sạch
+   - **`start-clean`** - Khởi động app với cache xóa sạch (cũng không có mã QR, nên không khuyến khích chạy bằng nx, nên gõ lệnh ở terminal)
      -> Dùng khi gặp lỗi styling hoặc cần reset
    - **`android`** - Chạy trên Android emulator (phải cài sẵn Android Studio để thêm giả lập cho máy, chạy khá nặng)
    - **`ios`** - Chạy trên iOS simulator (Chỉ dùng được trên máy mac)
-   - **`web`** - Chạy trên trình duyệt web
    - **`format`** - Format code tự động (Prettier)
-     -> Chạy trước khi commit code
+     -> Chạy trước khi code và commit
    - **`lint`** - Kiểm tra lỗi code
    - **`typecheck`** - Kiểm tra lỗi TypeScript
+   - **`doctor`** - Kiểm tra các lỗi cấu hình, dependencies không tương thích, hoặc các vấn đề khác có thể gây lỗi khi build hoặc run app
 
 ##### Ưu Điểm Của Nx Console:
 
@@ -556,35 +556,25 @@ Extension VS Code giúp quản lý và chạy các lệnh của dự án một c
 
 ## ⚠️ Lưu Ý Quan Trọng
 
-### 1. Không Cần Biết Code Sâu
-
-Designer chỉ cần:
-
-- ✅ Hiểu cách dùng NativeWind classes (giống Tailwind CSS)
-- ✅ Biết cách thay đổi màu sắc, spacing, font
-- ✅ Sử dụng components có sẵn
-- ❌ KHÔNG cần viết logic phức tạp
-- ❌ KHÔNG cần lo về API, state management
-
-### 2. Khi Cần Thêm Component Mới
+### 1. Khi Cần Thêm Component Mới
 
 - Kiểm tra xem có component tương tự trong `components/ui/` chưa
 - Nếu chưa có, yêu cầu developer tạo
-- Hoặc tìm component từ RN Primitives
+- Hoặc tìm component từ React Native Reusables
 
-### 3. Performance (Hiệu Năng)
+### 2. Performance (Hiệu Năng)
 
 - ✅ Tối ưu hình ảnh (dùng định dạng WebP nếu được)
 - ✅ Giới hạn kích thước hình ảnh (< 500KB)
 - ✅ Sử dụng `expo-image` thay vì `Image` từ React Native
 - ✅ Dùng icons thay vì hình ảnh khi có thể
 
-### 4. Testing Trên Thiết Bị Thật
+### 3. Testing Trên Thiết Bị Thật
 
 - ✅ Luôn test trên điện thoại thật (qua Expo Go)
-- ✅ Test cả iOS và Android
+- ✅ Test cả iOS và Android (tùy chọn)
 - ✅ Test dark mode
-- ✅ Test các kích thước màn hình khác nhau
+- ✅ Test các kích thước màn hình khác nhau (tùy chọn)
 
 ---
 
