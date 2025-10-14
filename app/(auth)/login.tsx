@@ -89,10 +89,10 @@ export default function Login() {
       <ScrollView className="flex-1" contentContainerClassName="min-h-full">
         <View className="flex-1 px-6 py-8">
           {/* Logo/Image Section */}
-          <View className="mb-8 items-center">
+          <View className="items-center">
             <Image
-              source={require("@/assets/images/icon.png")}
-              style={{ width: 100, height: 100 }}
+              source={require("@/assets/images/favicon.png")}
+              style={{ width: 200, height: 200 }}
               contentFit="contain"
               accessibilityLabel="App Logo"
             />
@@ -175,16 +175,6 @@ export default function Login() {
             <Pressable onPress={() => router.push("/register")}>
               <Text className="text-sm font-semibold text-[#FF6D00]">Sign up now</Text>
             </Pressable>
-          </View>
-
-          {/* Decorative Image */}
-          <View className="mt-8 items-center">
-            <Image
-              source={require("@/assets/images/react-logo.png")}
-              style={{ width: 150, height: 150, opacity: 0.3 }}
-              contentFit="contain"
-              accessibilityLabel="Decorative Image"
-            />
           </View>
         </View>
       </ScrollView>

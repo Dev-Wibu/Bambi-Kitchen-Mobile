@@ -123,19 +123,19 @@ export default function Register() {
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">
       <ScrollView className="flex-1" contentContainerClassName="min-h-full">
-        <View className="flex-1 px-6 py-8">
+        <View className="flex-1 px-6 py-1">
           {/* Logo/Image Section */}
-          <View className="mb-6 items-center">
+          <View className="items-center">
             <Image
-              source={require("@/assets/images/icon.png")}
-              style={{ width: 90, height: 90 }}
+              source={require("@/assets/images/favicon.png")}
+              style={{ width: 180, height: 180 }}
               contentFit="contain"
               accessibilityLabel="App Logo"
             />
           </View>
 
           {/* Title Section */}
-          <View className="mb-6">
+          <View className="mb-3">
             <Text className="mb-2 text-center text-3xl font-bold text-[#000000] dark:text-white">
               Register
             </Text>
@@ -252,16 +252,6 @@ export default function Register() {
             <Pressable onPress={() => router.push("/login")}>
               <Text className="text-sm font-semibold text-[#FF6D00]">Login now</Text>
             </Pressable>
-          </View>
-
-          {/* Decorative Image */}
-          <View className="items-center">
-            <Image
-              source={require("@/assets/images/react-logo.png")}
-              style={{ width: 120, height: 120, opacity: 0.3 }}
-              contentFit="contain"
-              accessibilityLabel="Decorative Image"
-            />
           </View>
         </View>
       </ScrollView>

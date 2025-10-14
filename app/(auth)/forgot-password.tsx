@@ -97,6 +97,7 @@ export default function ForgotPassword() {
             <Button
               variant="outline"
               className="border-[#FF6D00]"
+              style={{ borderWidth: 1, height: 42, borderRadius: 24 }}
               onPress={() => router.push("/login")}>
               <Text className="text-lg font-semibold text-[#FF6D00]">Back to Login</Text>
             </Button>
