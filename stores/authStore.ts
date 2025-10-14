@@ -1,7 +1,7 @@
 import type { AuthLoginData } from "@/interfaces/auth.interface";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { getPersistStorage } from "./persistStorage";
 
 // Storage key
 const AUTH_STORAGE_KEY = "@auth_data";
@@ -29,7 +29,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: AUTH_STORAGE_KEY,
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(getPersistStorage),
       onRehydrateStorage: () => (state) => {
         // After rehydration, set loading to false
         if (state) {
