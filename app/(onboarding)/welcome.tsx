@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -22,15 +23,15 @@ export default function Welcome() {
         accessibilityLabel="Welcome Background"
       />
 
-      {/* Gradient Overlay
+      {/* Gradient Overlay */}
       <LinearGradient
-        colors={["#FF6D00", "#FF8E00", "#FFC107"]}
+        colors={["rgba(0,0,0,0.3)", "rgba(0,0,0,0.7)"]}
         style={{
           position: "absolute",
           width: "100%",
           height: "100%",
         }}
-      /> */}
+      />
 
       {/* Content */}
       <SafeAreaView className="flex-1">
@@ -51,7 +52,7 @@ export default function Welcome() {
           {/* Navigation Button */}
           <View className="w-full max-w-md">
             <Button
-              className="w-full rounded-3xl bg-[#FF6D00] active:bg-[#FF4D00]"
+              className="w-full rounded-3xl bg-[#FC8A06] active:bg-[#FF4D00]"
               onPress={() => router.push("/intro-1")}>
               <Text className="text-lg font-bold text-white">Get Started</Text>
             </Button>
