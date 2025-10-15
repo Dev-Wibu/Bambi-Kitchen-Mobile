@@ -108,6 +108,11 @@ const TabBarButton = ({
   isDark,
 }: Readonly<TabBarButtonProps>) => {
   const scale = useSharedValue(1);
+  const containerAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: scale.value }],
+    };
+  });
 
   const animatedIconStyle = useAnimatedStyle(() => {
     return {
@@ -141,6 +146,7 @@ const TabBarButton = ({
       style={{ flex: 1, alignItems: "center" }}>
       <Animated.View
         style={[
+          containerAnimatedStyle,
           {
             alignItems: "center",
             justifyContent: "center",
@@ -149,7 +155,6 @@ const TabBarButton = ({
             borderRadius: 16,
             minWidth: 64,
           },
-          { transform: [{ scale }] },
         ]}>
         {isFocused && (
           <LinearGradient

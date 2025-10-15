@@ -1,3 +1,4 @@
+import type { ComponentProps, ReactNode } from "react";
 import { Platform } from "react-native";
 import Animated from "react-native-reanimated";
 
@@ -10,14 +11,22 @@ import Animated from "react-native-reanimated";
  *   <Text>I am only animated on native</Text>
  * </NativeOnlyAnimatedView>
  */
-function NativeOnlyAnimatedView(
-  props: React.ComponentProps<typeof Animated.View> & React.RefAttributes<Animated.View>
-) {
+type AnimatedViewProps = ComponentProps<typeof Animated.View> & React.RefAttributes<Animated.View>;
+
+function NativeOnlyAnimatedView({ children, pointerEvents, style, ...rest }: AnimatedViewProps) {
   if (Platform.OS === "web") {
-    return <>{props.children as React.ReactNode}</>;
-  } else {
-    return <Animated.View {...props} />;
+    return <>{children as ReactNode}</>;
   }
+
+  const mergedStyle = pointerEvents
+    ? ([style, { pointerEvents }] as unknown as AnimatedViewProps["style"])
+    : style;
+
+  return (
+    <Animated.View {...rest} style={mergedStyle}>
+      {children}
+    </Animated.View>
+  );
 }
 
 export { NativeOnlyAnimatedView };
