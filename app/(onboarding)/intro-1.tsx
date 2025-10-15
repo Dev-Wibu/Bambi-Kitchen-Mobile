@@ -15,7 +15,7 @@ export default function IntroOne() {
         <Image
           source={require("@/assets/images/intro-1.jpg")}
           style={{
-            width: 600,
+            width: 700,
             height: 600,
             borderBottomLeftRadius: 350,
             borderBottomRightRadius: 350,
