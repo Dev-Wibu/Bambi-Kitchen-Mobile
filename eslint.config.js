@@ -12,6 +12,7 @@ module.exports = defineConfig([
       // Customize your rules here
       "react/no-unescaped-entities": "off",
       "no-undef": "off",
+      "linebreak-style": ["error", "windows"],
     },
   },
 ]);

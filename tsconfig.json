@@ -7,12 +7,5 @@
       "@/*": ["*"]
     }
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts",
-    "nativewind-env.d.ts",
-    "prettier.config.js"
-  ]
+  "include": ["**/*.ts", "**/*.tsx", "nativewind-env.d.ts", "prettier.config.js"]
 }

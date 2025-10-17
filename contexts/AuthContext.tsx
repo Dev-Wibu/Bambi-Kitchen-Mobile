@@ -25,6 +25,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isLoggedIn, user, isLoading, setUser, setIsLoggedIn, clearAuth } = useAuthStore();
 
+  const normalizeIdentifier = (identifier: string) => {
+    const trimmed = identifier.trim();
+    if (/^\+84\d+$/.test(trimmed)) {
+      return `0${trimmed.slice(3)}`;
+    }
+    return trimmed;
+  };
+
   const saveAuthState = async (authData: AuthLoginData) => {
     try {
       setUser(authData);
@@ -45,6 +53,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (phone: string, password: string): Promise<AuthLoginData> => {
     try {
+      const normalizedPhone = normalizeIdentifier(phone);
+      const normalizedPassword = password.trim();
       // MOCKAPI: Using mock login - REMOVE WHEN BE IS READY
       // Uncomment the code below when backend CORS and session issues are fixed
       /*
@@ -88,7 +98,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       */
 
       // MOCKAPI: Mock login implementation
-      const loginResult = await mockLogin(phone, password);
+      const loginResult = await mockLogin(normalizedPhone, normalizedPassword);
 
       if (!loginResult.success || !loginResult.account) {
         throw new Error(loginResult.error || "Login failed");
@@ -97,7 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const account = loginResult.account;
       const authData: AuthLoginData = {
         userId: account.id || 0,
-        name: account.name || phone,
+        name: account.name || normalizedPhone,
         role: account.role || "USER",
       };
 
@@ -117,6 +127,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     phone: string
   ): Promise<AuthLoginData> => {
     try {
+      const normalizedPhone = normalizeIdentifier(phone);
       // MOCKAPI: Using mock register - REMOVE WHEN BE IS READY
       // Uncomment the code below when backend CORS and session issues are fixed
       /*
@@ -147,7 +158,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         name,
         mail: email,
         password,
-        phone,
+        phone: normalizedPhone,
         role: "USER",
       });
 
@@ -156,7 +167,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // After successful registration, automatically log in
-      const authData = await login(phone, password);
+      const authData = await login(normalizedPhone, password);
       return authData;
       // END MOCKAPI
     } catch (error) {

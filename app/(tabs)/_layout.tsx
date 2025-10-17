@@ -25,25 +25,18 @@ export default function TabsLayout() {
 
   const hiddenRoutes = [
     "index",
-    "cart",
     "cart/index",
-    "manager/accounts",
     "manager/accounts/index",
     "manager/accounts/AccountForm",
-    "manager/discounts",
     "manager/discounts/index",
     "manager/discounts/DiscountForm",
-    "manager/dish-categories",
     "manager/dish-categories/index",
     "manager/dish-categories/DishCategoryForm",
-    "manager/ingredient-categories",
     "manager/ingredient-categories/index",
     "manager/ingredient-categories/IngredientCategoryForm",
-    "manager/inventory-transactions",
     "manager/inventory-transactions/index",
-    "manager/notifications",
     "manager/notifications/index",
-    ...(canAccessManager ? [] : ["manager", "manager/index"]),
+    ...(canAccessManager ? [] : ["manager/index"]),
   ];
 
   return (
@@ -89,7 +82,7 @@ export default function TabsLayout() {
           ),
         }}
       />
-      {canAccessManager && (
+      {canAccessManager ? (
         <Tabs.Screen
           name="manager/index"
           options={{
@@ -99,11 +92,7 @@ export default function TabsLayout() {
             ),
           }}
         />
-      )}
-      {/* Hidden routes to avoid duplicate tabs */}
-      {hiddenRoutes.map((route) => (
-        <Tabs.Screen key={route} name={route} options={{ href: null }} />
-      ))}
+      ) : null}
     </Tabs>
   );
 }
