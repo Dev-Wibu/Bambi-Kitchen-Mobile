@@ -1,15 +1,33 @@
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
+import { USE_MOCK_DATA, mockAccounts } from "@/data/mockData";
 import { useAuth } from "@/hooks/useAuth";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { ScrollView, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
 export default function ProfileTab() {
   const { user, logout } = useAuth();
   const router = useRouter();
+
+  // Use mock account data if available - only use if user is null
+  const mockUser = USE_MOCK_DATA && !user && mockAccounts.length > 0 ? mockAccounts[0] : null;
+  const displayUser = user || mockUser;
+
+  // Extract user properties safely - handle both Account and AuthLoginData types
+  const userId =
+    displayUser && "userId" in displayUser
+      ? displayUser.userId
+      : displayUser && "id" in displayUser
+        ? displayUser.id
+        : "N/A";
+  const userName = displayUser?.name || "N/A";
+  const userRole = displayUser?.role || "N/A";
+  const userMail = displayUser && "mail" in displayUser ? displayUser.mail : "Not available";
+  const userPhone = displayUser && "phone" in displayUser ? displayUser.phone : "Not available";
+  const userActive = displayUser && "active" in displayUser ? displayUser.active : true;
 
   const handleLogout = async () => {
     try {
@@ -29,6 +47,14 @@ export default function ProfileTab() {
     }
   };
 
+  const handleEditProfile = () => {
+    Toast.show({
+      type: "info",
+      text1: "Edit Profile",
+      text2: "Profile editing coming soon",
+    });
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">
       <ScrollView className="flex-1" contentContainerClassName="px-6 py-8">
@@ -40,104 +66,96 @@ export default function ProfileTab() {
           </Text>
         </View>
 
-        {/* User Info Card */}
-        <View className="mb-6 rounded-2xl bg-gray-50 p-6 dark:bg-gray-800">
-          <View className="mb-4 flex-row items-center">
-            <View className="mr-4 h-16 w-16 items-center justify-center rounded-full bg-[#FF6D00]">
-              <MaterialIcons name="person" size={32} color="white" />
+        {/* User Profile Card */}
+        <View className="relative mb-8 overflow-hidden rounded-2xl bg-gradient-to-br from-[#FF8A00] to-[#FF6D00] p-6 shadow-lg">
+          {/* Profile Avatar */}
+          <View className="mb-4 flex-row items-center justify-between">
+            <View className="flex-row items-center gap-4">
+              <View className="h-20 w-20 items-center justify-center rounded-full bg-white shadow-md">
+                <MaterialIcons name="person" size={40} color="#FF6D00" />
+              </View>
+              <View className="flex-1">
+                <Text className="mb-1 text-2xl font-bold text-white">{userName}</Text>
+                <View className="flex-row items-center gap-2">
+                  <View className="rounded-full bg-white/20 px-3 py-1">
+                    <Text className="text-xs font-bold text-white">{userRole}</Text>
+                  </View>
+                </View>
+              </View>
             </View>
-            <View className="flex-1">
-              <Text className="mb-1 text-xl font-bold text-[#000000] dark:text-white">
-                {user?.name || "User"}
-              </Text>
-              <Text className="text-sm text-[#757575]">ID: {user?.userId || "N/A"}</Text>
-            </View>
+            <Pressable
+              onPress={handleEditProfile}
+              className="h-10 w-10 items-center justify-center rounded-full bg-white/20">
+              <MaterialIcons name="edit" size={20} color="white" />
+            </Pressable>
           </View>
 
-          <View className="border-t border-gray-200 pt-4 dark:border-gray-700">
-            <View className="flex-row items-center justify-between">
-              <Text className="text-sm text-gray-600 dark:text-gray-300">Role</Text>
-              <View className="rounded-full bg-[#FF6D00] px-3 py-1">
-                <Text className="text-xs font-bold text-white">{user?.role || "N/A"}</Text>
-              </View>
+          {/* User Stats */}
+          <View className="mt-4 flex-row justify-between border-t border-white/20 pt-4">
+            <View className="items-center">
+              <Text className="text-2xl font-bold text-white">0</Text>
+              <Text className="text-xs text-white/80">Orders</Text>
+            </View>
+            <View className="h-12 w-px bg-white/20" />
+            <View className="items-center">
+              <Text className="text-2xl font-bold text-white">0</Text>
+              <Text className="text-xs text-white/80">Points</Text>
+            </View>
+            <View className="h-12 w-px bg-white/20" />
+            <View className="items-center">
+              <Text className="text-2xl font-bold text-white">0</Text>
+              <Text className="text-xs text-white/80">Reviews</Text>
             </View>
           </View>
         </View>
 
-        {/* Settings Sections */}
-        <View className="mb-6">
-          <Text className="mb-4 text-xl font-bold text-[#000000] dark:text-white">Settings</Text>
+        {/* Account Information */}
+        <View className="mb-6 rounded-2xl bg-gray-50 p-6 dark:bg-gray-800">
+          <Text className="mb-4 text-lg font-bold text-[#000000] dark:text-white">
+            Account Information
+          </Text>
           <View className="gap-4">
-            {/* Account Settings */}
-            <View className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-              <View className="flex-row items-center justify-between">
-                <View className="flex-1 flex-row items-center">
-                  <MaterialIcons name="settings" size={20} color="#FF6D00" />
-                  <Text className="ml-3 text-base font-medium text-[#000000] dark:text-white">
-                    Account Settings
-                  </Text>
-                </View>
-                <MaterialIcons name="chevron-right" size={20} color="#9CA3AF" />
-              </View>
+            <View>
+              <Text className="mb-1 text-xs text-[#757575]">User ID</Text>
+              <Text className="text-base font-medium text-[#000000] dark:text-white">{userId}</Text>
             </View>
-
-            {/* Privacy */}
-            <View className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-              <View className="flex-row items-center justify-between">
-                <View className="flex-1 flex-row items-center">
-                  <MaterialIcons name="privacy-tip" size={20} color="#FF6D00" />
-                  <Text className="ml-3 text-base font-medium text-[#000000] dark:text-white">
-                    Privacy
-                  </Text>
-                </View>
-                <MaterialIcons name="chevron-right" size={20} color="#9CA3AF" />
-              </View>
+            <View>
+              <Text className="mb-1 text-xs text-[#757575]">Name</Text>
+              <Text className="text-base font-medium text-[#000000] dark:text-white">
+                {userName}
+              </Text>
             </View>
-
-            {/* Notifications */}
-            <View className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-              <View className="flex-row items-center justify-between">
-                <View className="flex-1 flex-row items-center">
-                  <MaterialIcons name="notifications" size={20} color="#FF6D00" />
-                  <Text className="ml-3 text-base font-medium text-[#000000] dark:text-white">
-                    Notifications
-                  </Text>
-                </View>
-                <MaterialIcons name="chevron-right" size={20} color="#9CA3AF" />
-              </View>
+            <View>
+              <Text className="mb-1 text-xs text-[#757575]">Email</Text>
+              <Text className="text-base font-medium text-[#000000] dark:text-white">
+                {userMail}
+              </Text>
             </View>
-
-            {/* Help & Support */}
-            <View className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-              <View className="flex-row items-center justify-between">
-                <View className="flex-1 flex-row items-center">
-                  <MaterialIcons name="help" size={20} color="#FF6D00" />
-                  <Text className="ml-3 text-base font-medium text-[#000000] dark:text-white">
-                    Help & Support
-                  </Text>
-                </View>
-                <MaterialIcons name="chevron-right" size={20} color="#9CA3AF" />
-              </View>
+            <View>
+              <Text className="mb-1 text-xs text-[#757575]">Phone</Text>
+              <Text className="text-base font-medium text-[#000000] dark:text-white">
+                {userPhone}
+              </Text>
             </View>
-
-            {/* About */}
-            <View className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-              <View className="flex-row items-center justify-between">
-                <View className="flex-1 flex-row items-center">
-                  <MaterialIcons name="info" size={20} color="#FF6D00" />
-                  <Text className="ml-3 text-base font-medium text-[#000000] dark:text-white">
-                    About
-                  </Text>
-                </View>
-                <MaterialIcons name="chevron-right" size={20} color="#9CA3AF" />
+            <View>
+              <Text className="mb-1 text-xs text-[#757575]">Account Status</Text>
+              <View className="flex-row items-center gap-2">
+                <View
+                  className={`h-2 w-2 rounded-full ${userActive ? "bg-green-500" : "bg-red-500"}`}
+                />
+                <Text className="text-base font-medium text-[#000000] dark:text-white">
+                  {userActive ? "Active" : "Inactive"}
+                </Text>
               </View>
             </View>
           </View>
         </View>
 
         {/* Logout Button */}
-        <View className="mt-auto pt-6">
-          <Button className="w-full bg-red-500 active:bg-red-600" onPress={handleLogout}>
+        <View className="mt-4">
+          <Button
+            className="w-full rounded-3xl bg-red-500 active:bg-red-600"
+            onPress={handleLogout}>
             <View className="flex-row items-center gap-2">
               <MaterialIcons name="logout" size={20} color="white" />
               <Text className="text-lg font-bold text-white">Logout</Text>

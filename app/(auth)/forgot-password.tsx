@@ -38,7 +38,7 @@ export default function ForgotPassword() {
 
     setIsSubmitting(true);
     try {
-      // MOCKAPI: No backend yet, simulate success feedback
+      // TODO: Implement forgot password backend endpoint when available
       await new Promise((resolve) => setTimeout(resolve, 800));
 
       Toast.show({
