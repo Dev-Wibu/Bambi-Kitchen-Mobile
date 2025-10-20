@@ -13,17 +13,13 @@ import Animated from "react-native-reanimated";
  */
 type AnimatedViewProps = ComponentProps<typeof Animated.View> & React.RefAttributes<Animated.View>;
 
-function NativeOnlyAnimatedView({ children, pointerEvents, style, ...rest }: AnimatedViewProps) {
+function NativeOnlyAnimatedView({ children, style, ...rest }: AnimatedViewProps) {
   if (Platform.OS === "web") {
     return <>{children as ReactNode}</>;
   }
 
-  const mergedStyle = pointerEvents
-    ? ([style, { pointerEvents }] as unknown as AnimatedViewProps["style"])
-    : style;
-
   return (
-    <Animated.View {...rest} style={mergedStyle}>
+    <Animated.View {...rest} style={style}>
       {children}
     </Animated.View>
   );

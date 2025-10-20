@@ -1,7 +1,6 @@
 import type { AuthLoginData } from "@/interfaces/auth.interface";
-import { API_BASE_URL } from "@/libs/api";
-// MOCKAPI: Import mock API functions - REMOVE WHEN BE IS READY
-import { mockLogin, mockRegister } from "@/services/accountMockApi";
+import { API_BASE_URL, fetchClient } from "@/libs/api";
+import { extractRole } from "@/services/accountService";
 import { useAuthStore } from "@/stores/authStore";
 import React, { createContext, useContext } from "react";
 
@@ -55,13 +54,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const normalizedPhone = normalizeIdentifier(phone);
       const normalizedPassword = password.trim();
-      // MOCKAPI: Using mock login - REMOVE WHEN BE IS READY
-      // Uncomment the code below when backend CORS and session issues are fixed
-      /*
-      // Use Spring Security form login endpoint
+
+      // Use Spring Security form login endpoint with form-data format
       const formData = new URLSearchParams();
-      formData.append("username", phone); // Backend expects phone as username
-      formData.append("password", password);
+      formData.append("username", normalizedPhone); // Backend expects phone as username
+      formData.append("password", normalizedPassword);
 
       const response = await fetch(`${API_BASE_URL}/login`, {
         method: "POST",
@@ -87,33 +84,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         const authData: AuthLoginData = {
           userId: userId || 0,
-          name: name || phone,
+          name: name || normalizedPhone,
           role: extractRole(role || []),
         };
 
         await saveAuthState(authData);
+        return authData;
       } else {
         throw new Error("Failed to get user info");
       }
-      */
-
-      // MOCKAPI: Mock login implementation
-      const loginResult = await mockLogin(normalizedPhone, normalizedPassword);
-
-      if (!loginResult.success || !loginResult.account) {
-        throw new Error(loginResult.error || "Login failed");
-      }
-
-      const account = loginResult.account;
-      const authData: AuthLoginData = {
-        userId: account.id || 0,
-        name: account.name || normalizedPhone,
-        role: account.role || "USER",
-      };
-
-      await saveAuthState(authData);
-      return authData;
-      // END MOCKAPI
     } catch (error) {
       console.error("Login error:", error);
       throw error;
@@ -128,16 +107,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   ): Promise<AuthLoginData> => {
     try {
       const normalizedPhone = normalizeIdentifier(phone);
-      // MOCKAPI: Using mock register - REMOVE WHEN BE IS READY
-      // Uncomment the code below when backend CORS and session issues are fixed
-      /*
+
       // Register using the /api/account/register endpoint
       const response = await fetchClient.POST("/api/account/register", {
         body: {
           name,
           mail: email,
           password,
-          phone, // Required field
+          phone: normalizedPhone,
           role: "USER", // Required field - defaults to USER for self-registration
         },
       });
@@ -150,26 +127,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // After successful registration, automatically log in
-      await login(phone, password);
-      */
-
-      // MOCKAPI: Mock register implementation
-      const registerResult = await mockRegister({
-        name,
-        mail: email,
-        password,
-        phone: normalizedPhone,
-        role: "USER",
-      });
-
-      if (!registerResult.success || !registerResult.account) {
-        throw new Error(registerResult.error || "Registration failed");
-      }
-
-      // After successful registration, automatically log in
       const authData = await login(normalizedPhone, password);
       return authData;
-      // END MOCKAPI
     } catch (error) {
       console.error("Register error:", error);
       throw error;
@@ -192,9 +151,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkAuth = async () => {
     try {
-      // MOCKAPI: Disabled check auth - using Zustand store persistence
-      // Uncomment the code below when backend CORS and session issues are fixed
-      /*
       const response = await fetchClient.GET("/api/user/me", {
         credentials: "include",
       });
@@ -212,14 +168,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         await clearAuthState();
       }
-      */
-
-      // MOCKAPI: For now, just rely on Zustand store persistence
-      // When BE is ready, uncomment the code above to validate session
-      if (!user) {
-        await clearAuthState();
-      }
-      // END MOCKAPI
     } catch (error) {
       console.error("Check auth error:", error);
       await clearAuthState();

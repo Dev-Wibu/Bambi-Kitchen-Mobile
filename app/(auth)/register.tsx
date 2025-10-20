@@ -23,9 +23,6 @@ export default function Register() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // MOCKAPI: This form uses mock API for registration
-  // All new accounts are saved to mock storage (accountMockApi.ts)
-
   const validatePhone = (phoneNumber: string) => {
     // Vietnamese phone format: starts with +84 or 0, followed by 3/5/7/8/9 and 8 more digits
     const phoneRegex = /^(\+84|0)[35789]\d{8}$/;
@@ -38,10 +35,9 @@ export default function Register() {
   };
 
   const getPostAuthRoute = (role: ROLE_TYPE | undefined) => {
+    // Mobile app is only for USER role
+    // New registrations default to USER role, so this is mainly for safety
     switch (role) {
-      case "ADMIN":
-      case "STAFF":
-        return "/manager" as const;
       case "USER":
       default:
         return "/home" as const;

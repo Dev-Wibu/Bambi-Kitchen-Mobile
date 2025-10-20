@@ -1,11 +1,14 @@
 import { CustomTabBar } from "@/components/CustomTabBar";
 import { useAuth } from "@/hooks/useAuth";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Redirect, Tabs } from "expo-router";
+import { Redirect, Tabs, useRouter } from "expo-router";
+import { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
+import Toast from "react-native-toast-message";
 
 export default function TabsLayout() {
-  const { isLoggedIn, user, isLoading } = useAuth();
+  const { isLoggedIn, user, isLoading, logout } = useAuth();
+  const router = useRouter();
 
   // Show loading state while checking authentication
   if (isLoading) {
@@ -21,7 +24,31 @@ export default function TabsLayout() {
     return <Redirect href="/(auth)/login" />;
   }
 
-  const canAccessManager = user.role === "ADMIN" || user.role === "STAFF";
+  // Check if user is not a USER role - mobile app is only for USER role
+  useEffect(() => {
+    if (user && user.role !== "USER") {
+      Toast.show({
+        type: "info",
+        text1: "Manager Access Not Available",
+        text2: "Manager features are not deployed on mobile. Please use the web application.",
+        visibilityTime: 5000,
+      });
+      // Logout and redirect to login
+      setTimeout(() => {
+        logout();
+        router.replace("/(auth)/login");
+      }, 2000);
+    }
+  }, [user]);
+
+  // If user is not USER role, show loading while we logout
+  if (user.role !== "USER") {
+    return (
+      <View className="flex-1 items-center justify-center bg-white dark:bg-gray-900">
+        <ActivityIndicator size="large" color="#FF6D00" />
+      </View>
+    );
+  }
 
   const hiddenRoutes = [
     "index",
@@ -36,7 +63,7 @@ export default function TabsLayout() {
     "manager/ingredient-categories/IngredientCategoryForm",
     "manager/inventory-transactions/index",
     "manager/notifications/index",
-    ...(canAccessManager ? [] : ["manager/index"]),
+    "manager/index", // Hide manager tab for all mobile users
   ];
 
   return (
@@ -82,17 +109,7 @@ export default function TabsLayout() {
           ),
         }}
       />
-      {canAccessManager ? (
-        <Tabs.Screen
-          name="manager/index"
-          options={{
-            title: "Manager",
-            tabBarIcon: ({ color, size }) => (
-              <MaterialIcons name="dashboard" size={size} color={color} />
-            ),
-          }}
-        />
-      ) : null}
+      {/* Manager tab hidden for mobile - not deployed */}
     </Tabs>
   );
 }

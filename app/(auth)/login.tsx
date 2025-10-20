@@ -13,16 +13,11 @@ import Toast from "react-native-toast-message";
 
 export default function Login() {
   const router = useRouter();
-  const { login, isLoading: authLoading } = useAuth();
+  const { login, logout, isLoading: authLoading } = useAuth();
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  // MOCKAPI: Test credentials available:
-  // Phone: 0912345678, Password: 123456 (USER role)
-  // Phone: 0987654321, Password: admin123 (ADMIN role)
-  // Phone: 0909090909, Password: staff123 (STAFF role)
 
   const validatePhone = (phoneNumber: string) => {
     // Vietnamese phone format: starts with +84 or 0, followed by 3/5/7/8/9 and 8 more digits
@@ -31,10 +26,12 @@ export default function Login() {
   };
 
   const getPostAuthRoute = (role: ROLE_TYPE | undefined) => {
+    // Mobile app is only for USER role
+    // ADMIN and STAFF should use web/desktop manager interface
     switch (role) {
       case "ADMIN":
       case "STAFF":
-        return "/manager" as const;
+        return null; // Will show notification instead of navigating
       case "USER":
       default:
         return "/home" as const;
@@ -63,14 +60,30 @@ export default function Login() {
     setIsLoading(true);
     try {
       const authData = await login(phone, password);
+
+      // Check if user role is allowed on mobile
+      const targetRoute = getPostAuthRoute(authData?.role);
+
+      if (!targetRoute) {
+        // Non-USER roles cannot access mobile app
+        Toast.show({
+          type: "error",
+          text1: "Access Restricted",
+          text2: "Manager features are not available on mobile. Please use the web application.",
+          visibilityTime: 5000,
+        });
+        // Logout the user since they can't use the mobile app
+        await logout();
+        return;
+      }
+
       Toast.show({
         type: "success",
         text1: "Login Successful",
         text2: "Welcome back!",
       });
-      // Navigate to appropriate screen based on user role
-      // The tabs layout will handle redirecting to the correct tab
-      const targetRoute = getPostAuthRoute(authData?.role);
+
+      // Navigate to home for USER role
       router.replace(targetRoute);
     } catch (error) {
       console.error("Login error:", error);

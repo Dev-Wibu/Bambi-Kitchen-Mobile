@@ -209,3 +209,20 @@ _Update this file when project structure, dependencies, or workflows change._
 - Removed legacy `OLD/README.md` to reduce repository clutter
 - Maintained project-specific READMEs in relevant subdirectories
 - Consolidated primary documentation in `NEW/README.md`
+
+#### Backend Integration (October 2024)
+
+- **Removed Mock Authentication**: Deleted `services/accountMockApi.ts` and all mock authentication code
+- **Real Backend Integration**:
+  - Login now uses Spring Security form login endpoint (`/login`) with `application/x-www-form-urlencoded` format
+  - Register uses real backend API endpoint (`/api/account/register`) with JSON payload
+  - Session validation with `/api/user/me` endpoint for authenticated requests
+- **Mobile-Only Access Control**:
+  - Mobile app restricted to USER role only
+  - ADMIN and STAFF roles are blocked from mobile access with notification
+  - Manager features not deployed on mobile - users directed to web application
+  - Non-USER roles automatically logged out and redirected to login screen
+- **Backend Configuration**:
+  - Base URL: `https://bambi.kdz.asia`
+  - All endpoints use session-based authentication with credentials included
+  - CORS properly configured for mobile app access

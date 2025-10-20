@@ -22,10 +22,7 @@ export function CustomTabBar({ state, descriptors, navigation, hiddenRoutes }: C
       style={{
         backgroundColor: isDark ? "#1F2937" : "#FFFFFF",
         borderTopWidth: 0,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: -3 },
-        shadowOpacity: isDark ? 0.3 : 0.1,
-        shadowRadius: 8,
+        boxShadow: isDark ? "0 -3px 8px rgba(0, 0, 0, 0.3)" : "0 -3px 8px rgba(0, 0, 0, 0.1)",
         elevation: 10,
       }}>
       <View
