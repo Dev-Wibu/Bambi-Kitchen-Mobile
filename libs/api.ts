@@ -9,9 +9,23 @@ export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "https://bambi.kd
 // Create the fetch client with base configuration
 const fetchClient = createFetchClient<paths>({
   baseUrl: API_BASE_URL,
-  credentials: "include", // Important for session-based auth
   headers: {
     "Content-Type": "application/json",
+  },
+});
+
+// Add middleware to include JWT token in Authorization header
+fetchClient.use({
+  async onRequest({ request }) {
+    // Dynamically import to avoid circular dependency
+    const { useAuthStore } = await import("@/stores/authStore");
+    const token = useAuthStore.getState().token;
+    
+    if (token) {
+      request.headers.set("Authorization", `Bearer ${token}`);
+    }
+    
+    return request;
   },
 });
 

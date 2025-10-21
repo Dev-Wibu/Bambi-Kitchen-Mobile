@@ -22,7 +22,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isLoggedIn, user, isLoading, setUser, setIsLoggedIn, clearAuth } = useAuthStore();
+  const { isLoggedIn, user, isLoading, setUser, setToken, setIsLoggedIn, clearAuth } = useAuthStore();
 
   const normalizeIdentifier = (identifier: string) => {
     const trimmed = identifier.trim();
@@ -55,18 +55,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const normalizedPhone = normalizeIdentifier(phone);
       const normalizedPassword = password.trim();
 
-      // Use Spring Security form login endpoint with form-data format
-      const formData = new URLSearchParams();
-      formData.append("username", normalizedPhone); // Backend expects phone as username
-      formData.append("password", normalizedPassword);
-
-      const response = await fetch(`${API_BASE_URL}/login`, {
+      // Use JWT-based login endpoint with JSON format
+      const response = await fetch(`${API_BASE_URL}/api/user/login`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+          "Content-Type": "application/json",
         },
-        body: formData.toString(),
-        credentials: "include", // Important for session cookies
+        body: JSON.stringify({
+          username: normalizedPhone, // Backend expects phone as username
+          password: normalizedPassword,
+        }),
       });
 
       if (!response.ok) {
@@ -74,18 +72,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error(errorText || "Login failed");
       }
 
-      // After successful login, get user info
-      const userInfoResponse = await fetchClient.GET("/api/user/me", {
-        credentials: "include",
-      });
+      // Extract JWT token from response body
+      const token = await response.text();
+      
+      if (!token) {
+        throw new Error("No token received from server");
+      }
+
+      // Store the token
+      setToken(token);
+
+      // After successful login, get user info using the token
+      const userInfoResponse = await fetchClient.GET("/api/user/me");
 
       if (userInfoResponse.data) {
-        const { name, role, userId } = userInfoResponse.data as any;
+        const userData = userInfoResponse.data as any;
+        const userId = userData.id || 0;
+        const name = userData.name || normalizedPhone;
+        const role = userData.role;
 
         const authData: AuthLoginData = {
-          userId: userId || 0,
-          name: name || normalizedPhone,
-          role: extractRole(role || []),
+          userId: userId,
+          name: name,
+          role: extractRole(Array.isArray(role) ? role : [role]),
         };
 
         await saveAuthState(authData);
@@ -109,21 +118,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const normalizedPhone = normalizeIdentifier(phone);
 
       // Register using the /api/account/register endpoint
-      const response = await fetchClient.POST("/api/account/register", {
-        body: {
+      // Note: This endpoint doesn't use the token middleware since we don't have a token yet
+      const response = await fetch(`${API_BASE_URL}/api/account/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
           name,
           mail: email,
           password,
           phone: normalizedPhone,
           role: "USER", // Required field - defaults to USER for self-registration
-        },
+        }),
       });
 
-      if (!response.data) {
-        // Try to extract error message from response
-        const error = response.error as any;
-        const errorMessage = error?.message || error?.detail || "Registration failed";
-        throw new Error(errorMessage);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Registration failed");
       }
 
       // After successful registration, automatically log in
@@ -136,32 +148,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    try {
-      // Call logout endpoint
-      await fetch(`${API_BASE_URL}/logout`, {
-        method: "POST",
-        credentials: "include",
-      });
-    } catch (error) {
-      console.error("Logout error:", error);
-    } finally {
-      await clearAuthState();
-    }
+    // JWT tokens are stateless, so just clear local state
+    // No need to call backend logout endpoint
+    await clearAuthState();
   };
 
   const checkAuth = async () => {
     try {
-      const response = await fetchClient.GET("/api/user/me", {
-        credentials: "include",
-      });
+      const response = await fetchClient.GET("/api/user/me");
 
       if (response.data) {
-        const { name, role, userId } = response.data as any;
+        const userData = response.data as any;
+        const userId = userData.id || 0;
+        const name = userData.name || "";
+        const role = userData.role;
 
         const authData: AuthLoginData = {
-          userId: userId || 0,
-          name: name || "",
-          role: extractRole(role || []),
+          userId: userId,
+          name: name,
+          role: extractRole(Array.isArray(role) ? role : [role]),
         };
 
         await saveAuthState(authData);
