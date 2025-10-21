@@ -1,60 +1,43 @@
 import type { AuthLoginData } from "@/interfaces/auth.interface";
-
 import { API_BASE_URL, fetchClient } from "@/libs/api";
-
 import { extractRole } from "@/services/accountService";
-
 import { useAuthStore } from "@/stores/authStore";
-
 import React, { createContext, useContext } from "react";
 
 interface AuthContextType {
   isLoggedIn: boolean;
-
   user: AuthLoginData | null;
-
   isLoading: boolean;
-
   login: (phone: string, password: string) => Promise<AuthLoginData>;
-
   register: (
     name: string,
-
     email: string,
-
     password: string,
-
     phone: string
   ) => Promise<AuthLoginData>;
-
   logout: () => Promise<void>;
-
   checkAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isLoggedIn, user, isLoading, setUser, setIsLoggedIn, clearAuth } = useAuthStore();
+  const { isLoggedIn, user, isLoading, setUser, setToken, setIsLoggedIn, clearAuth } = useAuthStore();
 
   const normalizeIdentifier = (identifier: string) => {
     const trimmed = identifier.trim();
-
     if (/^\+84\d+$/.test(trimmed)) {
       return `0${trimmed.slice(3)}`;
     }
-
     return trimmed;
   };
 
   const saveAuthState = async (authData: AuthLoginData) => {
     try {
       setUser(authData);
-
       setIsLoggedIn(true);
     } catch (error) {
       console.error("Failed to save auth state:", error);
-
       throw error;
     }
   };
@@ -70,146 +53,120 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (phone: string, password: string): Promise<AuthLoginData> => {
     try {
       const normalizedPhone = normalizeIdentifier(phone);
-
       const normalizedPassword = password.trim();
 
-      // Use Spring Security form login endpoint with form-data format
-
-      const formData = new URLSearchParams();
-
-      formData.append("username", normalizedPhone); // Backend expects phone as username
-
-      formData.append("password", normalizedPassword);
-
-      const response = await fetch(`${API_BASE_URL}/login`, {
+      // Use JWT-based login endpoint with JSON format
+      const response = await fetch(`${API_BASE_URL}/api/user/login`, {
         method: "POST",
-
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+          "Content-Type": "application/json",
         },
-
-        body: formData.toString(),
-
-        credentials: "include", // Important for session cookies
+        body: JSON.stringify({
+          username: normalizedPhone, // Backend expects phone as username
+          password: normalizedPassword,
+        }),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-
         throw new Error(errorText || "Login failed");
       }
 
-      // After successful login, get user info
+      // Extract JWT token from response body
+      const token = await response.text();
+      
+      if (!token) {
+        throw new Error("No token received from server");
+      }
 
-      const userInfoResponse = await fetchClient.GET("/api/user/me", {
-        credentials: "include",
-      });
+      // Store the token
+      setToken(token);
+
+      // After successful login, get user info using the token
+      const userInfoResponse = await fetchClient.GET("/api/user/me");
 
       if (userInfoResponse.data) {
-        const { name, role, userId } = userInfoResponse.data as any;
+        const userData = userInfoResponse.data as any;
+        const userId = userData.id || 0;
+        const name = userData.name || normalizedPhone;
+        const role = userData.role;
 
         const authData: AuthLoginData = {
-          userId: userId || 0,
-
-          name: name || normalizedPhone,
-
-          role: extractRole(role || []),
+          userId: userId,
+          name: name,
+          role: extractRole(Array.isArray(role) ? role : [role]),
         };
 
         await saveAuthState(authData);
-
         return authData;
       } else {
         throw new Error("Failed to get user info");
       }
     } catch (error) {
       console.error("Login error:", error);
-
       throw error;
     }
   };
 
   const register = async (
     name: string,
-
     email: string,
-
     password: string,
-
     phone: string
   ): Promise<AuthLoginData> => {
     try {
       const normalizedPhone = normalizeIdentifier(phone);
 
       // Register using the /api/account/register endpoint
-
-      const response = await fetchClient.POST("/api/account/register", {
-        body: {
-          name,
-
-          mail: email,
-
-          password,
-
-          phone: normalizedPhone,
-
-          role: "USER", // Required field - defaults to USER for self-registration
+      // Note: This endpoint doesn't use the token middleware since we don't have a token yet
+      const response = await fetch(`${API_BASE_URL}/api/account/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          name,
+          mail: email,
+          password,
+          phone: normalizedPhone,
+          role: "USER", // Required field - defaults to USER for self-registration
+        }),
       });
 
-      if (!response.data) {
-        // Try to extract error message from response
-
-        const error = response.error as any;
-
-        const errorMessage = error?.message || error?.detail || "Registration failed";
-
-        throw new Error(errorMessage);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Registration failed");
       }
 
       // After successful registration, automatically log in
-
       const authData = await login(normalizedPhone, password);
-
       return authData;
     } catch (error) {
       console.error("Register error:", error);
-
       throw error;
     }
   };
 
   const logout = async () => {
-    try {
-      // Call logout endpoint
-
-      await fetch(`${API_BASE_URL}/logout`, {
-        method: "POST",
-
-        credentials: "include",
-      });
-    } catch (error) {
-      console.error("Logout error:", error);
-    } finally {
-      await clearAuthState();
-    }
+    // JWT tokens are stateless, so just clear local state
+    // No need to call backend logout endpoint
+    await clearAuthState();
   };
 
   const checkAuth = async () => {
     try {
-      const response = await fetchClient.GET("/api/user/me", {
-        credentials: "include",
-      });
+      const response = await fetchClient.GET("/api/user/me");
 
       if (response.data) {
-        const { name, role, userId } = response.data as any;
+        const userData = response.data as any;
+        const userId = userData.id || 0;
+        const name = userData.name || "";
+        const role = userData.role;
 
         const authData: AuthLoginData = {
-          userId: userId || 0,
-
-          name: name || "",
-
-          role: extractRole(role || []),
+          userId: userId,
+          name: name,
+          role: extractRole(Array.isArray(role) ? role : [role]),
         };
 
         await saveAuthState(authData);
@@ -218,7 +175,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (error) {
       console.error("Check auth error:", error);
-
       await clearAuthState();
     }
   };
@@ -227,17 +183,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider
       value={{
         isLoggedIn,
-
         user,
-
         isLoading,
-
         login,
-
         register,
-
         logout,
-
         checkAuth,
       }}>
       {children}
@@ -247,11 +197,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
-
   return context;
 };
-
