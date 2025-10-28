@@ -26,12 +26,15 @@ export default function Login() {
   };
 
   const getPostAuthRoute = (role: ROLE_TYPE | undefined) => {
-    // Mobile app is only for USER role
-    // ADMIN and STAFF should use web/desktop manager interface
+    // Mobile app handling:
+    // USER -> home page with tabs
+    // ADMIN -> manager interface with tabs
+    // STAFF -> blocked (show notification and logout)
     switch (role) {
       case "ADMIN":
+        return "/manager" as const;
       case "STAFF":
-        return null; // Will show notification instead of navigating
+        return null; // Will show notification for STAFF
       case "USER":
       default:
         return "/home" as const;
@@ -65,11 +68,11 @@ export default function Login() {
       const targetRoute = getPostAuthRoute(authData?.role);
 
       if (!targetRoute) {
-        // Non-USER roles cannot access mobile app
+        // STAFF role cannot access mobile app
         Toast.show({
           type: "error",
           text1: "Access Restricted",
-          text2: "Manager features are not available on mobile. Please use the web application.",
+          text2: "Staff features are not available on mobile. Please use the web application.",
           visibilityTime: 5000,
         });
         // Logout the user since they can't use the mobile app
@@ -80,10 +83,10 @@ export default function Login() {
       Toast.show({
         type: "success",
         text1: "Login Successful",
-        text2: "Welcome back!",
+        text2: authData?.role === "ADMIN" ? "Welcome to Manager Dashboard!" : "Welcome back!",
       });
 
-      // Navigate to home for USER role
+      // Navigate to appropriate route based on role
       router.replace(targetRoute);
     } catch (error) {
       console.error("Login error:", error);

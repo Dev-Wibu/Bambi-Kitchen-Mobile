@@ -20,11 +20,11 @@ fetchClient.use({
     // Dynamically import to avoid circular dependency
     const { useAuthStore } = await import("@/stores/authStore");
     const token = useAuthStore.getState().token;
-    
+
     if (token) {
       request.headers.set("Authorization", `Bearer ${token}`);
     }
-    
+
     return request;
   },
 });

@@ -1,6 +1,6 @@
 import "@/global.css";
 
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider } from "@/contexts/AuthContextMock"; // 🎭 MOCK AUTH - Switch to AuthContext for real backend
 import { QueryProvider } from "@/contexts/QueryProvider";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { NAV_THEME } from "@/libs/theme";

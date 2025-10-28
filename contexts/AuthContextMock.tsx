@@ -1,6 +1,6 @@
 import type { AuthLoginData } from "@/interfaces/auth.interface";
-import { API_BASE_URL, fetchClient } from "@/libs/api";
-import { extractRole } from "@/services/accountService";
+import { API_BASE_URL } from "@/libs/api";
+import type { ROLE_TYPE } from "@/interfaces/role.interface";
 import { useAuthStore } from "@/stores/authStore";
 import React, { createContext, useContext } from "react";
 
@@ -21,6 +21,20 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * MOCK AUTH PROVIDER
+ * 
+ * This is a mock authentication provider that bypasses the backend /api/user/me endpoint.
+ * It should ONLY be used for development/testing when the backend JWT filter has issues.
+ * 
+ * HOW TO USE:
+ * 1. In app/_layout.tsx, import this file instead of AuthContext.tsx
+ * 2. Login will still call real backend /api/user/login to get token
+ * 3. Instead of calling /api/user/me, it creates mock user data
+ * 
+ * TO SWITCH BACK TO REAL AUTH:
+ * Change the import in app/_layout.tsx from AuthContextMock to AuthContext
+ */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isLoggedIn, user, isLoading, setUser, setToken, setIsLoggedIn, clearAuth } =
     useAuthStore();
@@ -56,6 +70,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const normalizedPhone = normalizeIdentifier(phone);
       const normalizedPassword = password.trim();
 
+      console.log("🔐 [MOCK AUTH] Attempting login...");
+
       // Use JWT-based login endpoint with JSON format
       const response = await fetch(`${API_BASE_URL}/api/user/login`, {
         method: "POST",
@@ -63,7 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: normalizedPhone, // Backend expects phone as username
+          username: normalizedPhone,
           password: normalizedPassword,
         }),
       });
@@ -80,31 +96,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error("No token received from server");
       }
 
+      console.log("✅ [MOCK AUTH] Token received successfully");
+
       // Store the token
       setToken(token);
 
-      // After successful login, get user info using the token
-      const userInfoResponse = await fetchClient.GET("/api/user/me");
+      // ⚠️ MOCK: Instead of calling /api/user/me, create mock user data
+      // This bypasses the 401 error from backend
+      console.log("🎭 [MOCK AUTH] Creating mock user data (skipping /api/user/me)");
 
-      if (userInfoResponse.data) {
-        const userData = userInfoResponse.data as any;
-        const userId = userData.id || 0;
-        const name = userData.name || normalizedPhone;
-        const role = userData.role;
+      const mockUserData: AuthLoginData = {
+        userId: 1, // Mock user ID
+        name: `User ${normalizedPhone}`, // Mock name from phone
+        role: "USER" as ROLE_TYPE, // Default to USER role
+      };
 
-        const authData: AuthLoginData = {
-          userId: userId,
-          name: name,
-          role: extractRole(Array.isArray(role) ? role : [role]),
-        };
+      console.log("✅ [MOCK AUTH] Login successful with mock data:", mockUserData);
 
-        await saveAuthState(authData);
-        return authData;
-      } else {
-        throw new Error("Failed to get user info");
-      }
+      await saveAuthState(mockUserData);
+      return mockUserData;
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("❌ [MOCK AUTH] Login error:", error);
       throw error;
     }
   };
@@ -118,8 +130,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const normalizedPhone = normalizeIdentifier(phone);
 
+      console.log("📝 [MOCK AUTH] Attempting registration...");
+
       // Register using the /api/account/register endpoint
-      // Note: This endpoint doesn't use the token middleware since we don't have a token yet
       const response = await fetch(`${API_BASE_URL}/api/account/register`, {
         method: "POST",
         headers: {
@@ -130,7 +143,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           mail: email,
           password,
           phone: normalizedPhone,
-          role: "USER", // Required field - defaults to USER for self-registration
+          role: "USER",
         }),
       });
 
@@ -139,43 +152,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error(errorText || "Registration failed");
       }
 
+      console.log("✅ [MOCK AUTH] Registration successful");
+
       // After successful registration, automatically log in
       const authData = await login(normalizedPhone, password);
       return authData;
     } catch (error) {
-      console.error("Register error:", error);
+      console.error("❌ [MOCK AUTH] Register error:", error);
       throw error;
     }
   };
 
   const logout = async () => {
-    // JWT tokens are stateless, so just clear local state
-    // No need to call backend logout endpoint
+    console.log("👋 [MOCK AUTH] Logging out...");
     await clearAuthState();
   };
 
   const checkAuth = async () => {
     try {
-      const response = await fetchClient.GET("/api/user/me");
+      console.log("🔍 [MOCK AUTH] Checking authentication status...");
+      
+      const currentToken = useAuthStore.getState().token;
+      const currentUser = useAuthStore.getState().user;
 
-      if (response.data) {
-        const userData = response.data as any;
-        const userId = userData.id || 0;
-        const name = userData.name || "";
-        const role = userData.role;
-
-        const authData: AuthLoginData = {
-          userId: userId,
-          name: name,
-          role: extractRole(Array.isArray(role) ? role : [role]),
-        };
-
-        await saveAuthState(authData);
+      // If we have a token and user in storage, assume we're logged in
+      if (currentToken && currentUser) {
+        console.log("✅ [MOCK AUTH] User already authenticated:", currentUser);
+        await saveAuthState(currentUser);
       } else {
+        console.log("⚠️ [MOCK AUTH] No authentication found");
         await clearAuthState();
       }
     } catch (error) {
-      console.error("Check auth error:", error);
+      console.error("❌ [MOCK AUTH] Check auth error:", error);
       await clearAuthState();
     }
   };
