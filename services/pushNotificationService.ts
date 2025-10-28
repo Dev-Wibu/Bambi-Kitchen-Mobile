@@ -11,11 +11,10 @@ import { Platform } from "react-native";
  */
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true, // Show notification banner
+    shouldShowBanner: true, // Show notification banner
+    shouldShowList: true, // Show notification in notification list
     shouldPlaySound: true, // Play notification sound
     shouldSetBadge: true, // Update app badge
-    shouldShowBanner: true,
-    shouldShowList: true,
   }),
 });
 
