@@ -2,15 +2,17 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { USE_MOCK_DATA, mockAccounts } from "@/data/mockData";
 import { useAuth } from "@/hooks/useAuth";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { Pressable, ScrollView, View } from "react-native";
+import { Alert, Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
 export default function ProfileTab() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const { expoPushToken, isRegistered } = usePushNotifications();
 
   // Use mock account data if available - only use if user is null
   const mockUser = USE_MOCK_DATA && !user && mockAccounts.length > 0 ? mockAccounts[0] : null;
@@ -53,6 +55,34 @@ export default function ProfileTab() {
       text1: "Edit Profile",
       text2: "Profile editing coming soon",
     });
+  };
+
+  const handleShowPushToken = () => {
+    if (!expoPushToken) {
+      Alert.alert(
+        "Push Token Not Available",
+        "Token chưa được tạo. Vui lòng đợi hoặc restart app.",
+        [{ text: "OK" }]
+      );
+      return;
+    }
+
+    Alert.alert(
+      "📱 Expo Push Token",
+      `Copy token này và paste vào Expo Notification Tool:\n\nhttps://expo.dev/notifications\n\nToken:\n${expoPushToken}`,
+      [
+        {
+          text: "OK",
+          onPress: () => {
+            Toast.show({
+              type: "success",
+              text1: "Token Ready",
+              text2: "Mở https://expo.dev/notifications để test",
+            });
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -153,6 +183,23 @@ export default function ProfileTab() {
 
         {/* Logout Button */}
         <View className="mt-4">
+          {/* Push Notification Test Button */}
+          {isRegistered && expoPushToken && (
+            <View className="mb-4">
+              <Button
+                className="w-full rounded-3xl bg-[#FF6D00] active:bg-[#FF4D00]"
+                onPress={handleShowPushToken}>
+                <View className="flex-row items-center gap-2">
+                  <MaterialIcons name="notifications-active" size={20} color="white" />
+                  <Text className="text-lg font-bold text-white">Test Push Notification</Text>
+                </View>
+              </Button>
+              <Text className="mt-2 text-center text-xs text-gray-500">
+                Lấy token để test trên expo.dev/notifications
+              </Text>
+            </View>
+          )}
+
           <Button
             className="w-full rounded-3xl bg-red-500 active:bg-red-600"
             onPress={handleLogout}>
