@@ -79,7 +79,7 @@ export default function ManagerTab() {
             {/* Account Management */}
             <TouchableOpacity
               className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
-              onPress={() => router.push("/(tabs)/manager/accounts")}
+              onPress={() => router.push("/manager/accounts")}
               activeOpacity={0.7}>
               <View className="mb-2 flex-row items-center">
                 <MaterialIcons name="people" size={20} color="#FF6D00" />
