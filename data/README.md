@@ -9,6 +9,7 @@ This application uses centralized mock data to enable UI/UX development when bac
 **File:** `/data/mockData.ts`
 
 This file contains:
+
 - Mock dishes (8 items)
 - Mock dish categories (5 categories)
 - Mock dish templates (3 size templates: S, M, L)
@@ -22,10 +23,12 @@ This file contains:
 ## How Mock Data Works
 
 Mock data is automatically used when:
+
 1. The `USE_MOCK_DATA` flag is set to `true` in `/data/mockData.ts`
 2. The backend API returns empty or no data
 
 Pages that use mock data:
+
 - **Home Page** (`app/(tabs)/home/index.tsx`): Shows featured dishes, promotions, categories, and meal plans
 - **Menu Page** (`app/(tabs)/menu/index.tsx`): Displays dish templates and dishes with search functionality
 - **Order Page** (`app/(tabs)/order/index.tsx`): Shows order history with status and ratings
@@ -36,6 +39,7 @@ Pages that use mock data:
 When you have real backend data and want to remove all mock data:
 
 ### Step 1: Delete the Mock Data File
+
 ```bash
 rm data/mockData.ts
 ```
@@ -45,6 +49,7 @@ rm data/mockData.ts
 Remove these lines from the following files:
 
 #### In `app/(tabs)/home/index.tsx`:
+
 ```typescript
 // Remove these imports
 import {
@@ -60,19 +65,16 @@ import {
 ```
 
 #### In `app/(tabs)/menu/index.tsx`:
+
 ```typescript
 // Remove these imports
-import {
-  USE_MOCK_DATA,
-  mockDishCategories,
-  mockDishTemplates,
-  mockDishes,
-} from "@/data/mockData";
+import { USE_MOCK_DATA, mockDishCategories, mockDishTemplates, mockDishes } from "@/data/mockData";
 
 // Remove the mock data logic
 ```
 
 #### In `app/(tabs)/order/index.tsx`:
+
 ```typescript
 // Remove these imports
 import { USE_MOCK_DATA, mockOrders } from "@/data/mockData";
@@ -81,6 +83,7 @@ import { USE_MOCK_DATA, mockOrders } from "@/data/mockData";
 ```
 
 #### In `app/(tabs)/profile/index.tsx`:
+
 ```typescript
 // Remove these imports
 import { USE_MOCK_DATA, mockAccounts } from "@/data/mockData";
@@ -104,6 +107,7 @@ const { data: discounts, isLoading: loadingDiscounts } = useDiscounts();
 ### Step 4: Test the Application
 
 Run the application to ensure:
+
 1. No TypeScript errors
 2. All pages display data correctly from the backend
 3. Empty states are shown when there's no data

@@ -2,14 +2,16 @@ import { ROLES, type ROLE_TYPE } from "@/interfaces/role.interface";
 
 /**
  * Determines the appropriate route based on user role
- * ADMIN & STAFF -> (tabs)/manager
+ * ADMIN -> /manager (mobile manager interface with tabs)
+ * STAFF -> blocked on mobile (returns null)
  * USER -> (tabs)/home
  */
-export function getRoleBasedRoute(role: ROLE_TYPE): string {
+export function getRoleBasedRoute(role: ROLE_TYPE): string | null {
   switch (role) {
     case ROLES.ADMIN:
+      return "/manager";
     case ROLES.STAFF:
-      return "/(tabs)/manager";
+      return null; // STAFF is blocked on mobile
     case ROLES.USER:
     default:
       return "/(tabs)/home";
@@ -20,7 +22,7 @@ export function getRoleBasedRoute(role: ROLE_TYPE): string {
  * Checks if a role has access to manager features
  */
 export function canAccessManager(role: ROLE_TYPE): boolean {
-  return role === ROLES.ADMIN || role === ROLES.STAFF;
+  return role === ROLES.ADMIN;
 }
 
 /**
