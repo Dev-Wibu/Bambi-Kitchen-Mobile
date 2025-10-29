@@ -1,6 +1,6 @@
 import type { AuthLoginData } from "@/interfaces/auth.interface";
-import { API_BASE_URL } from "@/libs/api";
 import type { ROLE_TYPE } from "@/interfaces/role.interface";
+import { API_BASE_URL } from "@/libs/api";
 import { useAuthStore } from "@/stores/authStore";
 import React, { createContext, useContext } from "react";
 
@@ -23,15 +23,15 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 /**
  * MOCK AUTH PROVIDER
- * 
+ *
  * This is a mock authentication provider that bypasses the backend /api/user/me endpoint.
  * It should ONLY be used for development/testing when the backend JWT filter has issues.
- * 
+ *
  * HOW TO USE:
  * 1. In app/_layout.tsx, import this file instead of AuthContext.tsx
  * 2. Login will still call real backend /api/user/login to get token
  * 3. Instead of calling /api/user/me, it creates mock user data
- * 
+ *
  * TO SWITCH BACK TO REAL AUTH:
  * Change the import in app/_layout.tsx from AuthContextMock to AuthContext
  */
@@ -105,10 +105,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // This bypasses the 401 error from backend
       console.log("🎭 [MOCK AUTH] Creating mock user data (skipping /api/user/me)");
 
+      // 🔐 ADMIN OVERRIDE: Force specific phone number to be ADMIN
+      let mockRole: ROLE_TYPE = "USER";
+      if (normalizedPhone === "0912345678" && normalizedPassword === "12345678") {
+        mockRole = "ADMIN";
+        console.log("🔑 [MOCK AUTH] Admin override activated for phone:", normalizedPhone);
+      }
+
       const mockUserData: AuthLoginData = {
         userId: 1, // Mock user ID
-        name: `User ${normalizedPhone}`, // Mock name from phone
-        role: "USER" as ROLE_TYPE, // Default to USER role
+        name: mockRole === "ADMIN" ? "Admin User" : `User ${normalizedPhone}`, // Mock name
+        role: mockRole,
       };
 
       console.log("✅ [MOCK AUTH] Login successful with mock data:", mockUserData);
@@ -171,7 +178,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const checkAuth = async () => {
     try {
       console.log("🔍 [MOCK AUTH] Checking authentication status...");
-      
+
       const currentToken = useAuthStore.getState().token;
       const currentUser = useAuthStore.getState().user;
 
