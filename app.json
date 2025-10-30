@@ -8,6 +8,7 @@
     "scheme": "fe",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "owner": "dev-wibu",
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
@@ -25,7 +26,6 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "permissions": [
-        "android.permission.INTERNET",
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
       ],
@@ -51,6 +51,17 @@
         }
       ],
       [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#FF6D00",
+          "sounds": [
+            "./assets/sounds/notification.wav"
+          ],
+          "mode": "production"
+        }
+      ],
+      [
         "react-native-vision-camera",
         {
           "cameraPermissionText": "$(PRODUCT_NAME) needs access to your Camera.",
@@ -62,6 +73,12 @@
     "experiments": {
       "typedRoutes": false,
       "reactCompiler": false
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c59373a2-2901-4aa4-9dab-9d81ada8a574"
+      }
     }
   }
 }

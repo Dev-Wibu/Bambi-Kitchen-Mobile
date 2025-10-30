@@ -10,6 +10,29 @@ export default function TabsLayout() {
   const { isLoggedIn, user, isLoading, logout } = useAuth();
   const router = useRouter();
 
+  // Check if user is STAFF role - they are blocked on mobile
+  // ADMIN users should go to /manager, not (tabs)
+  useEffect(() => {
+    if (user) {
+      if (user.role === "STAFF") {
+        Toast.show({
+          type: "info",
+          text1: "Staff Access Not Available",
+          text2: "Staff features are not available on mobile. Please use the web application.",
+          visibilityTime: 5000,
+        });
+        // Logout and redirect to login
+        setTimeout(() => {
+          logout();
+          router.replace("/(auth)/login");
+        }, 2000);
+      } else if (user.role === "ADMIN") {
+        // Redirect ADMIN to manager interface
+        router.replace("/manager");
+      }
+    }
+  }, [user, logout, router]);
+
   // Show loading state while checking authentication
   if (isLoading) {
     return (
@@ -24,25 +47,9 @@ export default function TabsLayout() {
     return <Redirect href="/(auth)/login" />;
   }
 
-  // Check if user is not a USER role - mobile app is only for USER role
-  useEffect(() => {
-    if (user && user.role !== "USER") {
-      Toast.show({
-        type: "info",
-        text1: "Manager Access Not Available",
-        text2: "Manager features are not deployed on mobile. Please use the web application.",
-        visibilityTime: 5000,
-      });
-      // Logout and redirect to login
-      setTimeout(() => {
-        logout();
-        router.replace("/(auth)/login");
-      }, 2000);
-    }
-  }, [user]);
-
-  // If user is not USER role, show loading while we logout
-  if (user.role !== "USER") {
+  // If user is STAFF role, show loading while we logout
+  // If user is ADMIN, show loading while we redirect to manager
+  if (user.role === "STAFF" || user.role === "ADMIN") {
     return (
       <View className="flex-1 items-center justify-center bg-white dark:bg-gray-900">
         <ActivityIndicator size="large" color="#FF6D00" />
