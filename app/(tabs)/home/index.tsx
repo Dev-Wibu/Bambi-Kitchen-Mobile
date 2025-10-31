@@ -278,7 +278,7 @@ export default function HomeTab() {
 
                     <View className="h-24 w-24 bg-gray-200 dark:bg-gray-700">
                       <Image
-                        source={{ uri: dish.imageUrl }}
+                        source={{ uri: dish.imageUrl || dish.file }}
                         className="h-full w-full"
                         contentFit="cover"
                       />
@@ -382,7 +382,7 @@ export default function HomeTab() {
                   <View className="relative h-32 w-full bg-gray-200 dark:bg-gray-700">
                     {dish.imageUrl ? (
                       <Image
-                        source={{ uri: dish.imageUrl }}
+                        source={{ uri: dish.imageUrl || dish.file }}
                         className="h-full w-full"
                         contentFit="cover"
                       />
