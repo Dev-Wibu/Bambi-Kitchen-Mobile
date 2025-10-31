@@ -1,14 +1,23 @@
 import "@/global.css";
 
-import { AuthProvider } from "@/contexts/AuthContextMock"; // 🎭 MOCK AUTH - Switch to AuthContext for real backend
+import { AuthProvider } from "@/contexts/AuthContext"; // 🔥 REAL AUTH - Using real backend JWT
+
 import { QueryProvider } from "@/contexts/QueryProvider";
+
 import { ThemeProvider } from "@/contexts/ThemeContext";
+
 import { NAV_THEME } from "@/libs/theme";
+
 import { ThemeProvider as NavigationThemeProvider } from "@react-navigation/native";
+
 import { PortalHost } from "@rn-primitives/portal";
+
 import { Stack } from "expo-router";
+
 import { StatusBar } from "expo-status-bar";
+
 import { useColorScheme } from "nativewind";
+
 import Toast from "react-native-toast-message";
 
 export {
@@ -25,16 +34,25 @@ export default function RootLayout() {
         <ThemeProvider>
           <NavigationThemeProvider value={NAV_THEME[colorScheme ?? "light"]}>
             <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+
             <Stack>
               <Stack.Screen name="index" options={{ headerShown: false }} />
+
               <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
+
               <Stack.Screen name="(auth)/register" options={{ headerShown: false }} />
+
               <Stack.Screen name="(auth)/forgot-password" options={{ headerShown: false }} />
+
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+
               <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
+
               <Stack.Screen name="+not-found" options={{ headerShown: false }} />
             </Stack>
+
             <PortalHost />
+
             <Toast />
           </NavigationThemeProvider>
         </ThemeProvider>
@@ -42,3 +60,4 @@ export default function RootLayout() {
     </QueryProvider>
   );
 }
+
