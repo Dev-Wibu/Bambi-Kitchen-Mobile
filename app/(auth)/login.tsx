@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import type { ROLE_TYPE } from "@/interfaces/role.interface";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { Eye, EyeOff } from "lucide-react-native";
+import { Eye, EyeOff, Chrome } from "lucide-react-native";
 import { useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -13,11 +13,12 @@ import Toast from "react-native-toast-message";
 
 export default function Login() {
   const router = useRouter();
-  const { login, logout, isLoading: authLoading } = useAuth();
+  const { login, loginWithGoogle, logout, isLoading: authLoading } = useAuth();
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const validatePhone = (phoneNumber: string) => {
     // Vietnamese phone format: starts with +84 or 0, followed by 3/5/7/8/9 and 8 more digits
@@ -100,6 +101,22 @@ export default function Login() {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setIsGoogleLoading(true);
+    try {
+      await loginWithGoogle();
+    } catch (error) {
+      console.error("Google login error:", error);
+      Toast.show({
+        type: "error",
+        text1: "Google Login Failed",
+        text2: error instanceof Error ? error.message : "Please try again",
+      });
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">
       <ScrollView className="flex-1" contentContainerClassName="min-h-full">
@@ -170,15 +187,43 @@ export default function Login() {
           </View>
 
           {/* Login Button */}
-          <View className="mb-6">
+          <View className="mb-4">
             <Button
               className="w-full rounded-3xl bg-[#FF6D00] active:bg-[#FF4D00]"
               onPress={handleLogin}
-              disabled={isLoading || authLoading}>
+              disabled={isLoading || authLoading || isGoogleLoading}>
               {isLoading || authLoading ? (
                 <ActivityIndicator color="white" />
               ) : (
                 <Text className="text-lg font-bold text-white">Login</Text>
+              )}
+            </Button>
+          </View>
+
+          {/* Divider */}
+          <View className="mb-4 flex-row items-center">
+            <View className="flex-1 border-t border-gray-300 dark:border-gray-600" />
+            <Text className="mx-4 text-sm text-gray-500 dark:text-gray-400">OR</Text>
+            <View className="flex-1 border-t border-gray-300 dark:border-gray-600" />
+          </View>
+
+          {/* Google Login Button */}
+          <View className="mb-6">
+            <Button
+              variant="outline"
+              className="w-full rounded-3xl border-gray-300"
+              style={{ borderWidth: 1, height: 48 }}
+              onPress={handleGoogleLogin}
+              disabled={isLoading || authLoading || isGoogleLoading}>
+              {isGoogleLoading ? (
+                <ActivityIndicator color="#FF6D00" />
+              ) : (
+                <View className="flex-row items-center gap-2">
+                  <Chrome size={20} color="#4285F4" />
+                  <Text className="text-base font-semibold text-gray-700 dark:text-gray-200">
+                    Continue with Google
+                  </Text>
+                </View>
               )}
             </Button>
           </View>
