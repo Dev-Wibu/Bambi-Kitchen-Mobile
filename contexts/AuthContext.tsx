@@ -16,7 +16,7 @@ interface AuthContextType {
   isLoading: boolean;
 
   login: (phone: string, password: string) => Promise<AuthLoginData>;
-
+  loginWithGoogle: () => Promise<void>;
   register: (
     name: string,
 
@@ -204,6 +204,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await clearAuthState();
   };
 
+  const loginWithGoogle = async () => {
+    try {
+      // Import WebBrowser for OAuth flow
+      const WebBrowser = await import("expo-web-browser");
+      
+      // Construct the Google OAuth URL
+      const googleAuthUrl = `${API_BASE_URL}/api/user/login-with-google`;
+      
+      // Open the OAuth flow in a web browser
+      const result = await WebBrowser.openAuthSessionAsync(
+        googleAuthUrl,
+        `${API_BASE_URL}/oauth2/callback`
+      );
+
+      if (result.type === "success") {
+        // The URL will contain the token as a query parameter
+        // The OAuth2 callback screen will handle extracting it
+        const url = result.url;
+        if (url) {
+          // The redirect will be handled by the deep link system
+          // which will navigate to the oauth2-callback screen
+        }
+      } else if (result.type === "cancel") {
+        throw new Error("Google login was cancelled");
+      }
+    } catch (error) {
+      console.error("Google login error:", error);
+      throw error;
+    }
+  };
+
   const checkAuth = async () => {
     try {
       const response = await fetchClient.GET("/api/user/me");
@@ -246,7 +277,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
 
         login,
-
+        loginWithGoogle,
         register,
 
         logout,
