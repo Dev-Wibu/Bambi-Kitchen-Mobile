@@ -10,10 +10,37 @@ import { $api } from "@/libs/api";
  */
 
 /**
+ * Hook for user login
+ * Uses POST /api/user/login endpoint
+ */
+export const useLogin = () => {
+  return $api.useMutation("post", "/api/user/login");
+};
+
+/**
  * Get current user information
  */
 export const useGetMe = () => {
   return $api.useQuery("get", "/api/user/me");
+};
+
+/**
+ * Hook for Google login
+ * Uses GET /api/user/login-with-google endpoint
+ */
+export const useGoogleLogin = () => {
+  return $api.useMutation("get", "/api/user/login-with-google");
+};
+
+/**
+ * Hook for forgot password
+ * Uses GET /api/user/forgot-password endpoint
+ */
+export const useForgotPassword = (email: string) => {
+  return $api.useQuery("get", "/api/user/forgot-password", {
+    params: { query: { email } },
+    enabled: !!email,
+  });
 };
 
 /**

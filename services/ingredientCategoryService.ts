@@ -8,18 +8,18 @@ import { $api } from "@/libs/api";
 
 /**
  * Hook for getting all ingredient categories
- * Uses GET /api/ingredient-categories endpoint
+ * Uses GET /api/ingredient-category endpoint
  */
 export const useIngredientCategories = () => {
-  return $api.useQuery("get", "/api/ingredient-categories", {});
+  return $api.useQuery("get", "/api/ingredient-category", {});
 };
 
 /**
  * Hook for getting ingredient category by ID
- * Uses GET /api/ingredient-categories/{id} endpoint
+ * Uses GET /api/ingredient-category/{id} endpoint
  */
 export const useGetIngredientCategoryById = (id: number) => {
-  return $api.useQuery("get", "/api/ingredient-categories/{id}", {
+  return $api.useQuery("get", "/api/ingredient-category/{id}", {
     params: { path: { id } },
     enabled: !!id,
   });
@@ -27,26 +27,26 @@ export const useGetIngredientCategoryById = (id: number) => {
 
 /**
  * Hook for creating a new ingredient category
- * Uses POST /api/ingredient-categories endpoint
+ * Uses POST /api/ingredient-category endpoint
  */
 export const useCreateIngredientCategory = () => {
-  return $api.useMutation("post", "/api/ingredient-categories");
+  return $api.useMutation("post", "/api/ingredient-category");
 };
 
 /**
  * Hook for updating an existing ingredient category
- * Uses PUT /api/ingredient-categories endpoint
+ * Uses PUT /api/ingredient-category endpoint
  */
 export const useUpdateIngredientCategory = () => {
-  return $api.useMutation("put", "/api/ingredient-categories");
+  return $api.useMutation("put", "/api/ingredient-category");
 };
 
 /**
  * Hook for deleting an ingredient category
- * Uses DELETE /api/ingredient-categories/{id} endpoint
+ * Uses DELETE /api/ingredient-category/{id} endpoint
  */
 export const useDeleteIngredientCategory = () => {
-  return $api.useMutation("delete", "/api/ingredient-categories/{id}");
+  return $api.useMutation("delete", "/api/ingredient-category/{id}");
 };
 
 // ==================== TRANSFORM FUNCTIONS ====================
