@@ -4,7 +4,39 @@
  */
 
 export interface paths {
-    "/api/notifications": {
+    "/api/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateOrder"];
+        post: operations["createOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/order/feedback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["feedback"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/notification": {
         parameters: {
             query?: never;
             header?: never;
@@ -20,7 +52,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/inventory-transactions/{id}": {
+    "/api/inventory-transaction/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -52,7 +84,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/ingredient-categories": {
+    "/api/ingredient-category": {
         parameters: {
             query?: never;
             header?: never;
@@ -68,6 +100,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/dish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAllDishes"];
+        put: operations["update_2"];
+        /**
+         * Sài chung cho create & update, nếu update thì gửi id, còn create thì ko cần
+         * @description Tạo món ăn mới kèm nguyên liệu và thông tin chi tiết, gửi kèm 1 map chứa Id Ingredient và số lượng. Account chỉ cần gửi Id, mấy field khác để trống
+         */
+        post: operations["save_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/dish/save-custom-dish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["saveCustomDish"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/dish-category": {
         parameters: {
             query?: never;
@@ -76,22 +144,6 @@ export interface paths {
             cookie?: never;
         };
         get: operations["findAll_1"];
-        put: operations["update_2"];
-        post: operations["save_1"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/discount": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["findAll_2"];
         put: operations["update_3"];
         post: operations["save_2"];
         delete?: never;
@@ -107,7 +159,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["findAll_3"];
+        get: operations["findAll_2"];
         put: operations["update_4"];
         post: operations["save_3"];
         delete?: never;
@@ -132,7 +184,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/orders": {
+    "/api/user/login": {
         parameters: {
             query?: never;
             header?: never;
@@ -141,7 +193,71 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["createOrder"];
+        post: operations["login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/notification/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["sendNotificationToUser"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/notification/send-to-exact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["sendNotificationToTheExactDevice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/notification/send-to-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["sendNotificationToAllUsers"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/notification/device": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["registerDeviceToken"];
         delete?: never;
         options?: never;
         head?: never;
@@ -164,23 +280,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/inventory-transactions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["findAll_4"];
-        put?: never;
-        post: operations["save_4"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/dish": {
+    "/api/mail/send-order-mail": {
         parameters: {
             query?: never;
             header?: never;
@@ -189,25 +289,53 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Sài chung cho create & update, nếu update thì gửi id, còn create thì ko cần
-         * @description Tạo món ăn mới kèm nguyên liệu và thông tin chi tiết, gửi kèm 1 map chứa Id Ingredient và số lượng. Account chỉ cần gửi Id, mấy field khác để trống
-         */
-        post: operations["save_5"];
+        post: operations["sendOrderMail"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/dish-templates": {
+    "/api/inventory-transaction": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["findAll_5"];
+        get: operations["findAll_3"];
+        put?: never;
+        post: operations["save_4"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/gemini/agent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["agentChat"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/dish-template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["findAll_4"];
         put?: never;
         post: operations["create"];
         delete?: never;
@@ -232,7 +360,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/notifications/{id}/read": {
+    "/api/notification/{id}/check-read": {
         parameters: {
             query?: never;
             header?: never;
@@ -248,17 +376,21 @@ export interface paths {
         patch: operations["markAsRead"];
         trace?: never;
     };
-    "/demo": {
+    "/dump-data": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["demo"];
+        /**
+         * IMPORTANCE
+         * @description CÔNG NGHỆ LÕI CỦA BÀN HỒNG, CHỈ DÙNG KHI CẤP BÁCH
+         */
+        get: operations["dumpData"];
         put?: never;
         post?: never;
-        delete: operations["deleteRecipe"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -271,7 +403,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["auth"];
+        get: operations["getMe"];
         put?: never;
         post?: never;
         delete?: never;
@@ -280,7 +412,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/user/google": {
+    "/api/user/login-with-google": {
         parameters: {
             query?: never;
             header?: never;
@@ -312,6 +444,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/test/testinventory": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["testinventory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/test/order/confirm/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["confirm"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/test/order/cancel/{orderId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["canceled"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/test/demo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["demo"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/recipe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["findAll_5"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/recipe/by-dish/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["findByDishId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/payment/vnpay-return": {
         parameters: {
             query?: never;
@@ -328,7 +556,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/payment/testpayment": {
+    "/api/payment/test-payment": {
         parameters: {
             query?: never;
             header?: never;
@@ -360,7 +588,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/notifications/{id}": {
+    "/api/notification/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -376,7 +604,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/notifications/account/{id}": {
+    "/api/notification/to-account/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -392,14 +620,14 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/mail/send": {
+    "/api/mail/send-otp": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["sendMail"];
+        get: operations["sendOTP"];
         put?: never;
         post?: never;
         delete?: never;
@@ -424,6 +652,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/ingredient/toggle-active/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["toggleActive"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/ingredient/search": {
         parameters: {
             query?: never;
@@ -440,7 +684,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/ingredient-categories/{id}": {
+    "/api/ingredient-category/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -456,7 +700,87 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/dish-templates/{sizeCode}": {
+    "/api/gemini/chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["chat"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/dish/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getDishById"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/dish/toggle-public/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["toggleActive_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/dish/toggle-active/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["toggleInactive"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/dish/account/{accountId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getDishesByAccountId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/dish-template/{sizeCode}": {
         parameters: {
             query?: never;
             header?: never;
@@ -488,7 +812,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/discount/{id}": {
+    "/api/account/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -504,17 +828,17 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/account/{id}": {
+    "/api/test/demo/delete-recipe": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["findById_5"];
+        get?: never;
         put?: never;
         post?: never;
-        delete: operations["delete_5"];
+        delete: operations["deleteRecipe"];
         options?: never;
         head?: never;
         patch?: never;
@@ -524,6 +848,31 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        OrderUpdateDto: {
+            /** Format: int32 */
+            orderId?: number;
+            comment?: string;
+            /** Format: int32 */
+            ranking?: number;
+        };
+        Orders: {
+            /** Format: int32 */
+            id?: number;
+            /** Format: date-time */
+            createAt?: string;
+            /** Format: double */
+            totalPrice?: number;
+            /** @enum {string} */
+            status?: "PENDING" | "COMPLETED" | "PAID" | "CANCELLED";
+            /** Format: int32 */
+            userId?: number;
+            /** Format: int32 */
+            staffId?: number;
+            note?: string;
+            /** Format: int32 */
+            ranking?: number;
+            comment?: string;
+        };
         Account: {
             /** Format: int32 */
             id?: number;
@@ -559,12 +908,24 @@ export interface components {
             active?: boolean;
             imgUrl?: string;
             publicId?: string;
+            /** Format: double */
+            quantity?: number;
+            /** Format: double */
+            reserve?: number;
+            /** Format: date-time */
+            lastReserveAt?: string;
+            /** Format: double */
+            available?: number;
+            /** Format: double */
+            pricePerUnit?: number;
         };
         IngredientCategory: {
             /** Format: int32 */
             id?: number;
             name: string;
             description?: string;
+            /** Format: int32 */
+            priority?: number;
         };
         InventoryTransaction: {
             /** Format: int32 */
@@ -577,25 +938,6 @@ export interface components {
             quantity?: number;
             transactionType: boolean;
         };
-        Orders: {
-            /** Format: int32 */
-            id?: number;
-            /** Format: date-time */
-            createAt?: string;
-            /** Format: int32 */
-            totalPrice?: number;
-            /** @enum {string} */
-            status?: "PENDING" | "COMPLETED" | "CONFIRMED" | "CANCELLED";
-            /** Format: int32 */
-            userId?: number;
-            /** Format: int32 */
-            staffId?: number;
-            note?: string;
-            /** Format: int32 */
-            ranking?: number;
-            /** Format: int32 */
-            comment?: number;
-        };
         IngredientUpdateRequest: {
             /** Format: int32 */
             id: number;
@@ -605,8 +947,48 @@ export interface components {
             /** @enum {string} */
             unit?: "GRAM" | "KILOGRAM" | "LITER" | "PCS";
             active?: boolean;
+            /** Format: double */
+            available?: number;
+            /** Format: double */
+            quantity?: number;
+            /** Format: double */
+            reserve?: number;
             /** Format: binary */
             file?: string;
+        };
+        DishUpdateRequest: {
+            /** Format: int32 */
+            id?: number;
+            name?: string;
+            description?: string;
+            /** Format: int32 */
+            price?: number;
+            account?: components["schemas"]["Account"];
+            /** @enum {string} */
+            dishType?: "PRESET" | "CUSTOM";
+            /** Format: int32 */
+            usedQuantity?: number;
+            /** Format: binary */
+            file?: string;
+            public?: boolean;
+            active?: boolean;
+        };
+        Dish: {
+            /** Format: int32 */
+            id?: number;
+            name?: string;
+            description?: string;
+            /** Format: int32 */
+            price?: number;
+            imageUrl?: string;
+            publicId?: string;
+            account?: components["schemas"]["Account"];
+            /** @enum {string} */
+            dishType?: "PRESET" | "CUSTOM";
+            /** Format: int32 */
+            usedQuantity?: number;
+            public?: boolean;
+            active?: boolean;
         };
         DishCategoryUpdateRequest: {
             /** Format: int32 */
@@ -620,110 +1002,20 @@ export interface components {
             name: string;
             description?: string;
         };
-        DiscountUpdateRequest: {
-            /** Format: int32 */
-            id: number;
-            name?: string;
-            /** Format: int32 */
-            discountPercent?: number;
-            /** Format: int32 */
-            quantity?: number;
-            /** Format: date-time */
-            startTime?: string;
-            /** Format: date-time */
-            endTime?: string;
-            description?: string;
-        };
-        Discount: {
-            /** Format: int32 */
-            id?: number;
-            name?: string;
-            /** Format: int32 */
-            discountPercent?: number;
-            /** Format: int32 */
-            quantity?: number;
-            /** Format: date-time */
-            startTime?: string;
-            /** Format: date-time */
-            endTime?: string;
-            code?: string;
-            description?: string;
-        };
         AccountUpdateRequest: {
             /** Format: int32 */
             id: number;
             name: string;
             /** @enum {string} */
             role?: "ADMIN" | "STAFF" | "USER";
-            mail: string;
+            mail?: string;
+            phone?: string;
+            password?: string;
             active?: boolean;
         };
-        MakeOrderRequest: {
-            /** Format: int32 */
-            accountId?: number;
-            paymentMethod?: string;
-            note?: string;
-            items?: components["schemas"]["OrderItemDTO"][];
-        };
-        OrderItemDTO: {
-            /** Format: int32 */
-            dishId?: number;
-            /** Format: int32 */
-            basedOnId?: number;
-            name?: string;
-            /** Format: int32 */
-            quantity?: number;
-            recipe?: components["schemas"]["RecipeItemDTO"][];
-        };
-        RecipeItemDTO: {
-            /** Format: int32 */
-            ingredientId?: number;
-            /** Format: int32 */
-            quantity?: number;
-            /** @enum {string} */
-            sourceType?: "BASE" | "ADDON" | "REMOVED";
-        };
-        IngredientCreateRequest: {
-            name: string;
-            /** Format: int32 */
-            categoryId: number;
-            /** @enum {string} */
-            unit: "GRAM" | "KILOGRAM" | "LITER" | "PCS";
-            /** Format: binary */
-            file?: string;
-        };
-        DishCreateRequest: {
-            /** Format: int32 */
-            id?: number;
-            name: string;
-            description?: string;
-            /** Format: int32 */
-            price?: number;
-            imageUrl?: string;
-            account: components["schemas"]["Account"];
-            /** @enum {string} */
-            dishType: "PRESET" | "CUSTOM";
-            ingredients: {
-                [key: string]: number;
-            };
-            public?: boolean;
-            active?: boolean;
-        };
-        Dish: {
-            /** Format: int32 */
-            id?: number;
-            name?: string;
-            description?: string;
-            /** Format: int32 */
-            price?: number;
-            imageUrl?: string;
-            account?: components["schemas"]["Account"];
-            /** @enum {string} */
-            dishType?: "PRESET" | "CUSTOM";
-            /** Format: int32 */
-            usedQuantity?: number;
-            public?: boolean;
-            active?: boolean;
+        LoginRequest: {
+            username?: string;
+            password?: string;
         };
         DishTemplate: {
             /** @enum {string} */
@@ -740,21 +1032,90 @@ export interface components {
             /** Format: int32 */
             max_Vegetable?: number;
         };
-        DishCategoryCreateRequest: {
-            name: string;
-            description?: string;
-        };
-        DiscountCreateRequest: {
-            name: string;
+        MakeOrderRequest: {
             /** Format: int32 */
-            discountPercent?: number;
+            accountId?: number;
+            paymentMethod?: string;
+            note?: string;
+            /** Format: double */
+            totalPrice?: number;
+            items?: components["schemas"]["OrderItemDTO"][];
+        };
+        OrderItemDTO: {
+            /** Format: int32 */
+            dishId?: number;
+            /** Format: int32 */
+            basedOnId?: number;
+            name?: string;
             /** Format: int32 */
             quantity?: number;
-            /** Format: date-time */
-            startTime?: string;
-            /** Format: date-time */
-            endTime?: string;
-            code?: string;
+            note?: string;
+            dishTemplate?: components["schemas"]["DishTemplate"];
+            recipe?: components["schemas"]["RecipeItemDTO"][];
+        };
+        RecipeItemDTO: {
+            /** Format: int32 */
+            ingredientId?: number;
+            /** Format: int32 */
+            quantity?: number;
+            /** @enum {string} */
+            sourceType?: "BASE" | "ADDON" | "REMOVED";
+        };
+        NotificationSendingRequest: {
+            title?: string;
+            message?: string;
+            deviceToken?: string;
+            /** Format: int32 */
+            userId?: number;
+        };
+        DishInfo: {
+            name?: string;
+            /** Format: int32 */
+            price?: number;
+            ingredients?: {
+                [key: string]: number;
+            };
+        };
+        SendOrderEvent: {
+            email?: string;
+            dishes?: components["schemas"]["DishInfo"][];
+        };
+        IngredientCreateRequest: {
+            name: string;
+            /** Format: int32 */
+            categoryId: number;
+            /** Format: double */
+            quantity?: number;
+            /** @enum {string} */
+            unit: "GRAM" | "KILOGRAM" | "LITER" | "PCS";
+            /** Format: double */
+            pricePerUnit?: number;
+            /** Format: binary */
+            file?: string;
+        };
+        ChatRequest: {
+            message?: string;
+        };
+        DishCreateRequest: {
+            /** Format: int32 */
+            id?: number;
+            name: string;
+            description?: string;
+            /** Format: int32 */
+            price?: number;
+            account: components["schemas"]["Account"];
+            /** @enum {string} */
+            dishType: "PRESET" | "CUSTOM";
+            ingredients: {
+                [key: string]: number;
+            };
+            /** Format: binary */
+            file?: string;
+            public?: boolean;
+            active?: boolean;
+        };
+        DishCategoryCreateRequest: {
+            name: string;
             description?: string;
         };
         AccountCreateRequest: {
@@ -764,27 +1125,14 @@ export interface components {
             role: "ADMIN" | "STAFF" | "USER";
             password: string;
         };
-        UserDTO: {
-            /** Format: int32 */
-            id?: number;
-            name?: string;
-            /** Format: int32 */
-            age?: number;
-        };
-        WarpResponseUserDTO: {
-            /** Format: int32 */
-            statusCode?: number;
-            message?: string;
-            data?: components["schemas"]["UserDTO"];
-        };
         ApplicationContext: {
             parent?: unknown;
             id?: string;
             displayName?: string;
+            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
-            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             environment?: components["schemas"]["Environment"];
             /** Format: int32 */
             beanDefinitionCount?: number;
@@ -823,6 +1171,7 @@ export interface components {
                         annotations?: unknown[];
                         declaredAnnotations?: unknown[];
                         packages?: string[];
+                        nativeAccessEnabled?: boolean;
                         layer?: unknown;
                     };
                     definedPackages?: {
@@ -866,6 +1215,7 @@ export interface components {
                     annotations?: unknown[];
                     declaredAnnotations?: unknown[];
                     packages?: string[];
+                    nativeAccessEnabled?: boolean;
                     layer?: unknown;
                 };
                 definedPackages?: {
@@ -891,8 +1241,8 @@ export interface components {
             defaultProfiles?: string[];
         };
         FilterRegistration: {
-            servletNameMappings?: string[];
             urlPatternMappings?: string[];
+            servletNameMappings?: string[];
             name?: string;
             className?: string;
             initParameters?: {
@@ -904,24 +1254,24 @@ export interface components {
         HttpStatusCode: {
             error?: boolean;
             is1xxInformational?: boolean;
-            is2xxSuccessful?: boolean;
-            is3xxRedirection?: boolean;
-            is4xxClientError?: boolean;
             is5xxServerError?: boolean;
+            is4xxClientError?: boolean;
+            is3xxRedirection?: boolean;
+            is2xxSuccessful?: boolean;
         };
         JspConfigDescriptor: {
-            taglibs?: components["schemas"]["TaglibDescriptor"][];
             jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
+            taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
             buffer?: string;
-            elIgnored?: string;
-            errorOnELNotFound?: string;
-            pageEncoding?: string;
             scriptingInvalid?: string;
+            errorOnELNotFound?: string;
             isXml?: string;
             includePreludes?: string[];
+            pageEncoding?: string;
             includeCodas?: string[];
+            elIgnored?: string;
             deferredSyntaxAllowedAsLiteral?: string;
             trimDirectiveWhitespaces?: string;
             errorOnUndeclaredNamespace?: string;
@@ -949,15 +1299,15 @@ export interface components {
             expandUriTemplateVariables?: boolean;
             propagateQueryParams?: boolean;
             hosts?: string[];
-            redirectView?: boolean;
             propagateQueryProperties?: boolean;
-            attributesMap?: {
-                [key: string]: unknown;
-            };
+            redirectView?: boolean;
+            attributesCSV?: string;
             attributes?: {
                 [key: string]: string;
             };
-            attributesCSV?: string;
+            attributesMap?: {
+                [key: string]: unknown;
+            };
         };
         ServletContext: {
             classLoader?: {
@@ -981,35 +1331,35 @@ export interface components {
             majorVersion?: number;
             /** Format: int32 */
             minorVersion?: number;
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            attributeNames?: unknown;
+            initParameterNames?: unknown;
+            contextPath?: string;
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             virtualServerName?: string;
-            attributeNames?: unknown;
-            /** Format: int32 */
-            sessionTimeout?: number;
-            contextPath?: string;
-            initParameterNames?: unknown;
-            servletRegistrations?: {
-                [key: string]: components["schemas"]["ServletRegistration"];
-            };
             /** Format: int32 */
             effectiveMajorVersion?: number;
+            servletContextName?: string;
             /** Format: int32 */
             effectiveMinorVersion?: number;
-            serverInfo?: string;
-            servletContextName?: string;
+            jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
             filterRegistrations?: {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            requestCharacterEncoding?: string;
+            /** Format: int32 */
+            sessionTimeout?: number;
+            serverInfo?: string;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             responseCharacterEncoding?: string;
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            requestCharacterEncoding?: string;
+            servletRegistrations?: {
+                [key: string]: components["schemas"]["ServletRegistration"];
+            };
         };
         ServletRegistration: {
-            runAsRole?: string;
             mappings?: string[];
+            runAsRole?: string;
             name?: string;
             className?: string;
             initParameters?: {
@@ -1024,15 +1374,36 @@ export interface components {
             };
             /** @deprecated */
             comment?: string;
+            domain?: string;
             /** Format: int32 */
             maxAge?: number;
-            domain?: string;
-            httpOnly?: boolean;
             secure?: boolean;
+            httpOnly?: boolean;
         };
         TaglibDescriptor: {
-            taglibURI?: string;
             taglibLocation?: string;
+            taglibURI?: string;
+        };
+        UserDTO: {
+            /** Format: int32 */
+            id?: number;
+            name?: string;
+            /** Format: int32 */
+            age?: number;
+        };
+        WarpResponseUserDTO: {
+            /** Format: int32 */
+            statusCode?: number;
+            message?: string;
+            data?: components["schemas"]["UserDTO"];
+        };
+        Recipe: {
+            /** Format: int32 */
+            id?: number;
+            ingredient?: components["schemas"]["Ingredient"];
+            /** Format: int32 */
+            quantity?: number;
+            dish?: components["schemas"]["Dish"];
         };
     };
     responses: never;
@@ -1043,6 +1414,78 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    updateOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderUpdateDto"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Orders"];
+                };
+            };
+        };
+    };
+    createOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MakeOrderRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+        };
+    };
+    feedback: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderUpdateDto"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Orders"];
+                };
+            };
+        };
+    };
     getAllNotifications: {
         parameters: {
             query?: never;
@@ -1058,7 +1501,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "_/_": components["schemas"]["Notification"][];
+                    "*/*": components["schemas"]["Notification"][];
                 };
             };
         };
@@ -1082,7 +1525,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "_/_": components["schemas"]["Notification"];
+                    "*/*": components["schemas"]["Notification"];
                 };
             };
         };
@@ -1106,7 +1549,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "_/_": components["schemas"]["Notification"];
+                    "*/*": components["schemas"]["Notification"];
                 };
             };
         };
@@ -1194,7 +1637,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "_/_": components["schemas"]["Ingredient"][];
+                    "*/*": components["schemas"]["Ingredient"][];
                 };
             };
         };
@@ -1216,7 +1659,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "_/_": components["schemas"]["Ingredient"];
+                    "*/*": components["schemas"]["Ingredient"];
                 };
             };
         };
@@ -1238,7 +1681,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "_/_": components["schemas"]["Ingredient"];
+                    "*/*": components["schemas"]["Ingredient"];
                 };
             };
         };
@@ -1311,6 +1754,91 @@ export interface operations {
             };
         };
     };
+    getAllDishes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Dish"][];
+                };
+            };
+        };
+    };
+    update_2: {
+        parameters: {
+            query: {
+                request: components["schemas"]["DishUpdateRequest"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Dish"];
+                };
+            };
+        };
+    };
+    save_1: {
+        parameters: {
+            query: {
+                request: components["schemas"]["DishCreateRequest"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Dish"];
+                };
+            };
+        };
+    };
+    saveCustomDish: {
+        parameters: {
+            query: {
+                id: number;
+                isPublic: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     findAll_1: {
         parameters: {
             query?: never;
@@ -1326,12 +1854,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "_/_": components["schemas"]["DishCategory"][];
+                    "*/*": components["schemas"]["DishCategory"][];
                 };
             };
         };
     };
-    update_2: {
+    update_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -1350,12 +1878,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "_/_": components["schemas"]["DishCategory"];
+                    "*/*": components["schemas"]["DishCategory"];
                 };
             };
         };
     };
-    save_1: {
+    save_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -1374,7 +1902,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "_/_": components["schemas"]["DishCategory"];
+                    "*/*": components["schemas"]["DishCategory"];
                 };
             };
         };
@@ -1394,75 +1922,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Discount"][];
-                };
-            };
-        };
-    };
-    update_3: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DiscountUpdateRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Discount"];
-                };
-            };
-        };
-    };
-    save_2: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DiscountCreateRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Discount"];
-                };
-            };
-        };
-    };
-    findAll_3: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "_/_": components["schemas"]["Account"][];
+                    "*/*": components["schemas"]["Account"][];
                 };
             };
         };
@@ -1486,7 +1946,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "_/_": components["schemas"]["Account"];
+                    "*/*": components["schemas"]["Account"];
                 };
             };
         };
@@ -1510,7 +1970,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "_/_": components["schemas"]["Account"];
+                    "*/*": components["schemas"]["Account"];
                 };
             };
         };
@@ -1539,7 +1999,7 @@ export interface operations {
             };
         };
     };
-    createOrder: {
+    login: {
         parameters: {
             query?: never;
             header?: never;
@@ -1548,7 +2008,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["MakeOrderRequest"];
+                "application/json": components["schemas"]["LoginRequest"];
             };
         };
         responses: {
@@ -1557,7 +2017,105 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "*/*": string;
+                };
+            };
+        };
+    };
+    sendNotificationToUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NotificationSendingRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+        };
+    };
+    sendNotificationToTheExactDevice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NotificationSendingRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+        };
+    };
+    sendNotificationToAllUsers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NotificationSendingRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+        };
+    };
+    registerDeviceToken: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": "ANDROID" | "WEB" | "IOS";
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
             };
         };
     };
@@ -1579,12 +2137,34 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "_/_": string;
+                    "*/*": string;
                 };
             };
         };
     };
-    findAll_4: {
+    sendOrderMail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendOrderEvent"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    findAll_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -1599,7 +2179,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "_/_": components["schemas"]["InventoryTransaction"][];
+                    "*/*": components["schemas"]["InventoryTransaction"][];
                 };
             };
         };
@@ -1623,12 +2203,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "_/_": components["schemas"]["InventoryTransaction"];
+                    "*/*": components["schemas"]["InventoryTransaction"];
                 };
             };
         };
     };
-    save_5: {
+    agentChat: {
         parameters: {
             query?: never;
             header?: never;
@@ -1637,7 +2217,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["DishCreateRequest"];
+                "application/json": components["schemas"]["ChatRequest"];
             };
         };
         responses: {
@@ -1647,12 +2227,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "_/_": components["schemas"]["Dish"];
+                    "*/*": string;
                 };
             };
         };
     };
-    findAll_5: {
+    findAll_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -1740,35 +2320,10 @@ export interface operations {
             };
         };
     };
-    demo: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UserDTO"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["WarpResponseUserDTO"];
-                };
-            };
-        };
-    };
-    deleteRecipe: {
+    dumpData: {
         parameters: {
             query: {
-                DishId: number;
-                IngredientId: number;
+                password: string;
             };
             header?: never;
             path?: never;
@@ -1781,11 +2336,13 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "*/*": string;
+                };
             };
         };
     };
-    auth: {
+    getMe: {
         parameters: {
             query?: never;
             header?: never;
@@ -1800,7 +2357,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "_/_": {
+                    "*/*": {
                         [key: string]: unknown;
                     };
                 };
@@ -1845,6 +2402,136 @@ export interface operations {
                 };
                 content: {
                     "*/*": string;
+                };
+            };
+        };
+    };
+    testinventory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": boolean;
+                };
+            };
+        };
+    };
+    confirm: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+        };
+    };
+    canceled: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+        };
+    };
+    demo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserDTO"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WarpResponseUserDTO"];
+                };
+            };
+        };
+    };
+    findAll_5: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Recipe"][];
+                };
+            };
+        };
+    };
+    findByDishId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Recipe"][];
                 };
             };
         };
@@ -1985,9 +2672,11 @@ export interface operations {
             };
         };
     };
-    sendMail: {
+    sendOTP: {
         parameters: {
-            query?: never;
+            query: {
+                email: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -2045,6 +2734,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": string;
+                };
+            };
+        };
+    };
+    toggleActive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": Record<string, never>;
                 };
             };
         };
@@ -2110,6 +2821,116 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    chat: {
+        parameters: {
+            query: {
+                message: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+        };
+    };
+    getDishById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Dish"];
+                };
+            };
+        };
+    };
+    toggleActive_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": boolean;
+                };
+            };
+        };
+    };
+    toggleInactive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": boolean;
+                };
+            };
+        };
+    };
+    getDishesByAccountId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Dish"][];
+                };
             };
         };
     };
@@ -2216,7 +3037,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Discount"];
+                    "*/*": components["schemas"]["Account"];
                 };
             };
         };
@@ -2243,13 +3064,14 @@ export interface operations {
             };
         };
     };
-    findById_5: {
+    deleteRecipe: {
         parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
+            query: {
+                DishId: number;
+                IngredientId: number;
             };
+            header?: never;
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;
@@ -2259,31 +3081,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["Account"];
-                };
-            };
-        };
-    };
-    delete_5: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": string;
-                };
+                content?: never;
             };
         };
     };
