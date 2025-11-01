@@ -9,18 +9,18 @@ import { $api } from "@/libs/api";
 
 /**
  * Hook for getting all notifications
- * Uses GET /api/notifications endpoint
+ * Uses GET /api/notification endpoint
  */
 export const useNotifications = () => {
-  return $api.useQuery("get", "/api/notifications", {});
+  return $api.useQuery("get", "/api/notification", {});
 };
 
 /**
  * Hook for getting notification by ID
- * Uses GET /api/notifications/{id} endpoint
+ * Uses GET /api/notification/{id} endpoint
  */
 export const useGetNotificationById = (id: number) => {
-  return $api.useQuery("get", "/api/notifications/{id}", {
+  return $api.useQuery("get", "/api/notification/{id}", {
     params: { path: { id } },
     enabled: !!id,
   });
@@ -28,10 +28,10 @@ export const useGetNotificationById = (id: number) => {
 
 /**
  * Hook for getting notifications by account ID
- * Uses GET /api/notifications/account/{id} endpoint
+ * Uses GET /api/notification/to-account/{id} endpoint
  */
 export const useGetNotificationsByAccountId = (id: number) => {
-  return $api.useQuery("get", "/api/notifications/account/{id}", {
+  return $api.useQuery("get", "/api/notification/to-account/{id}", {
     params: { path: { id } },
     enabled: !!id,
   });
@@ -39,34 +39,66 @@ export const useGetNotificationsByAccountId = (id: number) => {
 
 /**
  * Hook for creating a new notification
- * Uses POST /api/notifications endpoint
+ * Uses POST /api/notification endpoint
  */
 export const useCreateNotification = () => {
-  return $api.useMutation("post", "/api/notifications");
+  return $api.useMutation("post", "/api/notification");
 };
 
 /**
  * Hook for updating an existing notification
- * Uses PUT /api/notifications endpoint
+ * Uses PUT /api/notification endpoint
  */
 export const useUpdateNotification = () => {
-  return $api.useMutation("put", "/api/notifications");
+  return $api.useMutation("put", "/api/notification");
 };
 
 /**
  * Hook for deleting a notification
- * Uses DELETE /api/notifications/{id} endpoint
+ * Uses DELETE /api/notification/{id} endpoint
  */
 export const useDeleteNotification = () => {
-  return $api.useMutation("delete", "/api/notifications/{id}");
+  return $api.useMutation("delete", "/api/notification/{id}");
 };
 
 /**
  * Hook for marking a notification as read
- * Uses PATCH /api/notifications/{id}/read endpoint
+ * Uses PATCH /api/notification/{id}/check-read endpoint
  */
 export const useMarkAsRead = () => {
-  return $api.useMutation("patch", "/api/notifications/{id}/read");
+  return $api.useMutation("patch", "/api/notification/{id}/check-read");
+};
+
+/**
+ * Hook for sending notification to a specific user
+ * Uses POST /api/notification/send endpoint
+ */
+export const useSendNotificationToUser = () => {
+  return $api.useMutation("post", "/api/notification/send");
+};
+
+/**
+ * Hook for sending notification to a specific device
+ * Uses POST /api/notification/send-to-exact endpoint
+ */
+export const useSendNotificationToDevice = () => {
+  return $api.useMutation("post", "/api/notification/send-to-exact");
+};
+
+/**
+ * Hook for sending notification to all users
+ * Uses POST /api/notification/send-to-all endpoint
+ */
+export const useSendNotificationToAll = () => {
+  return $api.useMutation("post", "/api/notification/send-to-all");
+};
+
+/**
+ * Hook for registering device token
+ * Uses POST /api/notification/device endpoint
+ */
+export const useRegisterDeviceToken = () => {
+  return $api.useMutation("post", "/api/notification/device");
 };
 
 // ==================== TRANSFORM FUNCTIONS ====================

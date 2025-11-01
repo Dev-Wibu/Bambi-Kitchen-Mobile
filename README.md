@@ -9,14 +9,16 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 📖 **Read full documentation**: [VAN_DE_DANG_NHAP_VA_GIAI_PHAP.md](./VAN_DE_DANG_NHAP_VA_GIAI_PHAP.md) (Vietnamese)
 
 **Quick Summary**:
+
 - ✅ Login works and returns JWT token
 - ❌ `/api/user/me` returns 401 (backend filter issue)
-- ✅ **Solution**: Using `AuthContextMock` to bypass the `/api/user/me` call
+- ✅ **Solution**: Using `AuthContext` to bypass the `/api/user/me` call
 - ⚠️ You still need **real credentials** from the backend database to login
 
 **To switch back to real auth** (when backend is fixed):
+
 1. Edit `app/_layout.tsx` line 3
-2. Change: `import { AuthProvider } from "@/contexts/AuthContextMock";`
+2. Change: `import { AuthProvider } from "@/contexts/AuthContext";`
 3. To: `import { AuthProvider } from "@/contexts/AuthContext";`
 
 ---

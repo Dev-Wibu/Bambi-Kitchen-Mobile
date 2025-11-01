@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import type { ROLE_TYPE } from "@/interfaces/role.interface";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { Eye, EyeOff } from "lucide-react-native";
+import { Eye, EyeOff, Chrome } from "lucide-react-native";
 import { useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -13,7 +13,7 @@ import Toast from "react-native-toast-message";
 
 export default function Register() {
   const router = useRouter();
-  const { register } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -22,6 +22,7 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const validatePhone = (phoneNumber: string) => {
     // Vietnamese phone format: starts with +84 or 0, followed by 3/5/7/8/9 and 8 more digits
@@ -113,6 +114,24 @@ export default function Register() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignup = async () => {
+    setIsGoogleLoading(true);
+    try {
+      // Use the same Google OAuth flow - backend will create account if it doesn't exist
+      await loginWithGoogle();
+      // The oauth2-callback screen will handle navigation after successful signup
+    } catch (error) {
+      console.error("Google signup error:", error);
+      Toast.show({
+        type: "error",
+        text1: "Google Sign Up Failed",
+        text2: error instanceof Error ? error.message : "Please try again",
+      });
+    } finally {
+      setIsGoogleLoading(false);
     }
   };
 
@@ -227,15 +246,43 @@ export default function Register() {
           </View>
 
           {/* Register Button */}
-          <View className="mb-6">
+          <View className="mb-4">
             <Button
-              className="w-full bg-[#FF6D00] active:bg-[#FF4D00]"
+              className="w-full rounded-3xl bg-[#FF6D00] active:bg-[#FF4D00]"
               onPress={handleRegister}
-              disabled={isLoading}>
+              disabled={isLoading || isGoogleLoading}>
               {isLoading ? (
                 <ActivityIndicator color="white" />
               ) : (
                 <Text className="text-lg font-bold text-white">Register</Text>
+              )}
+            </Button>
+          </View>
+
+          {/* Divider */}
+          <View className="mb-4 flex-row items-center">
+            <View className="flex-1 border-t border-gray-300 dark:border-gray-600" />
+            <Text className="mx-4 text-sm text-gray-500 dark:text-gray-400">OR</Text>
+            <View className="flex-1 border-t border-gray-300 dark:border-gray-600" />
+          </View>
+
+          {/* Google Sign Up Button */}
+          <View className="mb-6">
+            <Button
+              variant="outline"
+              className="w-full rounded-3xl border-gray-300"
+              style={{ borderWidth: 1, height: 48 }}
+              onPress={handleGoogleSignup}
+              disabled={isLoading || isGoogleLoading}>
+              {isGoogleLoading ? (
+                <ActivityIndicator color="#FF6D00" />
+              ) : (
+                <View className="flex-row items-center gap-2">
+                  <Chrome size={20} color="#4285F4" />
+                  <Text className="text-base font-semibold text-gray-700 dark:text-gray-200">
+                    Sign up with Google
+                  </Text>
+                </View>
               )}
             </Button>
           </View>

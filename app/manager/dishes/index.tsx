@@ -1,4 +1,9 @@
-import { useCreateDish, useDishes } from "@/services/dishService";
+import {
+  useCreateDish,
+  useDishes,
+  useToggleDishActive,
+  useToggleDishPublic,
+} from "@/services/dishService";
 import { useAuthStore } from "@/stores/authStore";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -41,6 +46,8 @@ export default function DishesManager() {
 
   const { data, isLoading, refetch, isError } = useDishes();
   const createOrUpdateDish = useCreateDish();
+  const togglePublicMutation = useToggleDishPublic();
+  const toggleActiveMutation = useToggleDishActive();
   const [modalVisible, setModalVisible] = useState(false);
   const [id, setId] = useState<number | null>(null);
   const [name, setName] = useState("");

@@ -508,6 +508,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/recipe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["findAll_5"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/recipe/by-dish/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["findByDishId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/payment/vnpay-return": {
         parameters: {
             query?: never;
@@ -620,6 +652,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/ingredient/toggle-active/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["toggleActive"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/ingredient/search": {
         parameters: {
             query?: never;
@@ -691,7 +739,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["toggleActive"];
+        get: operations["toggleActive_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -868,12 +916,16 @@ export interface components {
             lastReserveAt?: string;
             /** Format: double */
             available?: number;
+            /** Format: double */
+            pricePerUnit?: number;
         };
         IngredientCategory: {
             /** Format: int32 */
             id?: number;
             name: string;
             description?: string;
+            /** Format: int32 */
+            priority?: number;
         };
         InventoryTransaction: {
             /** Format: int32 */
@@ -1036,6 +1088,8 @@ export interface components {
             quantity?: number;
             /** @enum {string} */
             unit: "GRAM" | "KILOGRAM" | "LITER" | "PCS";
+            /** Format: double */
+            pricePerUnit?: number;
             /** Format: binary */
             file?: string;
         };
@@ -1076,9 +1130,9 @@ export interface components {
             id?: string;
             displayName?: string;
             autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
+            applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
-            applicationName?: string;
             environment?: components["schemas"]["Environment"];
             /** Format: int32 */
             beanDefinitionCount?: number;
@@ -1183,12 +1237,12 @@ export interface components {
         BeanFactory: unknown;
         DefaultHttpStatusCode: components["schemas"]["HttpStatusCode"];
         Environment: {
-            defaultProfiles?: string[];
             activeProfiles?: string[];
+            defaultProfiles?: string[];
         };
         FilterRegistration: {
-            servletNameMappings?: string[];
             urlPatternMappings?: string[];
+            servletNameMappings?: string[];
             name?: string;
             className?: string;
             initParameters?: {
@@ -1199,8 +1253,8 @@ export interface components {
         HttpStatus: "100 CONTINUE" | "101 SWITCHING_PROTOCOLS" | "102 PROCESSING" | "103 EARLY_HINTS" | "103 CHECKPOINT" | "200 OK" | "201 CREATED" | "202 ACCEPTED" | "203 NON_AUTHORITATIVE_INFORMATION" | "204 NO_CONTENT" | "205 RESET_CONTENT" | "206 PARTIAL_CONTENT" | "207 MULTI_STATUS" | "208 ALREADY_REPORTED" | "226 IM_USED" | "300 MULTIPLE_CHOICES" | "301 MOVED_PERMANENTLY" | "302 FOUND" | "302 MOVED_TEMPORARILY" | "303 SEE_OTHER" | "304 NOT_MODIFIED" | "305 USE_PROXY" | "307 TEMPORARY_REDIRECT" | "308 PERMANENT_REDIRECT" | "400 BAD_REQUEST" | "401 UNAUTHORIZED" | "402 PAYMENT_REQUIRED" | "403 FORBIDDEN" | "404 NOT_FOUND" | "405 METHOD_NOT_ALLOWED" | "406 NOT_ACCEPTABLE" | "407 PROXY_AUTHENTICATION_REQUIRED" | "408 REQUEST_TIMEOUT" | "409 CONFLICT" | "410 GONE" | "411 LENGTH_REQUIRED" | "412 PRECONDITION_FAILED" | "413 PAYLOAD_TOO_LARGE" | "413 REQUEST_ENTITY_TOO_LARGE" | "414 URI_TOO_LONG" | "414 REQUEST_URI_TOO_LONG" | "415 UNSUPPORTED_MEDIA_TYPE" | "416 REQUESTED_RANGE_NOT_SATISFIABLE" | "417 EXPECTATION_FAILED" | "418 I_AM_A_TEAPOT" | "419 INSUFFICIENT_SPACE_ON_RESOURCE" | "420 METHOD_FAILURE" | "421 DESTINATION_LOCKED" | "422 UNPROCESSABLE_ENTITY" | "423 LOCKED" | "424 FAILED_DEPENDENCY" | "425 TOO_EARLY" | "426 UPGRADE_REQUIRED" | "428 PRECONDITION_REQUIRED" | "429 TOO_MANY_REQUESTS" | "431 REQUEST_HEADER_FIELDS_TOO_LARGE" | "451 UNAVAILABLE_FOR_LEGAL_REASONS" | "500 INTERNAL_SERVER_ERROR" | "501 NOT_IMPLEMENTED" | "502 BAD_GATEWAY" | "503 SERVICE_UNAVAILABLE" | "504 GATEWAY_TIMEOUT" | "505 HTTP_VERSION_NOT_SUPPORTED" | "506 VARIANT_ALSO_NEGOTIATES" | "507 INSUFFICIENT_STORAGE" | "508 LOOP_DETECTED" | "509 BANDWIDTH_LIMIT_EXCEEDED" | "510 NOT_EXTENDED" | "511 NETWORK_AUTHENTICATION_REQUIRED";
         HttpStatusCode: {
             error?: boolean;
-            is5xxServerError?: boolean;
             is1xxInformational?: boolean;
+            is5xxServerError?: boolean;
             is4xxClientError?: boolean;
             is3xxRedirection?: boolean;
             is2xxSuccessful?: boolean;
@@ -1211,18 +1265,18 @@ export interface components {
         };
         JspPropertyGroupDescriptor: {
             buffer?: string;
-            defaultContentType?: string;
-            urlPatterns?: string[];
-            elIgnored?: string;
-            pageEncoding?: string;
-            includePreludes?: string[];
-            includeCodas?: string[];
-            errorOnELNotFound?: string;
             scriptingInvalid?: string;
+            errorOnELNotFound?: string;
+            isXml?: string;
+            includePreludes?: string[];
+            pageEncoding?: string;
+            includeCodas?: string[];
+            elIgnored?: string;
+            deferredSyntaxAllowedAsLiteral?: string;
             trimDirectiveWhitespaces?: string;
             errorOnUndeclaredNamespace?: string;
-            deferredSyntaxAllowedAsLiteral?: string;
-            isXml?: string;
+            defaultContentType?: string;
+            urlPatterns?: string[];
         };
         RedirectView: {
             applicationContext?: components["schemas"]["ApplicationContext"];
@@ -1245,14 +1299,14 @@ export interface components {
             expandUriTemplateVariables?: boolean;
             propagateQueryParams?: boolean;
             hosts?: string[];
-            redirectView?: boolean;
             propagateQueryProperties?: boolean;
-            attributesMap?: {
-                [key: string]: unknown;
-            };
+            redirectView?: boolean;
             attributesCSV?: string;
             attributes?: {
                 [key: string]: string;
+            };
+            attributesMap?: {
+                [key: string]: unknown;
             };
         };
         ServletContext: {
@@ -1278,30 +1332,30 @@ export interface components {
             /** Format: int32 */
             minorVersion?: number;
             attributeNames?: unknown;
-            contextPath?: string;
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             initParameterNames?: unknown;
-            virtualServerName?: string;
+            contextPath?: string;
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            virtualServerName?: string;
             /** Format: int32 */
-            sessionTimeout?: number;
-            serverInfo?: string;
-            servletRegistrations?: {
-                [key: string]: components["schemas"]["ServletRegistration"];
-            };
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            requestCharacterEncoding?: string;
-            responseCharacterEncoding?: string;
+            effectiveMajorVersion?: number;
             servletContextName?: string;
+            /** Format: int32 */
+            effectiveMinorVersion?: number;
+            jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
             filterRegistrations?: {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
-            jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
             /** Format: int32 */
-            effectiveMajorVersion?: number;
-            /** Format: int32 */
-            effectiveMinorVersion?: number;
+            sessionTimeout?: number;
+            serverInfo?: string;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            responseCharacterEncoding?: string;
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            requestCharacterEncoding?: string;
+            servletRegistrations?: {
+                [key: string]: components["schemas"]["ServletRegistration"];
+            };
         };
         ServletRegistration: {
             mappings?: string[];
@@ -1313,8 +1367,6 @@ export interface components {
             };
         };
         SessionCookieConfig: {
-            /** Format: int32 */
-            maxAge?: number;
             name?: string;
             path?: string;
             attributes?: {
@@ -1322,9 +1374,11 @@ export interface components {
             };
             /** @deprecated */
             comment?: string;
+            domain?: string;
+            /** Format: int32 */
+            maxAge?: number;
             secure?: boolean;
             httpOnly?: boolean;
-            domain?: string;
         };
         TaglibDescriptor: {
             taglibLocation?: string;
@@ -1342,6 +1396,14 @@ export interface components {
             statusCode?: number;
             message?: string;
             data?: components["schemas"]["UserDTO"];
+        };
+        Recipe: {
+            /** Format: int32 */
+            id?: number;
+            ingredient?: components["schemas"]["Ingredient"];
+            /** Format: int32 */
+            quantity?: number;
+            dish?: components["schemas"]["Dish"];
         };
     };
     responses: never;
@@ -2432,6 +2494,48 @@ export interface operations {
             };
         };
     };
+    findAll_5: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Recipe"][];
+                };
+            };
+        };
+    };
+    findByDishId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Recipe"][];
+                };
+            };
+        };
+    };
     handleVnPayReturn: {
         parameters: {
             query: {
@@ -2634,6 +2738,28 @@ export interface operations {
             };
         };
     };
+    toggleActive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": Record<string, never>;
+                };
+            };
+        };
+    };
     findByName: {
         parameters: {
             query: {
@@ -2742,7 +2868,7 @@ export interface operations {
             };
         };
     };
-    toggleActive: {
+    toggleActive_1: {
         parameters: {
             query?: never;
             header?: never;
