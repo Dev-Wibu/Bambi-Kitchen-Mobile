@@ -1,8 +1,9 @@
 import "@/global.css";
 
-import { AuthProvider } from "@/contexts/AuthContextMock"; // 🎭 MOCK AUTH - Switch to AuthContext for real backend
+import { AuthProvider } from "@/contexts/AuthContext";
 import { QueryProvider } from "@/contexts/QueryProvider";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { NAV_THEME } from "@/libs/theme";
 import { ThemeProvider as NavigationThemeProvider } from "@react-navigation/native";
 import { PortalHost } from "@rn-primitives/portal";
@@ -16,12 +17,20 @@ export {
   ErrorBoundary,
 } from "expo-router";
 
+// App-wide push notification initialization
+function PushNotificationInitializer() {
+  // This hook will auto-register push token when user logs in
+  usePushNotifications();
+  return null;
+}
+
 export default function RootLayout() {
   const { colorScheme } = useColorScheme();
 
   return (
     <QueryProvider>
       <AuthProvider>
+        <PushNotificationInitializer />
         <ThemeProvider>
           <NavigationThemeProvider value={NAV_THEME[colorScheme ?? "light"]}>
             <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />

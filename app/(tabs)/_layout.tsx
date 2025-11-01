@@ -59,11 +59,8 @@ export default function TabsLayout() {
 
   const hiddenRoutes = [
     "index",
-    "cart/index",
     "manager/accounts/index",
     "manager/accounts/AccountForm",
-    "manager/discounts/index",
-    "manager/discounts/DiscountForm",
     "manager/dish-categories/index",
     "manager/dish-categories/DishCategoryForm",
     "manager/ingredient-categories/index",
@@ -104,6 +101,15 @@ export default function TabsLayout() {
           title: "Order",
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="receipt-long" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="notifications/index"
+        options={{
+          title: "Notifications",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="notifications" size={size} color={color} />
           ),
         }}
       />
