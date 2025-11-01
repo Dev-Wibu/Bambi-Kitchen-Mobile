@@ -131,19 +131,6 @@ export default function ManagerTab() {
               </Text>
             </View>
 
-            {/* Discount Management */}
-            <View className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-              <View className="mb-2 flex-row items-center">
-                <MaterialIcons name="local-offer" size={20} color="#FF6D00" />
-                <Text className="ml-2 text-base font-semibold text-[#000000] dark:text-white">
-                  Discount & Promotions
-                </Text>
-              </View>
-              <Text className="text-sm text-gray-600 dark:text-gray-300">
-                Create and manage discounts and promotions
-              </Text>
-            </View>
-
             {/* Notifications */}
             <View className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
               <View className="mb-2 flex-row items-center">

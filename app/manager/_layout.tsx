@@ -61,7 +61,6 @@ export default function ManagerLayout() {
 
   const hiddenRoutes = [
     "accounts/AccountForm",
-    "discounts/DiscountForm",
     "dish-categories/DishCategoryForm",
     "ingredient-categories/IngredientCategoryForm",
   ];
@@ -94,15 +93,6 @@ export default function ManagerLayout() {
         }}
       />
       <Tabs.Screen
-        name="discounts/index"
-        options={{
-          title: "Discounts",
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="local-offer" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="notifications/index"
         options={{
           title: "Notifications",
@@ -123,12 +113,6 @@ export default function ManagerLayout() {
       {/* Hidden form screens */}
       <Tabs.Screen
         name="accounts/AccountForm"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="discounts/DiscountForm"
         options={{
           href: null,
         }}
