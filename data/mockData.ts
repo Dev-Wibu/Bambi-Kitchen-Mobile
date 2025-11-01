@@ -15,7 +15,6 @@ import type { components } from "@/schema-from-be";
 export type Dish = components["schemas"]["Dish"];
 export type DishCategory = components["schemas"]["DishCategory"];
 export type DishTemplate = components["schemas"]["DishTemplate"];
-export type Discount = components["schemas"]["Discount"];
 export type Ingredient = components["schemas"]["Ingredient"];
 export type IngredientCategory = components["schemas"]["IngredientCategory"];
 export type Account = components["schemas"]["Account"];
@@ -79,40 +78,6 @@ export const mockDishTemplates: DishTemplate[] = [
     max_Carb: 300,
     max_Protein: 200,
     max_Vegetable: 160,
-  },
-];
-
-// Mock Discounts
-export const mockDiscounts: Discount[] = [
-  {
-    id: 1,
-    name: "Happy Hour Special",
-    discountPercent: 10,
-    quantity: 100,
-    startTime: "2024-01-01T00:00:00Z",
-    endTime: "2024-12-31T23:59:59Z",
-    code: "HAPPY10",
-    description: "10% off during happy hours",
-  },
-  {
-    id: 2,
-    name: "Weekend Deal",
-    discountPercent: 15,
-    quantity: 50,
-    startTime: "2024-01-01T00:00:00Z",
-    endTime: "2024-12-31T23:59:59Z",
-    code: "WEEKEND15",
-    description: "15% off on weekends",
-  },
-  {
-    id: 3,
-    name: "New Customer",
-    discountPercent: 20,
-    quantity: 200,
-    startTime: "2024-01-01T00:00:00Z",
-    endTime: "2024-12-31T23:59:59Z",
-    code: "NEWBIE20",
-    description: "Welcome bonus for new customers",
   },
 ];
 
@@ -326,7 +291,7 @@ export const mockNotifications: Notification[] = [
   {
     id: 1,
     title: "Welcome!",
-    message: "Thank you for joining us. Enjoy your first order with 20% off!",
+    message: "Thank you for joining us. Enjoy your first order!",
     createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
     read: false,
   },
@@ -339,8 +304,8 @@ export const mockNotifications: Notification[] = [
   },
   {
     id: 3,
-    title: "New Discount Available",
-    message: "Weekend special: Get 15% off on all orders this weekend!",
+    title: "New Promotion Available",
+    message: "Weekend special: Special offers available this weekend!",
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
     read: true,
   },
