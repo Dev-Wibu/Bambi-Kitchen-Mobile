@@ -157,28 +157,76 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loginWithGoogle = async () => {
     try {
-      // Import WebBrowser for OAuth flow
+      // Import necessary modules
       const WebBrowser = await import("expo-web-browser");
-      
-      // Construct the Google OAuth URL
-      const googleAuthUrl = `${API_BASE_URL}/api/user/login-with-google`;
-      
+      const { makeRedirectUri } = await import("expo-auth-session");
+
+      // CRITICAL: Call this to tell WebBrowser to listen for the redirect
+      // Without this, the browser won't close and return to the app on iOS
+      WebBrowser.maybeCompleteAuthSession();
+
+      // Generate the appropriate redirect URI for the current environment
+      // In development with Expo Go: exp://[IP]:8081
+      // In production: fe://oauth2/callback
+      const redirectUrl = makeRedirectUri({
+        scheme: "fe",
+        path: "oauth2/callback",
+      });
+
+      console.log("OAuth redirect URL:", redirectUrl);
+
+      // Construct the Google OAuth URL with redirect parameter
+      const googleAuthUrl = `${API_BASE_URL}/api/user/login-with-google?redirect_uri=${encodeURIComponent(redirectUrl)}`;
+
+      console.log("Opening Google OAuth:", googleAuthUrl);
+
       // Open the OAuth flow in a web browser
-      const result = await WebBrowser.openAuthSessionAsync(
-        googleAuthUrl,
-        `${API_BASE_URL}/oauth2/callback`
-      );
+      const result = await WebBrowser.openAuthSessionAsync(googleAuthUrl, redirectUrl);
+
+      console.log("OAuth result:", result);
 
       if (result.type === "success") {
-        // The URL will contain the token as a query parameter
-        // The OAuth2 callback screen will handle extracting it
+        // Extract token from the redirect URL
         const url = result.url;
         if (url) {
-          // The redirect will be handled by the deep link system
-          // which will navigate to the oauth2-callback screen
+          console.log("Redirect URL received:", url);
+
+          // Parse token from URL query parameters
+          const urlObj = new URL(url);
+          const token = urlObj.searchParams.get("token");
+
+          console.log("Token extracted:", token ? "✅ Yes" : "❌ No");
+
+          if (token) {
+            // Store the token
+            setToken(token);
+
+            // Get user info using the token
+            const userInfoResponse = await fetchClient.GET("/api/user/me");
+
+            if (userInfoResponse.data) {
+              const userData = userInfoResponse.data as any;
+              const userId = userData.id || 0;
+              const name = userData.name || "";
+              const role = userData.role;
+
+              const authData: AuthLoginData = {
+                userId: userId,
+                name: name,
+                role: extractRole(Array.isArray(role) ? role : [role]),
+              };
+
+              await saveAuthState(authData);
+              console.log("✅ Google login successful, user:", name);
+              return; // Success - login screen will handle navigation
+            }
+          }
+          throw new Error("No token received from OAuth provider");
         }
       } else if (result.type === "cancel") {
         throw new Error("Google login was cancelled");
+      } else if (result.type === "dismiss") {
+        throw new Error("Browser was dismissed");
       }
     } catch (error) {
       console.error("Google login error:", error);

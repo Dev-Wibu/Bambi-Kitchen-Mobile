@@ -3,9 +3,10 @@ import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
 import { useAuth } from "@/hooks/useAuth";
 import type { ROLE_TYPE } from "@/interfaces/role.interface";
+import { useAuthStore } from "@/stores/authStore";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { Eye, EyeOff, Chrome } from "lucide-react-native";
+import { Chrome, Eye, EyeOff } from "lucide-react-native";
 import { useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -105,6 +106,30 @@ export default function Login() {
     setIsGoogleLoading(true);
     try {
       await loginWithGoogle();
+
+      // Get user from auth store after successful login
+      const currentUser = useAuthStore.getState().user;
+      const targetRoute = getPostAuthRoute(currentUser?.role);
+
+      if (!targetRoute) {
+        // STAFF role cannot access mobile app
+        Toast.show({
+          type: "error",
+          text1: "Access Restricted",
+          text2: "Staff features are not available on mobile. Please use the web application.",
+          visibilityTime: 5000,
+        });
+        await logout();
+        return;
+      }
+
+      Toast.show({
+        type: "success",
+        text1: "Login Successful",
+        text2: currentUser?.role === "ADMIN" ? "Welcome to Manager Dashboard!" : "Welcome back!",
+      });
+
+      router.replace(targetRoute);
     } catch (error) {
       console.error("Google login error:", error);
       Toast.show({
