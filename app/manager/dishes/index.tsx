@@ -95,7 +95,7 @@ export default function DishesManager() {
   // Chọn ảnh từ thư viện
   const handlePickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.Images,
+      mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.7,
@@ -109,7 +109,7 @@ export default function DishesManager() {
   // Chụp ảnh mới bằng camera
   const handleTakePhoto = async () => {
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.Images,
+      mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.7,
