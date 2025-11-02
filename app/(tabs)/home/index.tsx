@@ -33,7 +33,6 @@ export default function HomeTab() {
 
   const router = useRouter();
 
-
   // Fetch data from API
 
   const { data: dishTemplatesAPI, isLoading: loadingTemplates } = useDishTemplates();
@@ -130,7 +129,6 @@ export default function HomeTab() {
             <NotificationDropdown>
               <NotificationBell />
             </NotificationDropdown>
-
           </View>
         </View>
 
@@ -253,4 +251,3 @@ export default function HomeTab() {
     </SafeAreaView>
   );
 }
-

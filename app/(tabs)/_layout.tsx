@@ -98,7 +98,6 @@ export default function TabsLayout() {
 
     "manager/index",
     "notifications/index", // Hide manager tab for all mobile users
-
   ];
 
   return (
@@ -165,4 +164,3 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
-

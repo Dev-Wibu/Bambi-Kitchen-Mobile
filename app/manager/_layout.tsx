@@ -498,4 +498,3 @@ export default function ManagerLayout() {
     </Tabs>
   );
 }
-
