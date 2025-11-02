@@ -11,7 +11,8 @@ import { $api } from "@/libs/api";
  * Uses GET /api/inventory-transactions endpoint
  */
 export const useInventoryTransactions = () => {
-  return $api.useQuery("get", "/api/inventory-transactions", {});
+  // Cast path to any to satisfy generated path typings
+  return $api.useQuery("get", "/api/inventory-transactions" as any, {});
 };
 
 /**
@@ -19,7 +20,7 @@ export const useInventoryTransactions = () => {
  * Uses GET /api/inventory-transactions/{id} endpoint
  */
 export const useGetInventoryTransactionById = (id: number) => {
-  return $api.useQuery("get", "/api/inventory-transactions/{id}", {
+  return $api.useQuery("get", "/api/inventory-transactions/{id}" as any, {
     params: { path: { id } },
     enabled: !!id,
   });
@@ -30,7 +31,7 @@ export const useGetInventoryTransactionById = (id: number) => {
  * Uses POST /api/inventory-transactions endpoint
  */
 export const useCreateInventoryTransaction = () => {
-  return $api.useMutation("post", "/api/inventory-transactions");
+  return $api.useMutation("post", "/api/inventory-transactions" as any);
 };
 
 /**
@@ -38,7 +39,7 @@ export const useCreateInventoryTransaction = () => {
  * Uses PUT /api/inventory-transactions/{id} endpoint
  */
 export const useUpdateInventoryTransaction = () => {
-  return $api.useMutation("put", "/api/inventory-transactions/{id}");
+  return $api.useMutation("put", "/api/inventory-transactions/{id}" as any);
 };
 
 /**
@@ -46,7 +47,7 @@ export const useUpdateInventoryTransaction = () => {
  * Uses DELETE /api/inventory-transactions/{id} endpoint
  */
 export const useDeleteInventoryTransaction = () => {
-  return $api.useMutation("delete", "/api/inventory-transactions/{id}");
+  return $api.useMutation("delete", "/api/inventory-transactions/{id}" as any);
 };
 
 // ==================== TRANSFORM FUNCTIONS ====================

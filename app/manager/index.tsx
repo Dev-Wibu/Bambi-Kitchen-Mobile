@@ -1,186 +1,255 @@
-import { Button } from "@/components/ui/button";
-import { Text } from "@/components/ui/text";
-import { useAuth } from "@/hooks/useAuth";
-import { MaterialIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import React from "react";
+
 import { ScrollView, TouchableOpacity, View } from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
+
 import Toast from "react-native-toast-message";
+
+import DonutProgress from "@/components/DonutProgress";
+
+import { Text } from "@/components/ui/text";
+
+import { useAuth } from "@/hooks/useAuth";
+
+import { useAccounts } from "@/services/accountService";
+
+import { useDishes } from "@/services/dishService";
+
+import { useIngredients } from "@/services/ingredientService";
+
+import { useNotifications } from "@/services/notificationService";
+
+import { MaterialIcons } from "@expo/vector-icons";
+
+import { useRouter } from "expo-router";
 
 export default function ManagerTab() {
   const { user, logout } = useAuth();
+
   const router = useRouter();
+
+  const { data: notifications } = useNotifications();
+
+  const hasUnread = Array.isArray(notifications) && notifications.some((n: any) => !n.read);
 
   const handleLogout = async () => {
     try {
       await logout();
-      Toast.show({
-        type: "success",
-        text1: "Logged out",
-        text2: "You have been successfully logged out",
-      });
+
+      Toast.show({ type: "success", text1: "Logged out" });
+
       router.replace("/(auth)/login");
-    } catch {
-      Toast.show({
-        type: "error",
-        text1: "Logout Failed",
-        text2: "An error occurred while logging out",
-      });
+    } catch (err) {
+      Toast.show({ type: "error", text1: "Logout failed" });
     }
   };
 
-  return (
-    <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">
-      <ScrollView className="flex-1" contentContainerClassName="px-6 py-8">
-        {/* Header */}
-        <View className="mb-8">
-          <Text className="mb-2 text-3xl font-bold text-[#000000] dark:text-white">
-            Manager Dashboard
-          </Text>
-          <Text className="text-base text-gray-600 dark:text-gray-300">
-            Welcome, {user?.name || "Manager"}!
-          </Text>
-        </View>
+  function DashboardDonutsForManager() {
+    const { data: dishesAPI } = useDishes();
 
-        {/* Role Badge */}
-        <View className="mb-6 rounded-2xl bg-gradient-to-r from-orange-100 to-orange-50 p-6 dark:bg-gray-800">
-          <View className="mb-4 flex-row items-center">
-            <MaterialIcons name="admin-panel-settings" size={24} color="#FF6D00" />
-            <Text className="ml-2 text-lg font-semibold text-[#000000] dark:text-white">
-              Administrator Access
-            </Text>
-          </View>
-          <View className="gap-3">
-            <View>
-              <Text className="text-sm text-[#757575]">Name</Text>
-              <Text className="text-base font-medium text-[#000000] dark:text-white">
-                {user?.name || "N/A"}
-              </Text>
-            </View>
-            <View>
-              <Text className="text-sm text-[#757575]">User ID</Text>
-              <Text className="text-base font-medium text-[#000000] dark:text-white">
-                {user?.userId || "N/A"}
-              </Text>
-            </View>
-            <View>
-              <Text className="text-sm text-[#757575]">Role</Text>
-              <Text className="text-base font-medium text-[#FF6D00]">{user?.role || "N/A"}</Text>
-            </View>
-          </View>
-        </View>
+    const { data: accountsAPI } = useAccounts();
 
-        {/* Management Sections */}
-        <View className="mb-6">
-          <Text className="mb-4 text-xl font-bold text-[#000000] dark:text-white">
-            Management Tools
-          </Text>
-          <View className="gap-4">
-            {/* Account Management */}
+    const { data: ingredientsAPI } = useIngredients();
+
+    const dishesCount = Array.isArray(dishesAPI) ? dishesAPI.length : 0;
+
+    const accountsCount = Array.isArray(accountsAPI) ? accountsAPI.length : 0;
+
+    const ingredientsCount = Array.isArray(ingredientsAPI) ? ingredientsAPI.length : 0;
+
+    const max = Math.max(dishesCount, accountsCount, ingredientsCount, 1);
+
+    const items = [
+      {
+        key: "dishes",
+        label: "Dishes",
+        value: dishesCount,
+        color: "#FF6B6B",
+        route: "/manager/dishes",
+      },
+
+      {
+        key: "accounts",
+        label: "Accounts",
+        value: accountsCount,
+        color: "#34D399",
+        route: "/manager/accounts",
+      },
+
+      {
+        key: "ingredients",
+        label: "Ingredients",
+        value: ingredientsCount,
+        color: "#60A5FA",
+        route: "/manager/ingredients",
+      },
+    ];
+
+    return (
+      <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" }}>
+        {items.map((it) => (
+          <View key={it.key} style={{ width: "48%", marginBottom: 12 }}>
             <TouchableOpacity
-              className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
-              onPress={() => router.push("/manager/accounts")}
-              activeOpacity={0.7}>
-              <View className="mb-2 flex-row items-center">
-                <MaterialIcons name="people" size={20} color="#FF6D00" />
-                <Text className="ml-2 text-base font-semibold text-[#000000] dark:text-white">
-                  Account Management
+              activeOpacity={0.85}
+              onPress={() => router.push(it.route)}
+              style={{ alignItems: "center" }}>
+              <View
+                style={{
+                  alignItems: "center",
+
+                  backgroundColor: "#fff",
+
+                  padding: 12,
+
+                  borderRadius: 16,
+
+                  borderWidth: 1,
+
+                  borderColor: "#F3F4F6",
+                }}>
+                <DonutProgress
+                  value={it.value}
+                  total={max}
+                  color={it.color}
+                  size={116}
+                  strokeWidth={10}
+                  centerValueFontSize={20}
+                />
+
+                <Text style={{ marginTop: 8, fontSize: 13, fontWeight: "600", color: "#111827" }}>
+                  {it.label}
                 </Text>
               </View>
-              <Text className="text-sm text-gray-600 dark:text-gray-300">
-                Manage user accounts and permissions
-              </Text>
+            </TouchableOpacity>
+          </View>
+        ))}
+      </View>
+    );
+  }
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      <ScrollView contentContainerStyle={{ padding: 20 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 12,
+          }}>
+          <View>
+            <Text style={{ fontSize: 28, fontWeight: "700", color: "#000" }}>
+              Manager Dashboard
+            </Text>
+
+            <Text style={{ color: "#6B7280", marginTop: 4 }}>
+              Welcome, {user?.name || "Manager"}!
+            </Text>
+          </View>
+
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Open notifications"
+              onPress={() => router.push("/manager/notifications")}
+              style={{ padding: 6 }}>
+              <MaterialIcons name="notifications" size={22} color="#FF6D00" />
+
+              {hasUnread ? (
+                <View
+                  style={{
+                    position: "absolute",
+                    right: -2,
+                    top: -2,
+                    height: 8,
+                    width: 8,
+                    borderRadius: 8,
+                    backgroundColor: "#FF6D00",
+                  }}
+                />
+              ) : null}
             </TouchableOpacity>
 
-            {/* Dish Management */}
-            <View className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-              <View className="mb-2 flex-row items-center">
-                <MaterialIcons name="restaurant-menu" size={20} color="#FF6D00" />
-                <Text className="ml-2 text-base font-semibold text-[#000000] dark:text-white">
-                  Dish Management
-                </Text>
-              </View>
-              <Text className="text-sm text-gray-600 dark:text-gray-300">
-                Create and manage dishes and menu items
-              </Text>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Logout"
+              onPress={handleLogout}
+              style={{ padding: 6 }}>
+              <MaterialIcons name="logout" size={22} color="#EF4444" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View
+          style={{
+            marginBottom: 16,
+            padding: 12,
+            borderRadius: 12,
+            backgroundColor: "#fff",
+            borderWidth: 1,
+            borderColor: "#F3F4F6",
+          }}>
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+            <MaterialIcons name="admin-panel-settings" size={18} color="#FF6D00" />
+
+            <Text style={{ marginLeft: 8, fontWeight: "600" }}>Administrator</Text>
+          </View>
+
+          <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                borderRadius: 999,
+                backgroundColor: "#F3F4F6",
+              }}>
+              <MaterialIcons name="person" size={14} color="#6B7280" />
+
+              <Text style={{ marginLeft: 8 }}>{user?.name || "N/A"}</Text>
             </View>
 
-            {/* Ingredient Management */}
-            <View className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-              <View className="mb-2 flex-row items-center">
-                <MaterialIcons name="inventory" size={20} color="#FF6D00" />
-                <Text className="ml-2 text-base font-semibold text-[#000000] dark:text-white">
-                  Ingredient Inventory
-                </Text>
-              </View>
-              <Text className="text-sm text-gray-600 dark:text-gray-300">
-                Manage ingredients and inventory levels
-              </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                borderRadius: 999,
+                backgroundColor: "#F3F4F6",
+              }}>
+              <MaterialIcons name="badge" size={14} color="#6B7280" />
+
+              <Text style={{ marginLeft: 8 }}>ID: {user?.userId ?? "-"}</Text>
             </View>
 
-            {/* Order Management */}
-            <View className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-              <View className="mb-2 flex-row items-center">
-                <MaterialIcons name="receipt-long" size={20} color="#FF6D00" />
-                <Text className="ml-2 text-base font-semibold text-[#000000] dark:text-white">
-                  Order Management
-                </Text>
-              </View>
-              <Text className="text-sm text-gray-600 dark:text-gray-300">
-                View and manage customer orders
-              </Text>
-            </View>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                borderRadius: 999,
+                backgroundColor: "#FFF7ED",
+              }}>
+              <MaterialIcons name="verified-user" size={14} color="#FF6D00" />
 
-            {/* Notifications */}
-            <View className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-              <View className="mb-2 flex-row items-center">
-                <MaterialIcons name="notifications" size={20} color="#FF6D00" />
-                <Text className="ml-2 text-base font-semibold text-[#000000] dark:text-white">
-                  Notifications
-                </Text>
-              </View>
-              <Text className="text-sm text-gray-600 dark:text-gray-300">
-                Send notifications to users
+              <Text style={{ marginLeft: 8, color: "#FF6D00", fontWeight: "600" }}>
+                {(user?.role || "N/A").toString()}
               </Text>
             </View>
           </View>
         </View>
 
-        {/* Statistics Card (if ADMIN) */}
-        {user?.role === "ADMIN" && (
-          <View className="mb-6 rounded-2xl bg-blue-50 p-6 dark:bg-gray-800">
-            <Text className="mb-4 text-lg font-semibold text-[#000000] dark:text-white">
-              Quick Stats
-            </Text>
-            <View className="gap-3">
-              <View className="flex-row items-center justify-between">
-                <Text className="text-sm text-gray-600 dark:text-gray-300">Total Users</Text>
-                <Text className="text-base font-bold text-[#FF6D00]">-</Text>
-              </View>
-              <View className="flex-row items-center justify-between">
-                <Text className="text-sm text-gray-600 dark:text-gray-300">Total Orders</Text>
-                <Text className="text-base font-bold text-[#FF6D00]">-</Text>
-              </View>
-              <View className="flex-row items-center justify-between">
-                <Text className="text-sm text-gray-600 dark:text-gray-300">Active Dishes</Text>
-                <Text className="text-base font-bold text-[#FF6D00]">-</Text>
-              </View>
-            </View>
-          </View>
-        )}
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 12 }}>Overview</Text>
 
-        {/* Logout Button */}
-        <View className="mt-auto h-6">
-          <Button
-            className="w-full rounded-3xl bg-red-500 py-1 active:bg-red-600"
-            onPress={handleLogout}>
-            <View className="flex-row items-center gap-2">
-              <MaterialIcons name="logout" size={20} color="white" />
-              <Text className="text-lg font-bold text-white">Logout</Text>
-            </View>
-          </Button>
+          <DashboardDonutsForManager />
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
+
