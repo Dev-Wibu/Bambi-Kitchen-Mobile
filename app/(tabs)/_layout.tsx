@@ -67,7 +67,8 @@ export default function TabsLayout() {
     "manager/ingredient-categories/IngredientCategoryForm",
     "manager/inventory-transactions/index",
     "manager/notifications/index",
-    "manager/index", // Hide manager tab for all mobile users
+    "manager/index",
+    "notifications/index", // Hide manager tab for all mobile users
   ];
 
   return (
@@ -104,13 +105,11 @@ export default function TabsLayout() {
           ),
         }}
       />
+      {/* Notifications page hidden from tab bar - accessible only via NotificationDropdown "See more" button */}
       <Tabs.Screen
         name="notifications/index"
         options={{
-          title: "Notifications",
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="notifications" size={size} color={color} />
-          ),
+          href: null, // Hide from tab bar
         }}
       />
       <Tabs.Screen

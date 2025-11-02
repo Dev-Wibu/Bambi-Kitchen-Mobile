@@ -7,11 +7,18 @@ import {
   useMarkAsRead,
 } from "@/services/notificationService";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
+import { useRouter } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
@@ -20,9 +27,11 @@ export default function NotificationsPage() {
   const { user } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
 
-  const { data: notifications, isLoading, refetch } = useGetNotificationsByAccountId(
-    user?.userId || 0
-  );
+  const {
+    data: notifications,
+    isLoading,
+    refetch,
+  } = useGetNotificationsByAccountId(user?.userId || 0);
   const markAsReadMutation = useMarkAsRead();
   const deleteNotificationMutation = useDeleteNotification();
 
@@ -52,40 +61,36 @@ export default function NotificationsPage() {
   };
 
   const handleDelete = async (id: number) => {
-    Alert.alert(
-      "Xóa thông báo",
-      "Bạn có chắc chắn muốn xóa thông báo này?",
-      [
-        { text: "Hủy", style: "cancel" },
-        {
-          text: "Xóa",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await deleteNotificationMutation.mutateAsync({
-                params: { path: { id } },
-              });
-              refetch();
-              Toast.show({
-                type: "success",
-                text1: "Đã xóa thông báo",
-              });
-            } catch (error) {
-              Toast.show({
-                type: "error",
-                text1: "Lỗi",
-                text2: "Không thể xóa thông báo",
-              });
-            }
-          },
+    Alert.alert("Xóa thông báo", "Bạn có chắc chắn muốn xóa thông báo này?", [
+      { text: "Hủy", style: "cancel" },
+      {
+        text: "Xóa",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await deleteNotificationMutation.mutateAsync({
+              params: { path: { id } },
+            });
+            refetch();
+            Toast.show({
+              type: "success",
+              text1: "Đã xóa thông báo",
+            });
+          } catch (error) {
+            Toast.show({
+              type: "error",
+              text1: "Lỗi",
+              text2: "Không thể xóa thông báo",
+            });
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const handleMarkAllAsRead = async () => {
     const unreadNotifications = notifications?.filter((n) => !n.read) || [];
-    
+
     if (unreadNotifications.length === 0) {
       Toast.show({
         type: "info",
@@ -199,10 +204,8 @@ export default function NotificationsPage() {
                         </Text>
                       </View>
                     </View>
-                    
-                    <Pressable
-                      onPress={() => handleDelete(notification.id!)}
-                      className="p-2">
+
+                    <Pressable onPress={() => handleDelete(notification.id!)} className="p-2">
                       <MaterialIcons name="delete-outline" size={20} color="#EF4444" />
                     </Pressable>
                   </View>

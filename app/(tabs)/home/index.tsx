@@ -1,17 +1,12 @@
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 import { Text } from "@/components/ui/text";
-import {
-  USE_MOCK_DATA,
-  mockDishCategories,
-  mockDishTemplates,
-} from "@/data/mockData";
+import { USE_MOCK_DATA, mockDishCategories, mockDishTemplates } from "@/data/mockData";
 import { useAuth } from "@/hooks/useAuth";
 import { useDishCategories } from "@/services/dishCategoryService";
 import { useDishTemplates } from "@/services/dishService";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -19,7 +14,6 @@ import Toast from "react-native-toast-message";
 export default function HomeTab() {
   const { user } = useAuth();
   const router = useRouter();
-  const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
 
   // Fetch data from API
   const { data: dishTemplatesAPI, isLoading: loadingTemplates } = useDishTemplates();
@@ -57,7 +51,9 @@ export default function HomeTab() {
                 {user?.name || "Welcome"}
               </Text>
             </View>
-            <NotificationBell onPress={() => setShowNotificationDropdown(true)} />
+            <NotificationDropdown>
+              <NotificationBell />
+            </NotificationDropdown>
           </View>
         </View>
 
@@ -151,12 +147,6 @@ export default function HomeTab() {
           </View>
         )}
       </ScrollView>
-
-      {/* Notification Dropdown */}
-      <NotificationDropdown
-        visible={showNotificationDropdown}
-        onClose={() => setShowNotificationDropdown(false)}
-      />
     </SafeAreaView>
   );
 }

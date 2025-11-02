@@ -5,8 +5,6 @@ import {
   useDeleteNotification,
   useMarkAsRead,
   useNotifications,
-  useSendNotificationToAll,
-  useSendNotificationToUser,
 } from "@/services/notificationService";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
