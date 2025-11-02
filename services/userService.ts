@@ -2,7 +2,7 @@ import { $api } from "@/libs/api";
 
 /**
  * Service for user-related operations including password reset and OAuth
- * 
+ *
  * Note: Forgot password and Google OAuth flows use raw fetch/expo-web-browser
  * in their respective components due to backend API design using query params
  * and OAuth redirect flows. Hooks here are provided for consistency but may

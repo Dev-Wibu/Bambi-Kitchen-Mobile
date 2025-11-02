@@ -11,7 +11,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        get: operations["getAllOrders"];
         put: operations["updateOrder"];
         post: operations["createOrder"];
         delete?: never;
@@ -107,6 +107,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /**
+         * Menu
+         * @description Cái endpoint này hiển thị bên menu, chỉ bao gồm những dish active và public
+         */
         get: operations["getAllDishes"];
         put: operations["update_2"];
         /**
@@ -556,6 +560,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/payment/to-account/{accountId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getTotalRevenueToAccount"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/payment/test-payment": {
         parameters: {
             query?: never;
@@ -580,6 +600,54 @@ export interface paths {
             cookie?: never;
         };
         get: operations["handleMomoReturn"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/order/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getOrderById"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/order/user/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getOrdersByUserId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/order/getFeedbacks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getFeedbacks"];
         put?: never;
         post?: never;
         delete?: never;
@@ -756,6 +824,26 @@ export interface paths {
             cookie?: never;
         };
         get: operations["toggleInactive"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/dish/get-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Tất cả các dish
+         * @description Cái endpoint này hiển thị bên admin, bao gồm cả những dish không active và public
+         */
+        get: operations["getAllDishAdmin"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1109,6 +1197,8 @@ export interface components {
             ingredients: {
                 [key: string]: number;
             };
+            /** Format: int32 */
+            usedQuantity?: number;
             /** Format: binary */
             file?: string;
             public?: boolean;
@@ -1134,9 +1224,9 @@ export interface components {
             /** Format: int64 */
             startupDate?: number;
             environment?: components["schemas"]["Environment"];
+            beanDefinitionNames?: string[];
             /** Format: int32 */
             beanDefinitionCount?: number;
-            beanDefinitionNames?: string[];
             parentBeanFactory?: components["schemas"]["BeanFactory"];
             classLoader?: {
                 name?: string;
@@ -1241,8 +1331,8 @@ export interface components {
             defaultProfiles?: string[];
         };
         FilterRegistration: {
-            urlPatternMappings?: string[];
             servletNameMappings?: string[];
+            urlPatternMappings?: string[];
             name?: string;
             className?: string;
             initParameters?: {
@@ -1253,30 +1343,30 @@ export interface components {
         HttpStatus: "100 CONTINUE" | "101 SWITCHING_PROTOCOLS" | "102 PROCESSING" | "103 EARLY_HINTS" | "103 CHECKPOINT" | "200 OK" | "201 CREATED" | "202 ACCEPTED" | "203 NON_AUTHORITATIVE_INFORMATION" | "204 NO_CONTENT" | "205 RESET_CONTENT" | "206 PARTIAL_CONTENT" | "207 MULTI_STATUS" | "208 ALREADY_REPORTED" | "226 IM_USED" | "300 MULTIPLE_CHOICES" | "301 MOVED_PERMANENTLY" | "302 FOUND" | "302 MOVED_TEMPORARILY" | "303 SEE_OTHER" | "304 NOT_MODIFIED" | "305 USE_PROXY" | "307 TEMPORARY_REDIRECT" | "308 PERMANENT_REDIRECT" | "400 BAD_REQUEST" | "401 UNAUTHORIZED" | "402 PAYMENT_REQUIRED" | "403 FORBIDDEN" | "404 NOT_FOUND" | "405 METHOD_NOT_ALLOWED" | "406 NOT_ACCEPTABLE" | "407 PROXY_AUTHENTICATION_REQUIRED" | "408 REQUEST_TIMEOUT" | "409 CONFLICT" | "410 GONE" | "411 LENGTH_REQUIRED" | "412 PRECONDITION_FAILED" | "413 PAYLOAD_TOO_LARGE" | "413 REQUEST_ENTITY_TOO_LARGE" | "414 URI_TOO_LONG" | "414 REQUEST_URI_TOO_LONG" | "415 UNSUPPORTED_MEDIA_TYPE" | "416 REQUESTED_RANGE_NOT_SATISFIABLE" | "417 EXPECTATION_FAILED" | "418 I_AM_A_TEAPOT" | "419 INSUFFICIENT_SPACE_ON_RESOURCE" | "420 METHOD_FAILURE" | "421 DESTINATION_LOCKED" | "422 UNPROCESSABLE_ENTITY" | "423 LOCKED" | "424 FAILED_DEPENDENCY" | "425 TOO_EARLY" | "426 UPGRADE_REQUIRED" | "428 PRECONDITION_REQUIRED" | "429 TOO_MANY_REQUESTS" | "431 REQUEST_HEADER_FIELDS_TOO_LARGE" | "451 UNAVAILABLE_FOR_LEGAL_REASONS" | "500 INTERNAL_SERVER_ERROR" | "501 NOT_IMPLEMENTED" | "502 BAD_GATEWAY" | "503 SERVICE_UNAVAILABLE" | "504 GATEWAY_TIMEOUT" | "505 HTTP_VERSION_NOT_SUPPORTED" | "506 VARIANT_ALSO_NEGOTIATES" | "507 INSUFFICIENT_STORAGE" | "508 LOOP_DETECTED" | "509 BANDWIDTH_LIMIT_EXCEEDED" | "510 NOT_EXTENDED" | "511 NETWORK_AUTHENTICATION_REQUIRED";
         HttpStatusCode: {
             error?: boolean;
-            is1xxInformational?: boolean;
             is5xxServerError?: boolean;
             is4xxClientError?: boolean;
             is3xxRedirection?: boolean;
+            is1xxInformational?: boolean;
             is2xxSuccessful?: boolean;
         };
         JspConfigDescriptor: {
-            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
             taglibs?: components["schemas"]["TaglibDescriptor"][];
+            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
             buffer?: string;
-            scriptingInvalid?: string;
-            errorOnELNotFound?: string;
-            isXml?: string;
-            includePreludes?: string[];
-            pageEncoding?: string;
-            includeCodas?: string[];
-            elIgnored?: string;
-            deferredSyntaxAllowedAsLiteral?: string;
-            trimDirectiveWhitespaces?: string;
-            errorOnUndeclaredNamespace?: string;
             defaultContentType?: string;
             urlPatterns?: string[];
+            elIgnored?: string;
+            pageEncoding?: string;
+            includeCodas?: string[];
+            includePreludes?: string[];
+            trimDirectiveWhitespaces?: string;
+            deferredSyntaxAllowedAsLiteral?: string;
+            errorOnUndeclaredNamespace?: string;
+            isXml?: string;
+            errorOnELNotFound?: string;
+            scriptingInvalid?: string;
         };
         RedirectView: {
             applicationContext?: components["schemas"]["ApplicationContext"];
@@ -1299,15 +1389,15 @@ export interface components {
             expandUriTemplateVariables?: boolean;
             propagateQueryParams?: boolean;
             hosts?: string[];
-            propagateQueryProperties?: boolean;
             redirectView?: boolean;
-            attributesCSV?: string;
+            propagateQueryProperties?: boolean;
             attributes?: {
                 [key: string]: string;
             };
             attributesMap?: {
                 [key: string]: unknown;
             };
+            attributesCSV?: string;
         };
         ServletContext: {
             classLoader?: {
@@ -1332,27 +1422,27 @@ export interface components {
             /** Format: int32 */
             minorVersion?: number;
             attributeNames?: unknown;
-            initParameterNames?: unknown;
             contextPath?: string;
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             virtualServerName?: string;
+            initParameterNames?: unknown;
+            requestCharacterEncoding?: string;
+            responseCharacterEncoding?: string;
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            filterRegistrations?: {
+                [key: string]: components["schemas"]["FilterRegistration"];
+            };
+            jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
             /** Format: int32 */
             effectiveMajorVersion?: number;
             servletContextName?: string;
             /** Format: int32 */
             effectiveMinorVersion?: number;
-            jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            filterRegistrations?: {
-                [key: string]: components["schemas"]["FilterRegistration"];
-            };
             /** Format: int32 */
             sessionTimeout?: number;
             serverInfo?: string;
             sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            responseCharacterEncoding?: string;
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            requestCharacterEncoding?: string;
             servletRegistrations?: {
                 [key: string]: components["schemas"]["ServletRegistration"];
             };
@@ -1367,6 +1457,9 @@ export interface components {
             };
         };
         SessionCookieConfig: {
+            domain?: string;
+            /** Format: int32 */
+            maxAge?: number;
             name?: string;
             path?: string;
             attributes?: {
@@ -1374,9 +1467,6 @@ export interface components {
             };
             /** @deprecated */
             comment?: string;
-            domain?: string;
-            /** Format: int32 */
-            maxAge?: number;
             secure?: boolean;
             httpOnly?: boolean;
         };
@@ -1405,6 +1495,48 @@ export interface components {
             quantity?: number;
             dish?: components["schemas"]["Dish"];
         };
+        IngredientsGetByDishResponse: {
+            /** Format: int32 */
+            id?: number;
+            name?: string;
+            description?: string;
+            /** Format: int32 */
+            price?: number;
+            imageUrl?: string;
+            publicId?: string;
+            account?: components["schemas"]["Account"];
+            ingredients?: components["schemas"]["Ingredient"][];
+            /** @enum {string} */
+            dishType?: "PRESET" | "CUSTOM";
+            public?: boolean;
+            active?: boolean;
+        };
+        Payment: {
+            /** Format: int32 */
+            orderId?: number;
+            /** Format: int32 */
+            accountId?: number;
+            /** Format: int64 */
+            amount?: number;
+            paymentMethod?: string;
+            status?: string;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+            transactionId?: string;
+            note?: string;
+        };
+        FeedbackDto: {
+            /** Format: int32 */
+            orderId?: number;
+            /** Format: int32 */
+            ranking?: number;
+            comment?: string;
+            accountName?: string;
+            /** Format: int32 */
+            accountId?: number;
+        };
     };
     responses: never;
     parameters: never;
@@ -1414,6 +1546,26 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    getAllOrders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Orders"][];
+                };
+            };
+        };
+    };
     updateOrder: {
         parameters: {
             query?: never;
@@ -2531,7 +2683,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Recipe"][];
+                    "*/*": components["schemas"]["IngredientsGetByDishResponse"];
                 };
             };
         };
@@ -2556,6 +2708,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": string;
+                };
+            };
+        };
+    };
+    getTotalRevenueToAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Payment"][];
                 };
             };
         };
@@ -2604,6 +2778,70 @@ export interface operations {
                     "*/*": {
                         [key: string]: unknown;
                     };
+                };
+            };
+        };
+    };
+    getOrderById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Orders"];
+                };
+            };
+        };
+    };
+    getOrdersByUserId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Orders"][];
+                };
+            };
+        };
+    };
+    getFeedbacks: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["FeedbackDto"][];
                 };
             };
         };
@@ -2908,6 +3146,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": boolean;
+                };
+            };
+        };
+    };
+    getAllDishAdmin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Dish"][];
                 };
             };
         };

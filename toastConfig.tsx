@@ -1,5 +1,4 @@
 import { BaseToast, ErrorToast } from "react-native-toast-message";
-import { View, Text } from "react-native";
 
 /**
  * Custom toast configuration for react-native-toast-message
