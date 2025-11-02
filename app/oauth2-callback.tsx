@@ -1,11 +1,10 @@
-import { useAuth } from "@/hooks/useAuth";
+import type { AuthLoginData } from "@/interfaces/auth.interface";
+import { fetchClient } from "@/libs/api";
 import { extractRole } from "@/services/accountService";
 import { useAuthStore } from "@/stores/authStore";
-import type { AuthLoginData } from "@/interfaces/auth.interface";
-import { fetchClient, API_BASE_URL } from "@/libs/api";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, View, Text } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
@@ -58,7 +57,7 @@ export default function OAuth2Callback() {
           });
 
           // Navigate based on role
-          const targetRoute = authData.role === "ADMIN" ? "/manager" : "/home";
+          const targetRoute = authData.role === "ADMIN" ? "/manager" : "/(tabs)/home";
           router.replace(targetRoute);
         } else {
           throw new Error("Failed to fetch user information");
@@ -71,7 +70,7 @@ export default function OAuth2Callback() {
           text2: error instanceof Error ? error.message : "Please try again",
         });
         // Redirect to login on error
-        router.replace("/login");
+        router.replace("/(auth)/login");
       } finally {
         setIsProcessing(false);
       }

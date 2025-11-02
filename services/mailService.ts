@@ -2,7 +2,7 @@ import { $api } from "@/libs/api";
 
 /**
  * Service for mail-related operations including OTP sending and verification
- * 
+ *
  * Note: OTP operations use raw fetch in forgot-password.tsx due to backend
  * API design using query params. Hooks here are provided for consistency.
  */

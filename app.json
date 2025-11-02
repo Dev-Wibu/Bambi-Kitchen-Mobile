@@ -11,6 +11,7 @@
     "owner": "dev-wibu",
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.devwibu.fe",
       "infoPlist": {
         "NSCameraUsageDescription": "$(PRODUCT_NAME) needs access to your Camera.",
         "NSMicrophoneUsageDescription": "$(PRODUCT_NAME) needs access to your Microphone."
@@ -25,10 +26,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "permissions": [
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
-      ],
+      "permissions": ["android.permission.CAMERA", "android.permission.RECORD_AUDIO"],
       "package": "com.anonymous.FE"
     },
     "web": {
@@ -55,9 +53,7 @@
         {
           "icon": "./assets/images/notification-icon.png",
           "color": "#FF6D00",
-          "sounds": [
-            "./assets/sounds/notification.wav"
-          ],
+          "sounds": ["./assets/sounds/notification.wav"],
           "mode": "production"
         }
       ],
