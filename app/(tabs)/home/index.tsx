@@ -22,8 +22,6 @@ import { MaterialIcons } from "@expo/vector-icons";
 
 import { useRouter } from "expo-router";
 
-import { useState } from "react";
-
 import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -34,8 +32,6 @@ export default function HomeTab() {
   const { user } = useAuth();
 
   const router = useRouter();
-
-  const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
 
   // Fetch data from API
 
@@ -130,7 +126,9 @@ export default function HomeTab() {
               </Text>
             </View>
 
-            <NotificationBell onPress={() => setShowNotificationDropdown(true)} />
+            <NotificationDropdown>
+              <NotificationBell />
+            </NotificationDropdown>
           </View>
         </View>
 
@@ -250,16 +248,6 @@ export default function HomeTab() {
           </View>
         )}
       </ScrollView>
-
-      {/* Dashboard summary (Donut grid) was rendered inside the ScrollView above */}
-
-      {/* Notification Dropdown */}
-
-      <NotificationDropdown
-        visible={showNotificationDropdown}
-        onClose={() => setShowNotificationDropdown(false)}
-      />
     </SafeAreaView>
   );
 }
-
