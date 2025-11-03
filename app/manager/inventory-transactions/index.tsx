@@ -31,7 +31,7 @@ export default function InventoryTransactionManagement() {
 
   // Query hooks
 
-  const { data: transactions, isLoading } = useInventoryTransactions();
+  const { data: transactions, isLoading, refetch } = useInventoryTransactions();
 
   const deleteMutation = useDeleteInventoryTransaction();
 
@@ -55,7 +55,7 @@ export default function InventoryTransactionManagement() {
         text2: "Transaction deleted successfully",
       });
 
-      queryClient.invalidateQueries({ queryKey: ["/api/inventory-transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/inventory-transaction"] });
 
       setDeleteConfirm(null);
     } catch {
@@ -154,6 +154,11 @@ export default function InventoryTransactionManagement() {
                 </Text>
               </View>
             </View>
+            <TouchableOpacity
+              onPress={() => refetch()}
+              style={{ backgroundColor: "#F3F4F6", borderRadius: 24, padding: 8 }}>
+              <MaterialIcons name="refresh" size={28} color="#FF6D00" />
+            </TouchableOpacity>
           </View>
         </View>
 

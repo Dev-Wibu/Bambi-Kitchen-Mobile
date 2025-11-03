@@ -28,7 +28,7 @@ export default function AccountManagement() {
   const queryClient = useQueryClient();
 
   // Query hooks
-  const { data: accounts, isLoading } = useAccounts();
+  const { data: accounts, isLoading, refetch } = useAccounts();
   const createMutation = useCreateAccount();
   const updateMutation = useUpdateAccount();
   const deleteMutation = useDeleteAccount();
@@ -62,6 +62,7 @@ export default function AccountManagement() {
       });
 
       queryClient.invalidateQueries({ queryKey: ["/api/account"] });
+      refetch(); // Reload the list after delete
       setDeleteConfirm(null);
     } catch {
       Toast.show({
@@ -129,6 +130,7 @@ export default function AccountManagement() {
       }
 
       queryClient.invalidateQueries({ queryKey: ["/api/account"] });
+      refetch(); // Reload the list after create/update
       setIsFormVisible(false);
       setSelectedAccount(null);
     } catch {
@@ -225,12 +227,19 @@ export default function AccountManagement() {
                 </Text>
               </View>
             </View>
-            <Button className="bg-[#FF6D00] active:bg-[#FF4D00]" onPress={handleAdd}>
-              <View className="flex-row items-center gap-2">
-                <MaterialIcons name="add" size={20} color="white" />
-                <Text className="font-semibold text-white">Add</Text>
-              </View>
-            </Button>
+            <View className="flex-row gap-2">
+              <TouchableOpacity
+                onPress={() => refetch()}
+                style={{ backgroundColor: "#F3F4F6", borderRadius: 8, padding: 8 }}>
+                <MaterialIcons name="refresh" size={24} color="#FF6D00" />
+              </TouchableOpacity>
+              <Button className="bg-[#FF6D00] active:bg-[#FF4D00]" onPress={handleAdd}>
+                <View className="flex-row items-center gap-2">
+                  <MaterialIcons name="add" size={20} color="white" />
+                  <Text className="font-semibold text-white">Add</Text>
+                </View>
+              </Button>
+            </View>
           </View>
         </View>
 

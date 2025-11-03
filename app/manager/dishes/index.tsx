@@ -165,15 +165,48 @@ export default function DishesManager() {
       };
       if (id) request.id = id;
       
-      // Gửi request object trực tiếp, không stringify
-      let params: any = { query: { request } };
-      await createOrUpdateDish.mutateAsync({ params });
+      // Use custom fetch to handle deeply-nested objects
+      // Backend expects @ModelAttribute which is form-encoded data
+      const formData = new URLSearchParams();
+      formData.append('name', request.name);
+      if (request.description) formData.append('description', request.description);
+      formData.append('price', String(request.price));
+      formData.append('isPublic', String(request.public));
+      formData.append('isActive', String(request.active));
+      formData.append('dishType', request.dishType);
+      if (request.file) formData.append('file', request.file);
+      formData.append('account.id', String(request.account.id));
+      // Serialize ingredients as individual form params
+      Object.entries(request.ingredients).forEach(([key, value]) => {
+        formData.append(`ingredients[${key}]`, String(value));
+      });
+      if (request.id) formData.append('id', String(request.id));
+      
+      const response = await fetch('https://bambi.kdz.asia/api/dish', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': `Bearer ${useAuthStore.getState().token}`,
+        },
+        body: formData.toString(),
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to save dish');
+      }
+      
       Toast.show({ type: "success", text1: id ? "Dish updated" : "Dish created" });
       resetForm();
-      refetch();
+      setModalVisible(false);
+      refetch(); // Reload the list after create/update
     } catch (error) {
       console.log("Dish create/update error:", error);
-      Toast.show({ type: "error", text1: id ? "Update failed" : "Create failed" });
+      Toast.show({ 
+        type: "error", 
+        text1: id ? "Update failed" : "Create failed",
+        text2: error instanceof Error ? error.message : "Please try again"
+      });
     } finally {
       setSubmitting(false);
     }
@@ -190,14 +223,21 @@ export default function DishesManager() {
           </TouchableOpacity>
           <Text className="text-2xl font-bold text-[#FF6D00]">Dishes</Text>
         </View>
-        <TouchableOpacity
-          onPress={() => {
-            resetForm();
-            setModalVisible(true);
-          }}
-          style={{ backgroundColor: "#FF6D00", borderRadius: 24, padding: 8 }}>
-          <MaterialIcons name="add" size={28} color="#fff" />
-        </TouchableOpacity>
+        <View className="flex-row gap-2">
+          <TouchableOpacity
+            onPress={() => refetch()}
+            style={{ backgroundColor: "#F3F4F6", borderRadius: 24, padding: 8 }}>
+            <MaterialIcons name="refresh" size={28} color="#FF6D00" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              resetForm();
+              setModalVisible(true);
+            }}
+            style={{ backgroundColor: "#FF6D00", borderRadius: 24, padding: 8 }}>
+            <MaterialIcons name="add" size={28} color="#fff" />
+          </TouchableOpacity>
+        </View>
       </View>
       {isLoading ? (
         <ActivityIndicator color="#FF6D00" style={{ marginTop: 32 }} />
