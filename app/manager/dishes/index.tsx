@@ -7,6 +7,7 @@ import {
 import { useAuthStore } from "@/stores/authStore";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -22,6 +23,7 @@ import {
 import Toast from "react-native-toast-message";
 
 export default function DishesManager() {
+  const router = useRouter();
   // Hàm upload ảnh lên Cloudinary
   async function uploadImageToCloudinary(uri: string): Promise<string | null> {
     const data = new FormData();
@@ -144,8 +146,12 @@ export default function DishesManager() {
         return;
       }
       const account = { id: user.userId };
-      // Đảm bảo ingredients luôn là object không null
-      const safeIngredients = ingredients && typeof ingredients === "object" ? ingredients : {};
+      // Đảm bảo ingredients luôn là object không null và không rỗng
+      // Backend yêu cầu ingredients phải có ít nhất 1 item
+      const safeIngredients = ingredients && typeof ingredients === "object" && Object.keys(ingredients).length > 0 
+        ? ingredients 
+        : { 1: 1 }; // Default: ingredient ID 1 với số lượng 1
+      
       const request: any = {
         name,
         description,
@@ -158,7 +164,9 @@ export default function DishesManager() {
         ingredients: safeIngredients,
       };
       if (id) request.id = id;
-      let params: any = { query: { request: JSON.stringify(request) } };
+      
+      // Gửi request object trực tiếp, không stringify
+      let params: any = { query: { request } };
       await createOrUpdateDish.mutateAsync({ params });
       Toast.show({ type: "success", text1: id ? "Dish updated" : "Dish created" });
       resetForm();
@@ -173,8 +181,15 @@ export default function DishesManager() {
 
   return (
     <View className="flex-1 bg-white dark:bg-gray-900">
-      <View className="flex-row items-center justify-between px-4 py-3">
-        <Text className="text-2xl font-bold text-[#FF6D00]">Dishes</Text>
+      <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+        <View className="flex-row items-center gap-3 flex-1">
+          <TouchableOpacity 
+            onPress={() => router.back()}
+            className="mr-2">
+            <MaterialIcons name="arrow-back" size={24} color="#FF6D00" />
+          </TouchableOpacity>
+          <Text className="text-2xl font-bold text-[#FF6D00]">Dishes</Text>
+        </View>
         <TouchableOpacity
           onPress={() => {
             resetForm();

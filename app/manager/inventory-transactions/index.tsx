@@ -13,6 +13,8 @@ import { MaterialIcons } from "@expo/vector-icons";
 
 import { useQueryClient } from "@tanstack/react-query";
 
+import { useRouter } from "expo-router";
+
 import { useState } from "react";
 
 import { ActivityIndicator, ScrollView, TouchableOpacity, View } from "react-native";
@@ -22,6 +24,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
 export default function InventoryTransactionManagement() {
+  const router = useRouter();
   const [deleteConfirm, setDeleteConfirm] = useState<InventoryTransaction | null>(null);
 
   const queryClient = useQueryClient();
@@ -135,14 +138,21 @@ export default function InventoryTransactionManagement() {
 
         <View className="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
           <View className="flex-row items-center justify-between">
-            <View>
-              <Text className="text-2xl font-bold text-[#000000] dark:text-white">
-                Inventory Transaction Management
-              </Text>
+            <View className="flex-row items-center gap-3 flex-1">
+              <TouchableOpacity 
+                onPress={() => router.back()}
+                className="mr-2">
+                <MaterialIcons name="arrow-back" size={24} color="#FF6D00" />
+              </TouchableOpacity>
+              <View className="flex-1">
+                <Text className="text-2xl font-bold text-[#000000] dark:text-white">
+                  Inventory Transaction Management
+                </Text>
 
-              <Text className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                View and manage inventory transactions
-              </Text>
+                <Text className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                  View and manage inventory transactions
+                </Text>
+              </View>
             </View>
           </View>
         </View>

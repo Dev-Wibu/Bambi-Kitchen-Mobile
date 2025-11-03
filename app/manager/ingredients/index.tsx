@@ -16,6 +16,8 @@ import { MaterialIcons } from "@expo/vector-icons";
 
 import { useQueryClient } from "@tanstack/react-query";
 
+import { useRouter } from "expo-router";
+
 import { useState } from "react";
 
 import { ActivityIndicator, ScrollView, TextInput, TouchableOpacity, View } from "react-native";
@@ -25,6 +27,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
 export default function IngredientManagement() {
+  const router = useRouter();
   const [isFormVisible, setIsFormVisible] = useState(false);
 
   const [selectedIngredient, setSelectedIngredient] = useState<Ingredient | null>(null);
@@ -139,9 +142,16 @@ export default function IngredientManagement() {
 
       <View className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
         <View className="mb-3 flex-row items-center justify-between">
-          <Text className="text-2xl font-bold text-gray-900 dark:text-white">
-            Ingredients Management
-          </Text>
+          <View className="flex-row items-center gap-3 flex-1">
+            <TouchableOpacity 
+              onPress={() => router.back()}
+              className="mr-2">
+              <MaterialIcons name="arrow-back" size={24} color="#FF6D00" />
+            </TouchableOpacity>
+            <Text className="text-2xl font-bold text-gray-900 dark:text-white">
+              Ingredients Management
+            </Text>
+          </View>
 
           <Button onPress={handleAdd} className="bg-[#FF6D00]">
             <MaterialIcons name="add" size={20} color="white" />
