@@ -148,10 +148,11 @@ export default function DishesManager() {
       const account = { id: user.userId };
       // Đảm bảo ingredients luôn là object không null và không rỗng
       // Backend yêu cầu ingredients phải có ít nhất 1 item
-      const safeIngredients = ingredients && typeof ingredients === "object" && Object.keys(ingredients).length > 0 
-        ? ingredients 
-        : { 1: 1 }; // Default: ingredient ID 1 với số lượng 1
-      
+      const safeIngredients =
+        ingredients && typeof ingredients === "object" && Object.keys(ingredients).length > 0
+          ? ingredients
+          : { 1: 1 }; // Default: ingredient ID 1 với số lượng 1
+
       const request: any = {
         name,
         description,
@@ -164,48 +165,48 @@ export default function DishesManager() {
         ingredients: safeIngredients,
       };
       if (id) request.id = id;
-      
+
       // Use custom fetch to handle deeply-nested objects
       // Backend expects @ModelAttribute which is form-encoded data
       const formData = new URLSearchParams();
-      formData.append('name', request.name);
-      if (request.description) formData.append('description', request.description);
-      formData.append('price', String(request.price));
-      formData.append('isPublic', String(request.public));
-      formData.append('isActive', String(request.active));
-      formData.append('dishType', request.dishType);
-      if (request.file) formData.append('file', request.file);
-      formData.append('account.id', String(request.account.id));
+      formData.append("name", request.name);
+      if (request.description) formData.append("description", request.description);
+      formData.append("price", String(request.price));
+      formData.append("isPublic", String(request.public));
+      formData.append("isActive", String(request.active));
+      formData.append("dishType", request.dishType);
+      if (request.file) formData.append("file", request.file);
+      formData.append("account.id", String(request.account.id));
       // Serialize ingredients as individual form params
       Object.entries(request.ingredients).forEach(([key, value]) => {
         formData.append(`ingredients[${key}]`, String(value));
       });
-      if (request.id) formData.append('id', String(request.id));
-      
-      const response = await fetch('https://bambi.kdz.asia/api/dish', {
-        method: 'POST',
+      if (request.id) formData.append("id", String(request.id));
+
+      const response = await fetch("https://bambi.kdz.asia/api/dish", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': `Bearer ${useAuthStore.getState().token}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Bearer ${useAuthStore.getState().token}`,
         },
         body: formData.toString(),
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || 'Failed to save dish');
+        throw new Error(errorText || "Failed to save dish");
       }
-      
+
       Toast.show({ type: "success", text1: id ? "Dish updated" : "Dish created" });
       resetForm();
       setModalVisible(false);
       refetch(); // Reload the list after create/update
     } catch (error) {
       console.log("Dish create/update error:", error);
-      Toast.show({ 
-        type: "error", 
+      Toast.show({
+        type: "error",
         text1: id ? "Update failed" : "Create failed",
-        text2: error instanceof Error ? error.message : "Please try again"
+        text2: error instanceof Error ? error.message : "Please try again",
       });
     } finally {
       setSubmitting(false);
@@ -214,11 +215,9 @@ export default function DishesManager() {
 
   return (
     <View className="flex-1 bg-white dark:bg-gray-900">
-      <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-        <View className="flex-row items-center gap-3 flex-1">
-          <TouchableOpacity 
-            onPress={() => router.back()}
-            className="mr-2">
+      <View className="flex-row items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
+        <View className="flex-1 flex-row items-center gap-3">
+          <TouchableOpacity onPress={() => router.back()} className="mr-2">
             <MaterialIcons name="arrow-back" size={24} color="#FF6D00" />
           </TouchableOpacity>
           <Text className="text-2xl font-bold text-[#FF6D00]">Dishes</Text>
