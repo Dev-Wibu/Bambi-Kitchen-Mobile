@@ -12,6 +12,7 @@ import {
 } from "@/services/accountService";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -19,6 +20,7 @@ import Toast from "react-native-toast-message";
 import AccountForm from "./AccountForm";
 
 export default function AccountManagement() {
+  const router = useRouter();
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<Account | null>(null);
@@ -26,7 +28,7 @@ export default function AccountManagement() {
   const queryClient = useQueryClient();
 
   // Query hooks
-  const { data: accounts, isLoading } = useAccounts();
+  const { data: accounts, isLoading, refetch } = useAccounts();
   const createMutation = useCreateAccount();
   const updateMutation = useUpdateAccount();
   const deleteMutation = useDeleteAccount();
@@ -60,6 +62,7 @@ export default function AccountManagement() {
       });
 
       queryClient.invalidateQueries({ queryKey: ["/api/account"] });
+      refetch(); // Reload the list after delete
       setDeleteConfirm(null);
     } catch {
       Toast.show({
@@ -127,6 +130,7 @@ export default function AccountManagement() {
       }
 
       queryClient.invalidateQueries({ queryKey: ["/api/account"] });
+      refetch(); // Reload the list after create/update
       setIsFormVisible(false);
       setSelectedAccount(null);
     } catch {
@@ -208,20 +212,34 @@ export default function AccountManagement() {
         {/* Header */}
         <View className="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
           <View className="flex-row items-center justify-between">
-            <View>
-              <Text className="text-2xl font-bold text-[#000000] dark:text-white">
-                Account Management
-              </Text>
-              <Text className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                Manage user accounts and permissions
-              </Text>
-            </View>
-            <Button className="bg-[#FF6D00] active:bg-[#FF4D00]" onPress={handleAdd}>
-              <View className="flex-row items-center gap-2">
-                <MaterialIcons name="add" size={20} color="white" />
-                <Text className="font-semibold text-white">Add</Text>
+            <View className="flex-row items-center gap-3 flex-1">
+              <TouchableOpacity 
+                onPress={() => router.back()}
+                className="mr-2">
+                <MaterialIcons name="arrow-back" size={24} color="#FF6D00" />
+              </TouchableOpacity>
+              <View className="flex-1">
+                <Text className="text-2xl font-bold text-[#000000] dark:text-white">
+                  Account Management
+                </Text>
+                <Text className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                  Manage user accounts and permissions
+                </Text>
               </View>
-            </Button>
+            </View>
+            <View className="flex-row gap-2">
+              <TouchableOpacity
+                onPress={() => refetch()}
+                style={{ backgroundColor: "#F3F4F6", borderRadius: 8, padding: 8 }}>
+                <MaterialIcons name="refresh" size={24} color="#FF6D00" />
+              </TouchableOpacity>
+              <Button className="bg-[#FF6D00] active:bg-[#FF4D00]" onPress={handleAdd}>
+                <View className="flex-row items-center gap-2">
+                  <MaterialIcons name="add" size={20} color="white" />
+                  <Text className="font-semibold text-white">Add</Text>
+                </View>
+              </Button>
+            </View>
           </View>
         </View>
 
