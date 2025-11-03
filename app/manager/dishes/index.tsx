@@ -289,19 +289,7 @@ export default function DishesManager() {
           }
         />
       )}
-      <TouchableOpacity
-        onPress={() => refetch()}
-        style={{
-          position: "absolute",
-          right: 24,
-          bottom: 24,
-          backgroundColor: "#FF6D00",
-          borderRadius: 24,
-          padding: 12,
-          elevation: 2,
-        }}>
-        <MaterialIcons name="refresh" size={24} color="#fff" />
-      </TouchableOpacity>
+
       <Modal
         visible={modalVisible}
         animationType="slide"
