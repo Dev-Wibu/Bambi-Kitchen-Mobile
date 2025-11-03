@@ -41,3 +41,71 @@ export const useConfirmOrder = () => {
 export const useCancelOrder = () => {
   return $api.useMutation("get", "/api/test/order/cancel/{orderId}");
 };
+
+// ==================== ORDER QUERY HOOKS ====================
+
+/**
+ * Hook for getting all orders
+ * Uses GET /api/order endpoint
+ */
+export const useOrders = () => {
+  return $api.useQuery("get", "/api/order");
+};
+
+/**
+ * Hook for getting order by ID
+ * Uses GET /api/order/{id} endpoint
+ */
+export const useOrderById = (id: number) => {
+  return $api.useQuery("get", "/api/order/{id}", {
+    params: { path: { id } },
+  });
+};
+
+/**
+ * Hook for getting orders by user ID
+ * Uses GET /api/order/user/{userId} endpoint
+ */
+export const useOrdersByUserId = (userId: number) => {
+  return $api.useQuery("get", "/api/order/user/{userId}", {
+    params: { path: { userId } },
+  });
+};
+
+/**
+ * Hook for getting feedbacks
+ * Uses GET /api/order/getFeedbacks endpoint
+ */
+export const useFeedbacks = () => {
+  return $api.useQuery("get", "/api/order/getFeedbacks");
+};
+
+// ==================== ORDER DETAIL HOOKS ====================
+
+/**
+ * Hook for getting all order details
+ * Uses GET /api/order-detail endpoint
+ */
+export const useOrderDetails = () => {
+  return $api.useQuery("get", "/api/order-detail");
+};
+
+/**
+ * Hook for getting order detail by ID
+ * Uses GET /api/order-detail/{detailId} endpoint
+ */
+export const useOrderDetailById = (detailId: number) => {
+  return $api.useQuery("get", "/api/order-detail/{detailId}", {
+    params: { path: { detailId } },
+  });
+};
+
+/**
+ * Hook for getting order details by order ID
+ * Uses GET /api/order-detail/by-order/{orderId} endpoint
+ */
+export const useOrderDetailsByOrderId = (orderId: number) => {
+  return $api.useQuery("get", "/api/order-detail/by-order/{orderId}", {
+    params: { path: { orderId } },
+  });
+};

@@ -31,3 +31,13 @@ export type OrderItemDTO = components["schemas"]["OrderItemDTO"];
  * Recipe item DTO (used in OrderItemDTO)
  */
 export type RecipeItemDTO = components["schemas"]["RecipeItemDTO"];
+
+/**
+ * Order detail type (individual items in an order)
+ */
+export type OrderDetail = components["schemas"]["OrderDetail"];
+
+/**
+ * Feedback DTO
+ */
+export type FeedbackDto = components["schemas"]["FeedbackDto"];
