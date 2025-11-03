@@ -4,25 +4,19 @@ import { NotificationDropdown } from "@/components/notifications/NotificationDro
 
 import { Text } from "@/components/ui/text";
 
-import { USE_MOCK_DATA, mockDishCategories, mockDishTemplates } from "@/data/mockData";
+import { USE_MOCK_DATA, mockDishTemplates } from "@/data/mockData";
 
 import { useAuth } from "@/hooks/useAuth";
 
-import { useDishCategories } from "@/services/dishCategoryService";
-
-import DonutProgress from "@/components/DonutProgress";
-
-import { useAccounts } from "@/services/accountService";
+import { useIngredientCategories } from "@/services/ingredientCategoryService";
 
 import { useDishTemplates, useDishes } from "@/services/dishService";
 
-import { useIngredients } from "@/services/ingredientService";
+import { ActivityIndicator, Image, Pressable, ScrollView, View } from "react-native";
 
 import { MaterialIcons } from "@expo/vector-icons";
 
 import { useRouter } from "expo-router";
-
-import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -33,11 +27,62 @@ export default function HomeTab() {
 
   const router = useRouter();
 
+  // Helpers: normalize text (remove Vietnamese diacritics) then map to an icon name
+
+  const normalize = (s?: string) =>
+    (s || "")
+
+      .normalize("NFD")
+
+      .replace(/[\u0300-\u036f]/g, "")
+
+      .toLowerCase();
+
+  // Map ingredient category name (VN + EN keywords) to a decorative MaterialIcons icon
+
+  const mapIngredientIcon = (name?: string): string => {
+    const n = normalize(name);
+
+    if (!n) return "restaurant";
+
+    if (/(thit|bo|heo|ga|protein|meat|beef|pork|chicken)/.test(n)) return "set-meal";
+
+    if (/(rau|rau tươi|salad|la|herb|vegetable|veg|greens)/.test(n)) return "eco";
+
+    if (/(hai san|ca|tom|muc|seafood|fish|shrimp|prawn)/.test(n)) return "lunch-dining";
+
+    if (/(sot|nuoc mam|tuong|condiment|sauce)/.test(n)) return "emoji-food-beverage";
+
+    if (/(tinh bot|gao|com|bun|mi|banh|grain|rice|noodle|bread|carb)/.test(n))
+      return "ramen-dining";
+
+    if (/(trai cay|hoa qua|fruit)/.test(n)) return "spa";
+
+    if (/(hat|dau|nuts?|beans?)/.test(n)) return "emoji-nature";
+
+    if (/(nam|mushroom)/.test(n)) return "yard";
+
+    if (/(nuoc|water|drink)/.test(n)) return "water-drop";
+
+    return "restaurant";
+  };
+
+  // Navigate to dish detail
+
+  const handleDishPress = (dish: any) => {
+    if (!dish || !dish.id) return;
+
+    router.push(`/(tabs)/menu/${dish.id}`);
+  };
+
   // Fetch data from API
 
   const { data: dishTemplatesAPI, isLoading: loadingTemplates } = useDishTemplates();
 
-  const { data: categoriesAPI, isLoading: loadingCategories } = useDishCategories();
+  const { data: dishesAPI, isLoading: loadingDishes } = useDishes();
+
+  const { data: ingredientCategories, isLoading: loadingIngredientCategories } =
+    useIngredientCategories();
 
   // Use mock data if enabled and API returns empty data
 
@@ -46,10 +91,29 @@ export default function HomeTab() {
       ? mockDishTemplates
       : dishTemplatesAPI || [];
 
-  const categories =
-    USE_MOCK_DATA && (!categoriesAPI || categoriesAPI.length === 0)
-      ? mockDishCategories
-      : categoriesAPI || [];
+  const categories = ingredientCategories || [];
+
+  const dishes = dishesAPI || [];
+
+  // Show only public, active dishes on Home
+
+  const displayedDishes = dishes.filter((d: any) => d && d.public && d.active);
+
+  // Debug: log the first few dishes so we can confirm imageUrl values on device
+
+  try {
+    console.log(
+      "Home displayedDishes",
+
+      displayedDishes
+
+        .slice(0, 6)
+
+        .map((d: any) => ({ id: d.id, imageUrl: d.imageUrl, file: d.file }))
+    );
+  } catch (e) {
+    // ignore logging errors in environments without console
+  }
 
   const handleTemplatePress = (template: any) => {
     Toast.show({
@@ -61,55 +125,7 @@ export default function HomeTab() {
     });
   };
 
-  const isLoading = loadingTemplates || loadingCategories;
-
-  // Inline dashboard donuts (fetch counts from APIs)
-
-  function DashboardDonuts() {
-    const { data: dishesAPI } = useDishes();
-
-    const { data: accountsAPI } = useAccounts();
-
-    const { data: ingredientsAPI } = useIngredients();
-
-    const dishesCount = Array.isArray(dishesAPI) ? dishesAPI.length : 0;
-
-    const accountsCount = Array.isArray(accountsAPI) ? accountsAPI.length : 0;
-
-    const ingredientsCount = Array.isArray(ingredientsAPI) ? ingredientsAPI.length : 0;
-
-    const templatesCount = Array.isArray(dishTemplates) ? dishTemplates.length : 0;
-
-    const max = Math.max(dishesCount, accountsCount, ingredientsCount, templatesCount, 1);
-
-    const items = [
-      { key: "dishes", label: "Dishes", value: dishesCount, color: "#FF6B6B" },
-
-      { key: "accounts", label: "Accounts", value: accountsCount, color: "#34D399" },
-
-      { key: "ingredients", label: "Ingredients", value: ingredientsCount, color: "#60A5FA" },
-
-      { key: "templates", label: "Templates", value: templatesCount, color: "#F59E0B" },
-
-      { key: "others1", label: "Other 1", value: 0, color: "#A78BFA" },
-
-      { key: "others2", label: "Other 2", value: 0, color: "#F472B6" },
-    ];
-
-    return (
-      <View className="flex-row flex-wrap justify-between">
-        {items.map((it) => (
-          <View key={it.key} style={{ width: "48%", marginBottom: 12 }}>
-            <View className="items-center rounded-2xl bg-white p-3 shadow-sm dark:bg-gray-800">
-              <DonutProgress value={it.value} total={max} color={it.color} size={92} />
-
-              <Text className="mt-2 text-sm font-medium text-[#111827]">{it.label}</Text>
-            </View>
-          </View>
-        ))}
-      </View>
-    );
-  }
+  const isLoading = loadingTemplates || loadingIngredientCategories || loadingDishes;
 
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">
@@ -146,95 +162,33 @@ export default function HomeTab() {
           <MaterialIcons name="tune" size={24} color="#000000" className="dark:text-white" />
         </Pressable>
 
-        {/* Categories */}
+        {/* Ingredient Categories */}
 
         {categories && categories.length > 0 && (
           <View className="mb-6">
             <Text className="mb-4 text-lg font-semibold text-[#000000] dark:text-white">
-              Categories
+              Ingredient Categories
             </Text>
 
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {categories.map((category) => (
-                <Pressable
-                  key={category.id}
-                  onPress={() => router.push("/(tabs)/menu")}
-                  className="mr-4 items-center">
+                <View key={category.id} className="mr-4 items-center">
                   <View className="mb-2 h-16 w-16 items-center justify-center rounded-full bg-[#FF6D00]/10">
-                    <MaterialIcons name="restaurant" size={28} color="#FF6D00" />
+                    <MaterialIcons
+                      name={mapIngredientIcon(category?.name)}
+                      size={28}
+                      color="#FF6D00"
+                    />
                   </View>
 
                   <Text className="text-xs font-medium text-[#000000] dark:text-white">
                     {category.name}
                   </Text>
-                </Pressable>
+                </View>
               ))}
             </ScrollView>
           </View>
         )}
-
-        {/* Meal Plans */}
-
-        {dishTemplates && dishTemplates.length > 0 && (
-          <View className="mb-6">
-            <View className="mb-4 flex-row items-center justify-between">
-              <Text className="text-lg font-semibold text-[#000000] dark:text-white">
-                Meal Plans
-              </Text>
-
-              <Pressable onPress={() => router.push("/(tabs)/menu")}>
-                <Text className="text-sm font-semibold text-[#FF6D00]">View All</Text>
-              </Pressable>
-            </View>
-
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="gap-4">
-              {dishTemplates.map((template, index) => (
-                <Pressable
-                  key={index}
-                  onPress={() => handleTemplatePress(template)}
-                  className="mr-4 w-56 overflow-hidden rounded-2xl bg-white shadow-md dark:bg-gray-800">
-                  <View className="p-5">
-                    <View className="mb-3 flex-row items-center justify-between">
-                      <View className="rounded-lg bg-[#FF6D00]/10 px-3 py-1">
-                        <Text className="font-bold text-[#FF6D00]">{template.size}</Text>
-                      </View>
-
-                      <MaterialIcons name="restaurant-menu" size={24} color="#FF6D00" />
-                    </View>
-
-                    <Text className="mb-2 text-lg font-bold text-[#000000] dark:text-white">
-                      {template.name}
-                    </Text>
-
-                    <View className="gap-1">
-                      <Text className="text-xs text-gray-600 dark:text-gray-300">
-                        Max Protein: {template.max_Protein}g
-                      </Text>
-
-                      <Text className="text-xs text-gray-600 dark:text-gray-300">
-                        Max Carb: {template.max_Carb}g
-                      </Text>
-
-                      <Text className="text-xs text-gray-600 dark:text-gray-300">
-                        Max Vegetable: {template.max_Vegetable}g
-                      </Text>
-                    </View>
-                  </View>
-                </Pressable>
-              ))}
-            </ScrollView>
-          </View>
-        )}
-
-        {/* Dashboard summary */}
-
-        <View className="mb-6">
-          <Text className="mb-4 text-lg font-semibold text-[#000000] dark:text-white">
-            Dashboard
-          </Text>
-
-          <DashboardDonuts />
-        </View>
 
         {/* Loading State */}
 
@@ -247,7 +201,112 @@ export default function HomeTab() {
             </Text>
           </View>
         )}
+
+        {/* Featured: Make Your Own Bowl */}
+
+        <View className="mb-6">
+          <Text className="mb-4 text-lg font-semibold text-[#000000] dark:text-white">
+            Featured
+          </Text>
+
+          <Pressable
+            onPress={() => router.push("/(tabs)/menu/customize")}
+            className="w-44 rounded-xl bg-white p-2 shadow-sm dark:bg-gray-800">
+            <View className="h-28 w-full overflow-hidden rounded-lg bg-gray-50 dark:bg-gray-700">
+              <Image
+                source={{
+                  uri: "https://s3.eu-central-1.amazonaws.com/easyorder-images/prod/products/2674a64b-9741-4c6b-9f31-0d5c35d6ad0e/large/b37492f9d64f851651b03f63e72d81640df380cf028a3d215626e546d429e01a.png",
+                }}
+                style={{ width: "100%", height: 112 }}
+                resizeMode="cover"
+              />
+            </View>
+
+            <View className="mt-2">
+              <Text className="text-sm font-semibold text-[#000000] dark:text-white">
+                MAKE YOUR OWN BOWL
+              </Text>
+
+              <Text className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                Build your own poke bowl!
+              </Text>
+
+              <Text className="mt-1 text-xs text-gray-500 dark:text-gray-500">
+                (Best consumed within an hour)
+              </Text>
+            </View>
+          </Pressable>
+        </View>
+
+        {/* Dishes (show a few) */}
+
+        {dishes && dishes.length > 0 && (
+          <View className="mt-4">
+            <View className="mb-4 flex-row items-center justify-between">
+              <Text className="text-lg font-semibold text-[#000000] dark:text-white">Dishes</Text>
+
+              <Pressable onPress={() => router.push("/(tabs)/menu")}>
+                <Text className="text-sm text-[#FF6D00]">View all</Text>
+              </Pressable>
+            </View>
+
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {displayedDishes.slice(0, 6).map((dish: any) => (
+                <Pressable
+                  key={dish.id}
+                  onPress={() => handleDishPress(dish)}
+                  className="mr-4 w-44 rounded-xl bg-white p-2 shadow-sm dark:bg-gray-800">
+                  <View className="h-28 w-full overflow-hidden rounded-lg">
+                    {dish?.imageUrl &&
+                    typeof dish.imageUrl === "string" &&
+                    dish.imageUrl.startsWith("http") ? (
+                      <Image
+                        source={{ uri: dish.imageUrl }}
+                        style={{ width: "100%", height: 112 }}
+                        resizeMode="cover"
+                      />
+                    ) : dish?.file &&
+                      typeof dish.file === "string" &&
+                      dish.file.startsWith("http") ? (
+                      <Image
+                        source={{ uri: dish.file }}
+                        style={{ width: "100%", height: 112 }}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <View
+                        style={{
+                          width: "100%",
+
+                          height: "100%",
+
+                          alignItems: "center",
+
+                          justifyContent: "center",
+
+                          backgroundColor: "#f3f4f6",
+                        }}>
+                        <MaterialIcons name="restaurant-menu" size={40} color="#FF6D00" />
+                      </View>
+                    )}
+                  </View>
+
+                  <View className="mt-2">
+                    <Text className="text-sm font-medium text-[#000000] dark:text-white">
+                      {dish.name}
+                    </Text>
+
+                    <Text className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                      ${((dish.price || 0) / 100).toFixed(2)}
+                    </Text>
+                  </View>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 }
+

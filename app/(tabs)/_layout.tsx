@@ -97,7 +97,14 @@ export default function TabsLayout() {
     "manager/notifications/index",
 
     "manager/index",
+
     "notifications/index", // Hide manager tab for all mobile users
+
+    // Hide internal menu screens from tab bar
+
+    "menu/customize",
+
+    "menu/[id]",
   ];
 
   return (
@@ -150,6 +157,17 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
+        name="cart/index"
+        options={{
+          title: "Cart",
+
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="shopping-cart" size={size} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
         name="profile/index"
         options={{
           title: "Profile",
@@ -164,3 +182,4 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
+
