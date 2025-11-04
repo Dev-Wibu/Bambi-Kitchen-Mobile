@@ -3,6 +3,7 @@ import type {
   InventoryTransactionUpdateRequest,
 } from "@/interfaces/inventoryTransaction.interface";
 import { $api } from "@/libs/api";
+import { useMutationHandler } from "@/hooks/useMutationHandler";
 
 // ==================== INVENTORY TRANSACTION API HOOKS ====================
 
@@ -47,6 +48,21 @@ export const useUpdateInventoryTransaction = () => {
  */
 export const useDeleteInventoryTransaction = () => {
   return $api.useMutation("delete", "/api/inventory-transaction/{id}" as any);
+};
+
+// ==================== ENHANCED MUTATIONS WITH AUTO TOAST ====================
+
+/**
+ * Hook for deleting inventory transaction with automatic toast notifications
+ */
+export const useDeleteInventoryTransactionWithToast = () => {
+  const deleteMutation = useDeleteInventoryTransaction();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => deleteMutation.mutateAsync(variables),
+    successMessage: "Xóa giao dịch thành công",
+    errorMessage: "Không thể xóa giao dịch",
+  });
 };
 
 // ==================== TRANSFORM FUNCTIONS ====================

@@ -4,6 +4,7 @@ import type {
   NotificationUpdateRequest,
 } from "@/interfaces/notification.interface";
 import { $api } from "@/libs/api";
+import { useMutationHandler } from "@/hooks/useMutationHandler";
 
 // ==================== NOTIFICATION API HOOKS ====================
 
@@ -99,6 +100,60 @@ export const useSendNotificationToAll = () => {
  */
 export const useRegisterDeviceToken = () => {
   return $api.useMutation("post", "/api/notification/device");
+};
+
+// ==================== ENHANCED MUTATIONS WITH AUTO TOAST ====================
+
+/**
+ * Hook for deleting notification with automatic toast notifications
+ */
+export const useDeleteNotificationWithToast = () => {
+  const deleteMutation = useDeleteNotification();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => deleteMutation.mutateAsync(variables),
+    successMessage: "Xóa thông báo thành công",
+    errorMessage: "Không thể xóa thông báo",
+  });
+};
+
+/**
+ * Hook for marking notification as read with automatic toast notifications
+ */
+export const useMarkAsReadWithToast = () => {
+  const markAsReadMutation = useMarkAsRead();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => markAsReadMutation.mutateAsync(variables),
+    showSuccessToast: false, // Don't show toast for mark as read
+    errorMessage: "Không thể đánh dấu đã đọc",
+  });
+};
+
+/**
+ * Hook for creating notification with automatic toast notifications
+ */
+export const useCreateNotificationWithToast = () => {
+  const createMutation = useCreateNotification();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => createMutation.mutateAsync(variables),
+    successMessage: "Tạo thông báo thành công",
+    errorMessage: "Không thể tạo thông báo",
+  });
+};
+
+/**
+ * Hook for updating notification with automatic toast notifications
+ */
+export const useUpdateNotificationWithToast = () => {
+  const updateMutation = useUpdateNotification();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => updateMutation.mutateAsync(variables),
+    successMessage: "Cập nhật thông báo thành công",
+    errorMessage: "Không thể cập nhật thông báo",
+  });
 };
 
 // ==================== TRANSFORM FUNCTIONS ====================

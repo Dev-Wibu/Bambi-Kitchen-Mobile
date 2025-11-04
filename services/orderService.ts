@@ -1,4 +1,5 @@
 import { $api } from "@/libs/api";
+import { useMutationHandler } from "@/hooks/useMutationHandler";
 
 // ==================== ORDER API HOOKS ====================
 
@@ -107,5 +108,33 @@ export const useOrderDetailById = (detailId: number) => {
 export const useOrderDetailsByOrderId = (orderId: number) => {
   return $api.useQuery("get", "/api/order-detail/by-order/{orderId}", {
     params: { path: { orderId } },
+  });
+};
+
+// ==================== ENHANCED MUTATIONS WITH AUTO TOAST ====================
+
+/**
+ * Hook for updating order with automatic toast notifications
+ */
+export const useUpdateOrderWithToast = () => {
+  const updateMutation = useUpdateOrder();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => updateMutation.mutateAsync(variables),
+    successMessage: "Order updated successfully",
+    errorMessage: "Unable to update order",
+  });
+};
+
+/**
+ * Hook for adding feedback with automatic toast notifications
+ */
+export const useFeedbackOrderWithToast = () => {
+  const feedbackMutation = useFeedbackOrder();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => feedbackMutation.mutateAsync(variables),
+    successMessage: "Feedback submitted successfully",
+    errorMessage: "Unable to submit feedback",
   });
 };
