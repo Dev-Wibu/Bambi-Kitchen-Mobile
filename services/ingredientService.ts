@@ -1,4 +1,5 @@
 import { $api } from "@/libs/api";
+import { useMutationHandler } from "@/hooks/useMutationHandler";
 
 // ==================== INGREDIENT API HOOKS ====================
 
@@ -62,4 +63,58 @@ export const useDeleteIngredient = () => {
  */
 export const useToggleIngredientActive = () => {
   return $api.useMutation("get", "/api/ingredient/toggle-active/{id}");
+};
+
+// ==================== ENHANCED MUTATIONS WITH AUTO TOAST ====================
+
+/**
+ * Hook for creating ingredient with automatic toast notifications
+ */
+export const useCreateIngredientWithToast = () => {
+  const createMutation = useCreateIngredient();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => createMutation.mutateAsync(variables),
+    successMessage: "Tạo nguyên liệu thành công",
+    errorMessage: "Không thể tạo nguyên liệu",
+  });
+};
+
+/**
+ * Hook for updating ingredient with automatic toast notifications
+ */
+export const useUpdateIngredientWithToast = () => {
+  const updateMutation = useUpdateIngredient();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => updateMutation.mutateAsync(variables),
+    successMessage: "Cập nhật nguyên liệu thành công",
+    errorMessage: "Không thể cập nhật nguyên liệu",
+  });
+};
+
+/**
+ * Hook for deleting ingredient with automatic toast notifications
+ */
+export const useDeleteIngredientWithToast = () => {
+  const deleteMutation = useDeleteIngredient();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => deleteMutation.mutateAsync(variables),
+    successMessage: "Xóa nguyên liệu thành công",
+    errorMessage: "Không thể xóa nguyên liệu",
+  });
+};
+
+/**
+ * Hook for toggling ingredient active status with automatic toast notifications
+ */
+export const useToggleIngredientActiveWithToast = () => {
+  const toggleMutation = useToggleIngredientActive();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => toggleMutation.mutateAsync(variables),
+    successMessage: "Đã thay đổi trạng thái nguyên liệu",
+    errorMessage: "Không thể thay đổi trạng thái",
+  });
 };

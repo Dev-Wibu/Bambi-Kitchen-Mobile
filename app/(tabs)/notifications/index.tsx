@@ -2,9 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  useDeleteNotification,
+  useDeleteNotificationWithToast,
   useGetNotificationsByAccountId,
-  useMarkAsRead,
+  useMarkAsReadWithToast,
 } from "@/services/notificationService";
 import { MaterialIcons } from "@expo/vector-icons";
 import { formatDistanceToNow } from "date-fns";
@@ -32,8 +32,8 @@ export default function NotificationsPage() {
     isLoading,
     refetch,
   } = useGetNotificationsByAccountId(user?.userId || 0);
-  const markAsReadMutation = useMarkAsRead();
-  const deleteNotificationMutation = useDeleteNotification();
+  const markAsReadMutation = useMarkAsReadWithToast();
+  const deleteNotificationMutation = useDeleteNotificationWithToast();
 
   const handleRefresh = async () => {
     setRefreshing(true);

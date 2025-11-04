@@ -1,13 +1,23 @@
 import { $api } from "@/libs/api";
+import { useMutationHandler } from "@/hooks/useMutationHandler";
 
 // ==================== DISH API HOOKS ====================
 
 /**
- * Hook for getting all dishes
+ * Hook for getting all dishes (menu - only active and public)
  * Uses GET /api/dish endpoint
  */
 export const useDishes = () => {
   return $api.useQuery("get", "/api/dish", {});
+};
+
+/**
+ * Hook for getting all dishes for admin (includes inactive and private dishes)
+ * Uses GET /api/dish/get-all endpoint
+ * This endpoint should be used in the dish management page
+ */
+export const useAllDishes = () => {
+  return $api.useQuery("get", "/api/dish/get-all", {});
 };
 
 /**
@@ -107,4 +117,58 @@ export const useCreateDishTemplate = () => {
  */
 export const useDeleteDishTemplate = () => {
   return $api.useMutation("delete", "/api/dish-template/{sizeCode}");
+};
+
+// ==================== ENHANCED MUTATIONS WITH AUTO TOAST ====================
+
+/**
+ * Hook for creating/updating dish with automatic toast notifications
+ */
+export const useCreateDishWithToast = () => {
+  const createMutation = useCreateDish();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => createMutation.mutateAsync(variables),
+    successMessage: "Lưu món ăn thành công",
+    errorMessage: "Không thể lưu món ăn",
+  });
+};
+
+/**
+ * Hook for updating dish with automatic toast notifications
+ */
+export const useUpdateDishWithToast = () => {
+  const updateMutation = useUpdateDish();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => updateMutation.mutateAsync(variables),
+    successMessage: "Cập nhật món ăn thành công",
+    errorMessage: "Không thể cập nhật món ăn",
+  });
+};
+
+/**
+ * Hook for toggling dish public status with automatic toast notifications
+ */
+export const useToggleDishPublicWithToast = () => {
+  const toggleMutation = useToggleDishPublic();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => toggleMutation.mutateAsync(variables),
+    successMessage: "Đã thay đổi trạng thái công khai",
+    errorMessage: "Không thể thay đổi trạng thái",
+  });
+};
+
+/**
+ * Hook for toggling dish active status with automatic toast notifications
+ */
+export const useToggleDishActiveWithToast = () => {
+  const toggleMutation = useToggleDishActive();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => toggleMutation.mutateAsync(variables),
+    successMessage: "Đã thay đổi trạng thái hoạt động",
+    errorMessage: "Không thể thay đổi trạng thái",
+  });
 };

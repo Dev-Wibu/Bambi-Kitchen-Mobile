@@ -2,6 +2,7 @@ import type { AccountCreateRequest, AccountUpdateRequest } from "@/interfaces/ac
 import type { LoginRequest } from "@/interfaces/auth.interface";
 import { ROLES, type ROLE_TYPE } from "@/interfaces/role.interface";
 import { $api } from "@/libs/api";
+import { useMutationHandler } from "@/hooks/useMutationHandler";
 
 // ==================== ACCOUNT API HOOKS ====================
 
@@ -59,6 +60,50 @@ export const useGetAccountById = (id: number) => {
   return $api.useQuery("get", "/api/account/{id}", {
     params: { path: { id } },
     enabled: !!id,
+  });
+};
+
+// ==================== ENHANCED MUTATIONS WITH AUTO TOAST ====================
+
+/**
+ * Hook for creating account with automatic toast notifications
+ * Wraps useCreateAccount with useMutationHandler to auto-show success/error messages
+ */
+export const useCreateAccountWithToast = () => {
+  const createMutation = useCreateAccount();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => createMutation.mutateAsync(variables),
+    successMessage: "Tạo tài khoản thành công",
+    errorMessage: "Không thể tạo tài khoản",
+  });
+};
+
+/**
+ * Hook for updating account with automatic toast notifications
+ * Wraps useUpdateAccount with useMutationHandler to auto-show success/error messages
+ */
+export const useUpdateAccountWithToast = () => {
+  const updateMutation = useUpdateAccount();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => updateMutation.mutateAsync(variables),
+    successMessage: "Cập nhật tài khoản thành công",
+    errorMessage: "Không thể cập nhật tài khoản",
+  });
+};
+
+/**
+ * Hook for deleting account with automatic toast notifications
+ * Wraps useDeleteAccount with useMutationHandler to auto-show success/error messages
+ */
+export const useDeleteAccountWithToast = () => {
+  const deleteMutation = useDeleteAccount();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => deleteMutation.mutateAsync(variables),
+    successMessage: "Xóa tài khoản thành công",
+    errorMessage: "Không thể xóa tài khoản",
   });
 };
 

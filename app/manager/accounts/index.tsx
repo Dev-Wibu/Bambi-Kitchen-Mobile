@@ -1,17 +1,19 @@
+import ReloadButton from "@/components/ReloadButton";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import type { Account } from "@/interfaces/account.interface";
-import type { ROLE_TYPE } from "@/interfaces/role.interface";
+import { ROLE_TYPE } from "@/interfaces/role.interface";
 import {
   transformAccountCreateRequest,
   transformAccountUpdateRequest,
   useAccounts,
-  useCreateAccount,
-  useDeleteAccount,
-  useUpdateAccount,
+  useCreateAccountWithToast,
+  useDeleteAccountWithToast,
+  useUpdateAccountWithToast,
 } from "@/services/accountService";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -19,6 +21,7 @@ import Toast from "react-native-toast-message";
 import AccountForm from "./AccountForm";
 
 export default function AccountManagement() {
+  const router = useRouter();
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<Account | null>(null);
@@ -26,10 +29,10 @@ export default function AccountManagement() {
   const queryClient = useQueryClient();
 
   // Query hooks
-  const { data: accounts, isLoading } = useAccounts();
-  const createMutation = useCreateAccount();
-  const updateMutation = useUpdateAccount();
-  const deleteMutation = useDeleteAccount();
+  const { data: accounts, isLoading, refetch } = useAccounts();
+  const createMutation = useCreateAccountWithToast();
+  const updateMutation = useUpdateAccountWithToast();
+  const deleteMutation = useDeleteAccountWithToast();
 
   const handleAdd = () => {
     setSelectedAccount(null);
@@ -48,26 +51,13 @@ export default function AccountManagement() {
   const confirmDelete = async () => {
     if (!deleteConfirm?.id) return;
 
-    try {
-      await deleteMutation.mutateAsync({
-        params: { path: { id: deleteConfirm.id } },
-      });
+    await deleteMutation.mutateAsync({
+      params: { path: { id: deleteConfirm.id } },
+    });
 
-      Toast.show({
-        type: "success",
-        text1: "Success",
-        text2: "Account deleted successfully",
-      });
-
-      queryClient.invalidateQueries({ queryKey: ["/api/account"] });
-      setDeleteConfirm(null);
-    } catch {
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: "Failed to delete account",
-      });
-    }
+    queryClient.invalidateQueries({ queryKey: ["/api/account"] });
+    refetch(); // Reload the list after delete
+    setDeleteConfirm(null);
   };
 
   const handleSubmit = async (data: {
@@ -77,65 +67,46 @@ export default function AccountManagement() {
     role: ROLE_TYPE;
     active: boolean;
   }) => {
-    try {
-      if (selectedAccount?.id) {
-        // Update existing account
-        const updateData = transformAccountUpdateRequest({
-          id: selectedAccount.id,
-          name: data.name,
-          email: data.email,
-          role: data.role,
-          active: data.active,
-        });
+    if (selectedAccount?.id) {
+      // Update existing account
+      const updateData = transformAccountUpdateRequest({
+        id: selectedAccount.id,
+        name: data.name,
+        email: data.email,
+        role: data.role,
+        active: data.active,
+      });
 
-        await updateMutation.mutateAsync({
-          body: updateData,
-        });
-
+      await updateMutation.mutateAsync({
+        body: updateData,
+      });
+    } else {
+      // Create new account
+      if (!data.password) {
         Toast.show({
-          type: "success",
-          text1: "Success",
-          text2: "Account updated successfully",
+          type: "error",
+          text1: "Error",
+          text2: "Password is required for new accounts",
         });
-      } else {
-        // Create new account
-        if (!data.password) {
-          Toast.show({
-            type: "error",
-            text1: "Error",
-            text2: "Password is required for new accounts",
-          });
-          return;
-        }
-
-        const createData = transformAccountCreateRequest({
-          name: data.name,
-          email: data.email,
-          password: data.password,
-          role: data.role,
-        });
-
-        await createMutation.mutateAsync({
-          body: createData,
-        });
-
-        Toast.show({
-          type: "success",
-          text1: "Success",
-          text2: "Account created successfully",
-        });
+        return;
       }
 
-      queryClient.invalidateQueries({ queryKey: ["/api/account"] });
-      setIsFormVisible(false);
-      setSelectedAccount(null);
-    } catch {
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: selectedAccount ? "Failed to update account" : "Failed to create account",
+      const createData = transformAccountCreateRequest({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        role: data.role,
+      });
+
+      await createMutation.mutateAsync({
+        body: createData,
       });
     }
+
+    queryClient.invalidateQueries({ queryKey: ["/api/account"] });
+    refetch(); // Reload the list after create/update
+    setIsFormVisible(false);
+    setSelectedAccount(null);
   };
 
   if (isLoading) {
@@ -208,20 +179,28 @@ export default function AccountManagement() {
         {/* Header */}
         <View className="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
           <View className="flex-row items-center justify-between">
-            <View>
-              <Text className="text-2xl font-bold text-[#000000] dark:text-white">
-                Account Management
-              </Text>
-              <Text className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                Manage user accounts and permissions
-              </Text>
-            </View>
-            <Button className="bg-[#FF6D00] active:bg-[#FF4D00]" onPress={handleAdd}>
-              <View className="flex-row items-center gap-2">
-                <MaterialIcons name="add" size={20} color="white" />
-                <Text className="font-semibold text-white">Add</Text>
+            <View className="flex-1 flex-row items-center gap-3">
+              <TouchableOpacity onPress={() => router.back()} className="mr-2">
+                <MaterialIcons name="arrow-back" size={24} color="#FF6D00" />
+              </TouchableOpacity>
+              <View className="flex-1">
+                <Text className="text-2xl font-bold text-[#000000] dark:text-white">
+                  Account Management
+                </Text>
+                <Text className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                  Manage user accounts and permissions
+                </Text>
               </View>
-            </Button>
+            </View>
+            <View className="flex-row gap-2">
+              <ReloadButton onRefresh={() => refetch()} />
+              <Button className="bg-[#FF6D00] active:bg-[#FF4D00]" onPress={handleAdd}>
+                <View className="flex-row items-center gap-2">
+                  <MaterialIcons name="add" size={20} color="white" />
+                  <Text className="font-semibold text-white">Add</Text>
+                </View>
+              </Button>
+            </View>
           </View>
         </View>
 

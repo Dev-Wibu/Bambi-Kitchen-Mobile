@@ -3,24 +3,24 @@ import type {
   InventoryTransactionUpdateRequest,
 } from "@/interfaces/inventoryTransaction.interface";
 import { $api } from "@/libs/api";
+import { useMutationHandler } from "@/hooks/useMutationHandler";
 
 // ==================== INVENTORY TRANSACTION API HOOKS ====================
 
 /**
  * Hook for getting all inventory transactions
- * Uses GET /api/inventory-transactions endpoint
+ * Uses GET /api/inventory-transaction endpoint (fixed from /api/inventory-transactions)
  */
 export const useInventoryTransactions = () => {
-  // Cast path to any to satisfy generated path typings
-  return $api.useQuery("get", "/api/inventory-transactions" as any, {});
+  return $api.useQuery("get", "/api/inventory-transaction" as any, {});
 };
 
 /**
  * Hook for getting inventory transaction by ID
- * Uses GET /api/inventory-transactions/{id} endpoint
+ * Uses GET /api/inventory-transaction/{id} endpoint (fixed from /api/inventory-transactions/{id})
  */
 export const useGetInventoryTransactionById = (id: number) => {
-  return $api.useQuery("get", "/api/inventory-transactions/{id}" as any, {
+  return $api.useQuery("get", "/api/inventory-transaction/{id}" as any, {
     params: { path: { id } },
     enabled: !!id,
   });
@@ -28,26 +28,41 @@ export const useGetInventoryTransactionById = (id: number) => {
 
 /**
  * Hook for creating a new inventory transaction
- * Uses POST /api/inventory-transactions endpoint
+ * Uses POST /api/inventory-transaction endpoint (fixed from /api/inventory-transactions)
  */
 export const useCreateInventoryTransaction = () => {
-  return $api.useMutation("post", "/api/inventory-transactions" as any);
+  return $api.useMutation("post", "/api/inventory-transaction" as any);
 };
 
 /**
  * Hook for updating an existing inventory transaction
- * Uses PUT /api/inventory-transactions/{id} endpoint
+ * Uses PUT /api/inventory-transaction/{id} endpoint (fixed from /api/inventory-transactions/{id})
  */
 export const useUpdateInventoryTransaction = () => {
-  return $api.useMutation("put", "/api/inventory-transactions/{id}" as any);
+  return $api.useMutation("put", "/api/inventory-transaction/{id}" as any);
 };
 
 /**
  * Hook for deleting an inventory transaction
- * Uses DELETE /api/inventory-transactions/{id} endpoint
+ * Uses DELETE /api/inventory-transaction/{id} endpoint (fixed from /api/inventory-transactions/{id})
  */
 export const useDeleteInventoryTransaction = () => {
-  return $api.useMutation("delete", "/api/inventory-transactions/{id}" as any);
+  return $api.useMutation("delete", "/api/inventory-transaction/{id}" as any);
+};
+
+// ==================== ENHANCED MUTATIONS WITH AUTO TOAST ====================
+
+/**
+ * Hook for deleting inventory transaction with automatic toast notifications
+ */
+export const useDeleteInventoryTransactionWithToast = () => {
+  const deleteMutation = useDeleteInventoryTransaction();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => deleteMutation.mutateAsync(variables),
+    successMessage: "Xóa giao dịch thành công",
+    errorMessage: "Không thể xóa giao dịch",
+  });
 };
 
 // ==================== TRANSFORM FUNCTIONS ====================

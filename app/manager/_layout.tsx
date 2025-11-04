@@ -1,15 +1,9 @@
 import { CustomTabBar } from "@/components/CustomTabBar";
-
 import { useAuth } from "@/hooks/useAuth";
-
 import { MaterialIcons } from "@expo/vector-icons";
-
 import { Redirect, Tabs, useRouter } from "expo-router";
-
 import { useEffect } from "react";
-
 import { ActivityIndicator, View } from "react-native";
-
 import Toast from "react-native-toast-message";
 
 export default function ManagerLayout() {
@@ -81,20 +75,14 @@ export default function ManagerLayout() {
 
   const hiddenRoutes = [
     "accounts/AccountForm",
-
     "ingredient-categories/IngredientCategoryForm",
-
     // Hide notifications from the bottom tab bar; we'll access it via a floating bell action
-
     "notifications/index",
-
     // Hidden tabs navigated via dashboard donuts
-
     "accounts/index",
-
     "dishes/index",
-
     "ingredients/index",
+    "orders/index",
   ];
 
   return (
@@ -122,6 +110,8 @@ export default function ManagerLayout() {
       <Tabs.Screen name="accounts/index" options={{ href: null }} />
 
       <Tabs.Screen name="dishes/index" options={{ href: null }} />
+
+      <Tabs.Screen name="orders/index" options={{ href: null }} />
 
       {/* Hidden form screens */}
 

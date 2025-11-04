@@ -1,20 +1,23 @@
+import ReloadButton from "@/components/ReloadButton";
 import { Button } from "@/components/ui/button";
-
 import { Text } from "@/components/ui/text";
-
 import type { Ingredient } from "@/interfaces/ingredient.interface";
 
 import {
-  useCreateIngredient,
-  useDeleteIngredient,
+  useDeleteIngredientWithToast,
   useIngredients,
-  useToggleIngredientActive,
-  useUpdateIngredient,
+  useToggleIngredientActiveWithToast,
 } from "@/services/ingredientService";
+
+import { API_BASE_URL } from "@/libs/api";
+
+import { useAuthStore } from "@/stores/authStore";
 
 import { MaterialIcons } from "@expo/vector-icons";
 
 import { useQueryClient } from "@tanstack/react-query";
+
+import { useRouter } from "expo-router";
 
 import { useState } from "react";
 
@@ -25,6 +28,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
 export default function IngredientManagement() {
+  const router = useRouter();
   const [isFormVisible, setIsFormVisible] = useState(false);
 
   const [selectedIngredient, setSelectedIngredient] = useState<Ingredient | null>(null);
@@ -33,34 +37,127 @@ export default function IngredientManagement() {
 
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Form fields
+  const [name, setName] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [unit, setUnit] = useState<"GRAM" | "KILOGRAM" | "LITER" | "PCS">("GRAM");
+  const [pricePerUnit, setPricePerUnit] = useState("");
+
+  // Query hooks - 3 hooks used here
+
+  const { data: ingredients, isLoading, refetch } = useIngredients();
+
+  const deleteMutation = useDeleteIngredientWithToast();
+
+  const toggleActiveMutation = useToggleIngredientActiveWithToast();
+
   const queryClient = useQueryClient();
-
-  // Query hooks - 5 endpoints used here
-
-  const { data: ingredients, isLoading } = useIngredients();
-
-  const createMutation = useCreateIngredient();
-
-  const updateMutation = useUpdateIngredient();
-
-  const deleteMutation = useDeleteIngredient();
-
-  const toggleActiveMutation = useToggleIngredientActive();
 
   const handleAdd = () => {
     setSelectedIngredient(null);
-
+    setName("");
+    setCategoryId("");
+    setQuantity("");
+    setUnit("GRAM");
+    setPricePerUnit("");
     setIsFormVisible(true);
   };
 
   const handleEdit = (ingredient: Ingredient) => {
     setSelectedIngredient(ingredient);
-
+    setName(ingredient.name || "");
+    setCategoryId(ingredient.category?.id?.toString() || "");
+    setQuantity(ingredient.quantity?.toString() || "");
+    setUnit(ingredient.unit || "GRAM");
+    setPricePerUnit(ingredient.pricePerUnit?.toString() || "");
     setIsFormVisible(true);
   };
 
   const handleDelete = (ingredient: Ingredient) => {
     setDeleteConfirm(ingredient);
+  };
+
+  const handleSubmitForm = async () => {
+    if (!name.trim()) {
+      Toast.show({ type: "error", text1: "Name is required" });
+      return;
+    }
+    if (name.trim().length < 10) {
+      Toast.show({ type: "error", text1: "Name must be at least 10 characters" });
+      return;
+    }
+    if (!categoryId) {
+      Toast.show({ type: "error", text1: "Category is required" });
+      return;
+    }
+    // Validate categoryId is a valid number
+    const categoryIdNum = parseInt(categoryId);
+    if (isNaN(categoryIdNum) || categoryIdNum <= 0) {
+      Toast.show({ type: "error", text1: "Invalid category ID" });
+      return;
+    }
+
+    try {
+      // BE uses @ModelAttribute expecting multipart/form-data
+      const formData = new FormData();
+      formData.append("name", name.trim());
+      formData.append("categoryId", categoryId);
+      formData.append("quantity", quantity || "0");
+      formData.append("unit", unit);
+      formData.append("pricePerUnit", pricePerUnit || "0");
+
+      if (selectedIngredient?.id) {
+        // Update mode: add id field
+        formData.append("id", selectedIngredient.id.toString());
+      }
+
+      // Get auth token
+      const token = useAuthStore.getState().token;
+      const url = `${API_BASE_URL}/api/ingredient`;
+
+      const response = await fetch(url, {
+        method: selectedIngredient?.id ? "PUT" : "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          // Don't set Content-Type - let browser set it with boundary
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        // Try to parse error as JSON to extract BE message
+        let errorMessage = selectedIngredient ? "Update failed" : "Create failed";
+        try {
+          const errorJson = JSON.parse(errorText);
+          // Extract error message from BE response
+          errorMessage = errorJson.message || errorJson.error || errorText;
+        } catch {
+          // If not JSON, use raw error text
+          errorMessage = errorText;
+        }
+        throw new Error(errorMessage);
+      }
+
+      // Success - Extract success message from BE if available
+      const responseData = await response.json();
+      const successMessage =
+        responseData?.message ||
+        (selectedIngredient ? "Ingredient updated successfully" : "Ingredient created successfully");
+
+      Toast.show({ type: "success", text1: "Success", text2: successMessage });
+
+      queryClient.invalidateQueries({ queryKey: ["/api/ingredient"] });
+      refetch(); // Reload the list
+      setIsFormVisible(false);
+    } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: selectedIngredient ? "Update failed" : "Create failed",
+        text2: error instanceof Error ? error.message : "Please try again",
+      });
+    }
   };
 
   const confirmDelete = async () => {
@@ -80,7 +177,7 @@ export default function IngredientManagement() {
       });
 
       queryClient.invalidateQueries({ queryKey: ["/api/ingredient"] });
-
+      refetch(); // Reload the list after delete
       setDeleteConfirm(null);
     } catch (error) {
       Toast.show({
@@ -108,6 +205,7 @@ export default function IngredientManagement() {
       });
 
       queryClient.invalidateQueries({ queryKey: ["/api/ingredient"] });
+      refetch(); // Reload the list after toggle
     } catch (error) {
       Toast.show({
         type: "error",
@@ -139,15 +237,22 @@ export default function IngredientManagement() {
 
       <View className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
         <View className="mb-3 flex-row items-center justify-between">
-          <Text className="text-2xl font-bold text-gray-900 dark:text-white">
-            Ingredients Management
-          </Text>
+          <View className="flex-1 flex-row items-center gap-3">
+            <TouchableOpacity onPress={() => router.back()} className="mr-2">
+              <MaterialIcons name="arrow-back" size={24} color="#FF6D00" />
+            </TouchableOpacity>
+            <Text className="text-2xl font-bold text-gray-900 dark:text-white">
+              Ingredients Management
+            </Text>
+          </View>
 
-          <Button onPress={handleAdd} className="bg-[#FF6D00]">
-            <MaterialIcons name="add" size={20} color="white" />
-
-            <Text className="ml-2 font-semibold text-white">Add</Text>
-          </Button>
+          <View className="flex-row gap-2">
+            <ReloadButton onRefresh={() => refetch()} size={24} borderRadius={8} />
+            <Button onPress={handleAdd} className="bg-[#FF6D00]">
+              <MaterialIcons name="add" size={20} color="white" />
+              <Text className="ml-2 font-semibold text-white">Add</Text>
+            </Button>
+          </View>
         </View>
 
         {/* Search */}
@@ -264,26 +369,91 @@ export default function IngredientManagement() {
         </View>
       )}
 
-      {/* Form Modal - Simplified */}
+      {/* Form Modal */}
 
       {isFormVisible && (
-        <View className="absolute inset-0 items-center justify-center bg-black/50">
-          <View className="mx-6 rounded-lg bg-white p-6 dark:bg-gray-800">
-            <Text className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-              {selectedIngredient ? "Edit Ingredient" : "Add Ingredient"}
-            </Text>
+        <View className="absolute inset-0 items-center justify-center bg-black/50 p-6">
+          <ScrollView className="max-h-[80%] w-full max-w-md">
+            <View className="rounded-lg bg-white p-6 dark:bg-gray-800">
+              <Text className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
+                {selectedIngredient ? "Edit Ingredient" : "Add Ingredient"}
+              </Text>
 
-            <Text className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-              Feature under development - Use full form later
-            </Text>
+              {/* Name */}
+              <Text className="mb-1 text-sm text-gray-700 dark:text-gray-300">Name *</Text>
+              <TextInput
+                className="mb-3 rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                value={name}
+                onChangeText={setName}
+                placeholder="Enter ingredient name"
+                placeholderTextColor="#9CA3AF"
+              />
 
-            <Button
-              onPress={() => setIsFormVisible(false)}
-              variant="outline"
-              className="border-gray-300">
-              <Text className="text-gray-700">Close</Text>
-            </Button>
-          </View>
+              {/* Category ID */}
+              <Text className="mb-1 text-sm text-gray-700 dark:text-gray-300">Category ID *</Text>
+              <TextInput
+                className="mb-3 rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                value={categoryId}
+                onChangeText={setCategoryId}
+                placeholder="Enter category ID"
+                placeholderTextColor="#9CA3AF"
+                keyboardType="numeric"
+              />
+
+              {/* Quantity */}
+              <Text className="mb-1 text-sm text-gray-700 dark:text-gray-300">Quantity</Text>
+              <TextInput
+                className="mb-3 rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                value={quantity}
+                onChangeText={setQuantity}
+                placeholder="Enter quantity"
+                placeholderTextColor="#9CA3AF"
+                keyboardType="numeric"
+              />
+
+              {/* Unit */}
+              <Text className="mb-1 text-sm text-gray-700 dark:text-gray-300">Unit *</Text>
+              <View className="mb-3 flex-row flex-wrap gap-2">
+                {["GRAM", "KILOGRAM", "LITER", "PCS"].map((u) => (
+                  <TouchableOpacity
+                    key={u}
+                    onPress={() => setUnit(u as any)}
+                    style={{
+                      backgroundColor: unit === u ? "#FF6D00" : "#F3F4F6",
+                      padding: 8,
+                      borderRadius: 8,
+                    }}>
+                    <Text style={{ color: unit === u ? "white" : "#374151" }}>{u}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* Price Per Unit */}
+              <Text className="mb-1 text-sm text-gray-700 dark:text-gray-300">Price Per Unit</Text>
+              <TextInput
+                className="mb-4 rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                value={pricePerUnit}
+                onChangeText={setPricePerUnit}
+                placeholder="Enter price per unit"
+                placeholderTextColor="#9CA3AF"
+                keyboardType="numeric"
+              />
+
+              {/* Buttons */}
+              <View className="flex-row gap-3">
+                <Button
+                  onPress={() => setIsFormVisible(false)}
+                  variant="outline"
+                  className="flex-1 border-gray-300">
+                  <Text className="text-gray-700">Cancel</Text>
+                </Button>
+
+                <Button onPress={handleSubmitForm} className="flex-1 bg-[#FF6D00]">
+                  <Text className="text-white">{selectedIngredient ? "Update" : "Create"}</Text>
+                </Button>
+              </View>
+            </View>
+          </ScrollView>
         </View>
       )}
     </SafeAreaView>

@@ -3,6 +3,7 @@ import type {
   DishCategoryUpdateRequest,
 } from "@/interfaces/dishCategory.interface";
 import { $api } from "@/libs/api";
+import { useMutationHandler } from "@/hooks/useMutationHandler";
 
 // ==================== DISH CATEGORY API HOOKS ====================
 
@@ -47,6 +48,47 @@ export const useUpdateDishCategory = () => {
  */
 export const useDeleteDishCategory = () => {
   return $api.useMutation("delete", "/api/dish-category/{id}");
+};
+
+// ==================== ENHANCED MUTATIONS WITH AUTO TOAST ====================
+
+/**
+ * Hook for creating dish category with automatic toast notifications
+ */
+export const useCreateDishCategoryWithToast = () => {
+  const createMutation = useCreateDishCategory();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => createMutation.mutateAsync(variables),
+    successMessage: "Tạo danh mục món ăn thành công",
+    errorMessage: "Không thể tạo danh mục món ăn",
+  });
+};
+
+/**
+ * Hook for updating dish category with automatic toast notifications
+ */
+export const useUpdateDishCategoryWithToast = () => {
+  const updateMutation = useUpdateDishCategory();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => updateMutation.mutateAsync(variables),
+    successMessage: "Cập nhật danh mục món ăn thành công",
+    errorMessage: "Không thể cập nhật danh mục món ăn",
+  });
+};
+
+/**
+ * Hook for deleting dish category with automatic toast notifications
+ */
+export const useDeleteDishCategoryWithToast = () => {
+  const deleteMutation = useDeleteDishCategory();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => deleteMutation.mutateAsync(variables),
+    successMessage: "Xóa danh mục món ăn thành công",
+    errorMessage: "Không thể xóa danh mục món ăn",
+  });
 };
 
 // ==================== TRANSFORM FUNCTIONS ====================

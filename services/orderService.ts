@@ -1,6 +1,7 @@
 import type { MakeOrderRequest, OrderItemDTO, RecipeItemDTO } from "@/interfaces/order.interface";
 
 import { $api } from "@/libs/api";
+import { useMutationHandler } from "@/hooks/useMutationHandler";
 
 import type { CartItem } from "@/stores/cartStore";
 
@@ -96,81 +97,100 @@ export const useCancelOrder = () => {
   return $api.useMutation("get", "/api/test/order/cancel/{orderId}");
 };
 
-// ==================== ORDER HELPERS ====================
+
+// ==================== ORDER QUERY HOOKS ====================
 
 /**
-
-
-
- * Compute cart total in decimal units (e.g., dollars) from cart items that store price in cents.
-
-
-
+ * Hook for getting all orders
+ * Uses GET /api/order endpoint
  */
-
-export const computeCartTotalDecimal = (items: Pick<CartItem, "price" | "quantity">[]): number => {
-  return items.reduce((sum, i) => sum + (i.price / 100) * i.quantity, 0);
+export const useOrders = () => {
+  return $api.useQuery("get", "/api/order");
 };
 
 /**
-
-
-
- * Transform cart items into backend MakeOrderRequest payload.
-
-
-
- * - Assumes CartItem.price is in cents; converts to decimal total.
-
-
-
- * - Passes through optional dishTemplate and recipe when present.
-
-
-
+ * Hook for getting order by ID
+ * Uses GET /api/order/{id} endpoint
  */
+export const useOrderById = (id: number) => {
+  return $api.useQuery("get", "/api/order/{id}", {
+    params: { path: { id } },
+  });
+};
 
-export const transformCartToMakeOrderRequest = (params: {
-  accountId: number;
+/**
+ * Hook for getting orders by user ID
+ * Uses GET /api/order/user/{userId} endpoint
+ */
+export const useOrdersByUserId = (userId: number) => {
+  return $api.useQuery("get", "/api/order/user/{userId}", {
+    params: { path: { userId } },
+  });
+};
 
-  paymentMethod: string;
+/**
+ * Hook for getting feedbacks
+ * Uses GET /api/order/getFeedbacks endpoint
+ */
+export const useFeedbacks = () => {
+  return $api.useQuery("get", "/api/order/getFeedbacks");
+};
 
-  note?: string;
+// ==================== ORDER DETAIL HOOKS ====================
 
-  items: CartItem[];
-}): MakeOrderRequest => {
-  const { accountId, paymentMethod, note, items } = params;
+/**
+ * Hook for getting all order details
+ * Uses GET /api/order-detail endpoint
+ */
+export const useOrderDetails = () => {
+  return $api.useQuery("get", "/api/order-detail");
+};
 
-  const totalPrice = computeCartTotalDecimal(items);
+/**
+ * Hook for getting order detail by ID
+ * Uses GET /api/order-detail/{detailId} endpoint
+ */
+export const useOrderDetailById = (detailId: number) => {
+  return $api.useQuery("get", "/api/order-detail/{detailId}", {
+    params: { path: { detailId } },
+  });
+};
 
-  const orderItems: OrderItemDTO[] = items.map((i) => ({
-    // Omit dishId when it's not a real preset dish (e.g., custom bowl with 0)
+/**
+ * Hook for getting order details by order ID
+ * Uses GET /api/order-detail/by-order/{orderId} endpoint
+ */
+export const useOrderDetailsByOrderId = (orderId: number) => {
+  return $api.useQuery("get", "/api/order-detail/by-order/{orderId}", {
+    params: { path: { orderId } },
+  });
+};
 
-    ...(i.dishId && i.dishId > 0 ? { dishId: i.dishId } : {}),
+// ==================== ENHANCED MUTATIONS WITH AUTO TOAST ====================
 
-    basedOnId: i.basedOnId,
+/**
+ * Hook for updating order with automatic toast notifications
+ */
+export const useUpdateOrderWithToast = () => {
+  const updateMutation = useUpdateOrder();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => updateMutation.mutateAsync(variables),
+    successMessage: "Order updated successfully",
+    errorMessage: "Unable to update order",
+  });
+};
 
-    name: i.name,
-
-    quantity: i.quantity,
-
-    note: i.note,
-
-    dishTemplate: i.dishTemplate,
-
-    recipe: i.recipe as RecipeItemDTO[] | undefined,
-  }));
-
-  return {
-    accountId,
-
-    paymentMethod,
-
-    note,
-
-    totalPrice,
-
-    items: orderItems,
-  };
+/**
+ * Hook for adding feedback with automatic toast notifications
+ */
+export const useFeedbackOrderWithToast = () => {
+  const feedbackMutation = useFeedbackOrder();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => feedbackMutation.mutateAsync(variables),
+    successMessage: "Feedback submitted successfully",
+    errorMessage: "Unable to submit feedback",
+  });
 };
 

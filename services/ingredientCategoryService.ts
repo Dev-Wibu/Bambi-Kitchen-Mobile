@@ -3,6 +3,7 @@ import type {
   IngredientCategoryUpdateRequest,
 } from "@/interfaces/ingredientCategory.interface";
 import { $api } from "@/libs/api";
+import { useMutationHandler } from "@/hooks/useMutationHandler";
 
 // ==================== INGREDIENT CATEGORY API HOOKS ====================
 
@@ -47,6 +48,47 @@ export const useUpdateIngredientCategory = () => {
  */
 export const useDeleteIngredientCategory = () => {
   return $api.useMutation("delete", "/api/ingredient-category/{id}");
+};
+
+// ==================== ENHANCED MUTATIONS WITH AUTO TOAST ====================
+
+/**
+ * Hook for creating ingredient category with automatic toast notifications
+ */
+export const useCreateIngredientCategoryWithToast = () => {
+  const createMutation = useCreateIngredientCategory();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => createMutation.mutateAsync(variables),
+    successMessage: "Tạo danh mục thành công",
+    errorMessage: "Không thể tạo danh mục",
+  });
+};
+
+/**
+ * Hook for updating ingredient category with automatic toast notifications
+ */
+export const useUpdateIngredientCategoryWithToast = () => {
+  const updateMutation = useUpdateIngredientCategory();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => updateMutation.mutateAsync(variables),
+    successMessage: "Cập nhật danh mục thành công",
+    errorMessage: "Không thể cập nhật danh mục",
+  });
+};
+
+/**
+ * Hook for deleting ingredient category with automatic toast notifications
+ */
+export const useDeleteIngredientCategoryWithToast = () => {
+  const deleteMutation = useDeleteIngredientCategory();
+  
+  return useMutationHandler({
+    mutationFn: (variables: any) => deleteMutation.mutateAsync(variables),
+    successMessage: "Xóa danh mục thành công",
+    errorMessage: "Không thể xóa danh mục",
+  });
 };
 
 // ==================== TRANSFORM FUNCTIONS ====================

@@ -1,23 +1,26 @@
+import ReloadButton from "@/components/ReloadButton";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import type { IngredientCategory } from "@/interfaces/ingredientCategory.interface";
 import {
   transformIngredientCategoryCreateRequest,
   transformIngredientCategoryUpdateRequest,
-  useCreateIngredientCategory,
-  useDeleteIngredientCategory,
+  useCreateIngredientCategoryWithToast,
+  useDeleteIngredientCategoryWithToast,
   useIngredientCategories,
-  useUpdateIngredientCategory,
+  useUpdateIngredientCategoryWithToast,
 } from "@/services/ingredientCategoryService";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, ScrollView, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Modal, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import IngredientCategoryForm from "./IngredientCategoryForm";
 
 export default function IngredientCategoryManagement() {
+  const router = useRouter();
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<IngredientCategory | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<IngredientCategory | null>(null);
@@ -25,10 +28,10 @@ export default function IngredientCategoryManagement() {
   const queryClient = useQueryClient();
 
   // Query hooks
-  const { data: categories, isLoading } = useIngredientCategories();
-  const createMutation = useCreateIngredientCategory();
-  const updateMutation = useUpdateIngredientCategory();
-  const deleteMutation = useDeleteIngredientCategory();
+  const { data: categories, isLoading, refetch } = useIngredientCategories();
+  const createMutation = useCreateIngredientCategoryWithToast();
+  const updateMutation = useUpdateIngredientCategoryWithToast();
+  const deleteMutation = useDeleteIngredientCategoryWithToast();
 
   const handleAdd = () => {
     setSelectedCategory(null);
@@ -59,6 +62,7 @@ export default function IngredientCategoryManagement() {
       });
 
       queryClient.invalidateQueries({ queryKey: ["/api/ingredient-categories"] });
+      refetch();
       setDeleteConfirm(null);
     } catch {
       Toast.show({
@@ -107,6 +111,7 @@ export default function IngredientCategoryManagement() {
       }
 
       queryClient.invalidateQueries({ queryKey: ["/api/ingredient-categories"] });
+      refetch();
       setIsFormVisible(false);
       setSelectedCategory(null);
     } catch {
@@ -145,67 +150,34 @@ export default function IngredientCategoryManagement() {
     );
   }
 
-  if (deleteConfirm) {
-    return (
-      <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">
-        <View className="flex-1 items-center justify-center px-6">
-          <View className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg dark:bg-gray-800">
-            <MaterialIcons
-              name="warning"
-              size={48}
-              color="#FF6D00"
-              style={{ alignSelf: "center" }}
-            />
-            <Text className="mt-4 text-center text-xl font-bold text-[#000000] dark:text-white">
-              Confirm Delete
-            </Text>
-            <Text className="mt-2 text-center text-base text-gray-600 dark:text-gray-300">
-              Are you sure you want to delete the ingredient category &quot;{deleteConfirm.name}
-              &quot;?
-            </Text>
-            <View className="mt-6 flex-row gap-3">
-              <Button
-                className="flex-1 bg-gray-300 active:bg-gray-400"
-                onPress={() => setDeleteConfirm(null)}>
-                <Text className="font-semibold text-[#000000]">Cancel</Text>
-              </Button>
-              <Button
-                className="flex-1 bg-red-500 active:bg-red-600"
-                onPress={confirmDelete}
-                disabled={deleteMutation.isPending}>
-                {deleteMutation.isPending ? (
-                  <ActivityIndicator color="white" />
-                ) : (
-                  <Text className="font-semibold text-white">Delete</Text>
-                )}
-              </Button>
-            </View>
-          </View>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">
       <View className="flex-1">
         {/* Header */}
         <View className="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
           <View className="flex-row items-center justify-between">
-            <View>
-              <Text className="text-2xl font-bold text-[#000000] dark:text-white">
-                Ingredient Category Management
-              </Text>
-              <Text className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                Manage ingredient categories
-              </Text>
-            </View>
-            <Button className="bg-[#FF6D00] active:bg-[#FF4D00]" onPress={handleAdd}>
-              <View className="flex-row items-center gap-2">
-                <MaterialIcons name="add" size={20} color="white" />
-                <Text className="font-semibold text-white">Add</Text>
+            <View className="flex-1 flex-row items-center gap-3">
+              <TouchableOpacity onPress={() => router.back()} className="mr-2">
+                <MaterialIcons name="arrow-back" size={24} color="#FF6D00" />
+              </TouchableOpacity>
+              <View className="flex-1">
+                <Text className="text-2xl font-bold text-[#000000] dark:text-white">
+                  Ingredient Category Management
+                </Text>
+                <Text className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                  Manage ingredient categories
+                </Text>
               </View>
-            </Button>
+            </View>
+            <View className="flex-row gap-2">
+              <ReloadButton onRefresh={() => refetch()} />
+              <Button className="bg-[#FF6D00] active:bg-[#FF4D00]" onPress={handleAdd}>
+                <View className="flex-row items-center gap-2">
+                  <MaterialIcons name="add" size={20} color="white" />
+                  <Text className="font-semibold text-white">Add</Text>
+                </View>
+              </Button>
+            </View>
           </View>
         </View>
 
@@ -255,6 +227,48 @@ export default function IngredientCategoryManagement() {
           )}
         </ScrollView>
       </View>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        visible={!!deleteConfirm}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setDeleteConfirm(null)}>
+        <View className="flex-1 items-center justify-center bg-black/50 px-6">
+          <View className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg dark:bg-gray-800">
+            <MaterialIcons
+              name="warning"
+              size={48}
+              color="#FF6D00"
+              style={{ alignSelf: "center" }}
+            />
+            <Text className="mt-4 text-center text-xl font-bold text-[#000000] dark:text-white">
+              Confirm Delete
+            </Text>
+            <Text className="mt-2 text-center text-base text-gray-600 dark:text-gray-300">
+              Are you sure you want to delete the ingredient category &quot;{deleteConfirm?.name}
+              &quot;?
+            </Text>
+            <View className="mt-6 flex-row gap-3">
+              <Button
+                className="flex-1 bg-gray-300 active:bg-gray-400"
+                onPress={() => setDeleteConfirm(null)}>
+                <Text className="font-semibold text-[#000000]">Cancel</Text>
+              </Button>
+              <Button
+                className="flex-1 bg-red-500 active:bg-red-600"
+                onPress={confirmDelete}
+                disabled={deleteMutation.isPending}>
+                {deleteMutation.isPending ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <Text className="font-semibold text-white">Delete</Text>
+                )}
+              </Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
