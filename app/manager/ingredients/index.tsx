@@ -1,16 +1,17 @@
+import ReloadButton from "@/components/ReloadButton";
 import { Button } from "@/components/ui/button";
-
 import { Text } from "@/components/ui/text";
-
 import type { Ingredient } from "@/interfaces/ingredient.interface";
 
 import {
-  useCreateIngredient,
-  useDeleteIngredient,
+  useDeleteIngredientWithToast,
   useIngredients,
-  useToggleIngredientActive,
-  useUpdateIngredient,
+  useToggleIngredientActiveWithToast,
 } from "@/services/ingredientService";
+
+import { API_BASE_URL } from "@/libs/api";
+
+import { useAuthStore } from "@/stores/authStore";
 
 import { MaterialIcons } from "@expo/vector-icons";
 
@@ -35,7 +36,7 @@ export default function IngredientManagement() {
   const [deleteConfirm, setDeleteConfirm] = useState<Ingredient | null>(null);
 
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   // Form fields
   const [name, setName] = useState("");
   const [categoryId, setCategoryId] = useState("");
@@ -43,19 +44,15 @@ export default function IngredientManagement() {
   const [unit, setUnit] = useState<"GRAM" | "KILOGRAM" | "LITER" | "PCS">("GRAM");
   const [pricePerUnit, setPricePerUnit] = useState("");
 
-  const queryClient = useQueryClient();
-
-  // Query hooks - 5 endpoints used here
+  // Query hooks - 3 hooks used here
 
   const { data: ingredients, isLoading, refetch } = useIngredients();
 
-  const createMutation = useCreateIngredient();
+  const deleteMutation = useDeleteIngredientWithToast();
 
-  const updateMutation = useUpdateIngredient();
+  const toggleActiveMutation = useToggleIngredientActiveWithToast();
 
-  const deleteMutation = useDeleteIngredient();
-
-  const toggleActiveMutation = useToggleIngredientActive();
+  const queryClient = useQueryClient();
 
   const handleAdd = () => {
     setSelectedIngredient(null);
@@ -80,45 +77,85 @@ export default function IngredientManagement() {
   const handleDelete = (ingredient: Ingredient) => {
     setDeleteConfirm(ingredient);
   };
-  
+
   const handleSubmitForm = async () => {
     if (!name.trim()) {
       Toast.show({ type: "error", text1: "Name is required" });
+      return;
+    }
+    if (name.trim().length < 10) {
+      Toast.show({ type: "error", text1: "Name must be at least 10 characters" });
       return;
     }
     if (!categoryId) {
       Toast.show({ type: "error", text1: "Category is required" });
       return;
     }
-    
+    // Validate categoryId is a valid number
+    const categoryIdNum = parseInt(categoryId);
+    if (isNaN(categoryIdNum) || categoryIdNum <= 0) {
+      Toast.show({ type: "error", text1: "Invalid category ID" });
+      return;
+    }
+
     try {
-      const ingredientData: any = {
-        name: name.trim(),
-        categoryId: parseInt(categoryId),
-        quantity: quantity ? parseFloat(quantity) : 0,
-        unit,
-        pricePerUnit: pricePerUnit ? parseFloat(pricePerUnit) : 0,
-      };
-      
+      // BE uses @ModelAttribute expecting multipart/form-data
+      const formData = new FormData();
+      formData.append("name", name.trim());
+      formData.append("categoryId", categoryId);
+      formData.append("quantity", quantity || "0");
+      formData.append("unit", unit);
+      formData.append("pricePerUnit", pricePerUnit || "0");
+
       if (selectedIngredient?.id) {
-        // Update
-        ingredientData.id = selectedIngredient.id;
-        await updateMutation.mutateAsync({ body: ingredientData });
-        Toast.show({ type: "success", text1: "Ingredient updated successfully" });
-      } else {
-        // Create
-        await createMutation.mutateAsync({ body: ingredientData });
-        Toast.show({ type: "success", text1: "Ingredient created successfully" });
+        // Update mode: add id field
+        formData.append("id", selectedIngredient.id.toString());
       }
-      
+
+      // Get auth token
+      const token = useAuthStore.getState().token;
+      const url = `${API_BASE_URL}/api/ingredient`;
+
+      const response = await fetch(url, {
+        method: selectedIngredient?.id ? "PUT" : "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          // Don't set Content-Type - let browser set it with boundary
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        // Try to parse error as JSON to extract BE message
+        let errorMessage = selectedIngredient ? "Update failed" : "Create failed";
+        try {
+          const errorJson = JSON.parse(errorText);
+          // Extract error message from BE response
+          errorMessage = errorJson.message || errorJson.error || errorText;
+        } catch {
+          // If not JSON, use raw error text
+          errorMessage = errorText;
+        }
+        throw new Error(errorMessage);
+      }
+
+      // Success - Extract success message from BE if available
+      const responseData = await response.json();
+      const successMessage =
+        responseData?.message ||
+        (selectedIngredient ? "Ingredient updated successfully" : "Ingredient created successfully");
+
+      Toast.show({ type: "success", text1: "Success", text2: successMessage });
+
       queryClient.invalidateQueries({ queryKey: ["/api/ingredient"] });
       refetch(); // Reload the list
       setIsFormVisible(false);
     } catch (error) {
-      Toast.show({ 
-        type: "error", 
+      Toast.show({
+        type: "error",
         text1: selectedIngredient ? "Update failed" : "Create failed",
-        text2: error instanceof Error ? error.message : "Please try again"
+        text2: error instanceof Error ? error.message : "Please try again",
       });
     }
   };
@@ -200,10 +237,8 @@ export default function IngredientManagement() {
 
       <View className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
         <View className="mb-3 flex-row items-center justify-between">
-          <View className="flex-row items-center gap-3 flex-1">
-            <TouchableOpacity 
-              onPress={() => router.back()}
-              className="mr-2">
+          <View className="flex-1 flex-row items-center gap-3">
+            <TouchableOpacity onPress={() => router.back()} className="mr-2">
               <MaterialIcons name="arrow-back" size={24} color="#FF6D00" />
             </TouchableOpacity>
             <Text className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -212,11 +247,7 @@ export default function IngredientManagement() {
           </View>
 
           <View className="flex-row gap-2">
-            <TouchableOpacity
-              onPress={() => refetch()}
-              style={{ backgroundColor: "#F3F4F6", borderRadius: 8, padding: 8 }}>
-              <MaterialIcons name="refresh" size={24} color="#FF6D00" />
-            </TouchableOpacity>
+            <ReloadButton onRefresh={() => refetch()} size={24} borderRadius={8} />
             <Button onPress={handleAdd} className="bg-[#FF6D00]">
               <MaterialIcons name="add" size={20} color="white" />
               <Text className="ml-2 font-semibold text-white">Add</Text>
@@ -417,15 +448,8 @@ export default function IngredientManagement() {
                   <Text className="text-gray-700">Cancel</Text>
                 </Button>
 
-                <Button 
-                  onPress={handleSubmitForm} 
-                  className="flex-1 bg-[#FF6D00]"
-                  disabled={createMutation.isPending || updateMutation.isPending}>
-                  {(createMutation.isPending || updateMutation.isPending) ? (
-                    <ActivityIndicator color="white" />
-                  ) : (
-                    <Text className="text-white">{selectedIngredient ? "Update" : "Create"}</Text>
-                  )}
+                <Button onPress={handleSubmitForm} className="flex-1 bg-[#FF6D00]">
+                  <Text className="text-white">{selectedIngredient ? "Update" : "Create"}</Text>
                 </Button>
               </View>
             </View>

@@ -1,8 +1,9 @@
+import ReloadButton from "@/components/ReloadButton";
 import {
-  useCreateDish,
-  useDishes,
-  useToggleDishActive,
-  useToggleDishPublic,
+  useAllDishes,
+  useCreateDishWithToast,
+  useToggleDishActiveWithToast,
+  useToggleDishPublicWithToast,
 } from "@/services/dishService";
 import { useAuthStore } from "@/stores/authStore";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -46,10 +47,11 @@ export default function DishesManager() {
     }
   }
 
-  const { data, isLoading, refetch, isError } = useDishes();
-  const createOrUpdateDish = useCreateDish();
-  const togglePublicMutation = useToggleDishPublic();
-  const toggleActiveMutation = useToggleDishActive();
+  // Use /api/dish/get-all for admin - includes inactive and private dishes
+  const { data, isLoading, refetch, isError } = useAllDishes();
+  const createOrUpdateDish = useCreateDishWithToast();
+  const togglePublicMutation = useToggleDishPublicWithToast();
+  const toggleActiveMutation = useToggleDishActiveWithToast();
   const [modalVisible, setModalVisible] = useState(false);
   const [id, setId] = useState<number | null>(null);
   const [name, setName] = useState("");
@@ -91,7 +93,7 @@ export default function DishesManager() {
     setDishType("PRESET");
     setImage(null);
     setFile(null);
-    setIngredients({});
+    setIngredients({}); // Initialize as empty object, not null
   };
 
   // Chọn ảnh từ thư viện
@@ -129,15 +131,6 @@ export default function DishesManager() {
     }
     setSubmitting(true);
     try {
-      let imageUrl = image;
-      if (file && file.uri) {
-        imageUrl = await uploadImageToCloudinary(file.uri);
-        if (!imageUrl) {
-          Toast.show({ type: "error", text1: "Upload image failed" });
-          setSubmitting(false);
-          return;
-        }
-      }
       // Lấy account từ authStore
       const user = useAuthStore.getState().user;
       if (!user) {
@@ -146,67 +139,85 @@ export default function DishesManager() {
         return;
       }
       const account = { id: user.userId };
-      // Đảm bảo ingredients luôn là object không null và không rỗng
-      // Backend yêu cầu ingredients phải có ít nhất 1 item
-      const safeIngredients =
+
+      // Backend expects multipart/form-data with @ModelAttribute
+      // Use FormData to send file as MultipartFile (not URLSearchParams)
+      const formData = new FormData();
+      formData.append("name", name);
+      if (description) formData.append("description", description);
+      formData.append("price", String(price));
+      formData.append("isPublic", String(isPublic));
+      formData.append("isActive", String(active));
+      formData.append("dishType", dishType);
+      formData.append("account.id", String(account.id));
+
+      // Append file if user selected one
+      if (file && file.uri) {
+        // Create file object compatible with FormData
+        const fileToUpload: any = {
+          uri: file.uri,
+          type: file.mimeType || "image/jpeg",
+          name: file.fileName || "dish_image.jpg",
+        };
+        formData.append("file", fileToUpload);
+      }
+
+      // Send ingredients map - Spring Boot @NotNull requires Map<Integer, Integer>
+      // Backend needs at least one ingredient, cannot be null or empty
+      const ingredientsToSend =
         ingredients && typeof ingredients === "object" && Object.keys(ingredients).length > 0
           ? ingredients
-          : { 1: 1 }; // Default: ingredient ID 1 với số lượng 1
+          : { 1: 1 }; // Default: ingredient ID 1 with quantity 1 (REQUIRED by backend)
 
-      const request: any = {
-        name,
-        description,
-        price: Number(price),
-        public: isPublic,
-        active,
-        dishType,
-        file: imageUrl,
-        account,
-        ingredients: safeIngredients,
-      };
-      if (id) request.id = id;
-
-      // Use custom fetch to handle deeply-nested objects
-      // Backend expects @ModelAttribute which is form-encoded data
-      const formData = new URLSearchParams();
-      formData.append("name", request.name);
-      if (request.description) formData.append("description", request.description);
-      formData.append("price", String(request.price));
-      formData.append("isPublic", String(request.public));
-      formData.append("isActive", String(request.active));
-      formData.append("dishType", request.dishType);
-      if (request.file) formData.append("file", request.file);
-      formData.append("account.id", String(request.account.id));
-      // Serialize ingredients as individual form params
-      Object.entries(request.ingredients).forEach(([key, value]) => {
+      // Spring Boot @ModelAttribute expects Map<Integer, Integer> format
+      // Send as: ingredients[1]=10&ingredients[2]=5
+      Object.entries(ingredientsToSend).forEach(([key, value]) => {
         formData.append(`ingredients[${key}]`, String(value));
       });
-      if (request.id) formData.append("id", String(request.id));
+
+      if (id) formData.append("id", String(id));
 
       const response = await fetch("https://bambi.kdz.asia/api/dish", {
         method: "POST",
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+          // Do NOT set Content-Type - let fetch set it automatically with boundary for multipart/form-data
           Authorization: `Bearer ${useAuthStore.getState().token}`,
         },
-        body: formData.toString(),
+        body: formData,
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || "Failed to save dish");
+        // Try to parse error as JSON to extract BE message
+        let errorMessage = "Failed to save dish";
+        try {
+          const errorJson = JSON.parse(errorText);
+          // Extract error message from BE response
+          errorMessage = errorJson.message || errorJson.error || errorJson.ingredients || errorText;
+        } catch {
+          // If not JSON, use raw error text
+          errorMessage = errorText;
+        }
+        throw new Error(errorMessage);
       }
 
-      Toast.show({ type: "success", text1: id ? "Dish updated" : "Dish created" });
+      // Success - Extract success message from BE if available
+      const responseData = await response.json();
+      const successMessage =
+        responseData?.message || (id ? "Dish updated successfully" : "Dish created successfully");
+
+      Toast.show({ type: "success", text1: "Success", text2: successMessage });
       resetForm();
       setModalVisible(false);
       refetch(); // Reload the list after create/update
     } catch (error) {
       console.log("Dish create/update error:", error);
+      // Extract and display the actual error message from BE
+      const errorMessage = error instanceof Error ? error.message : "Please try again";
       Toast.show({
         type: "error",
-        text1: id ? "Update failed" : "Create failed",
-        text2: error instanceof Error ? error.message : "Please try again",
+        text1: id ? "Update Failed" : "Create Failed",
+        text2: errorMessage,
       });
     } finally {
       setSubmitting(false);
@@ -223,11 +234,7 @@ export default function DishesManager() {
           <Text className="text-2xl font-bold text-[#FF6D00]">Dishes</Text>
         </View>
         <View className="flex-row gap-2">
-          <TouchableOpacity
-            onPress={() => refetch()}
-            style={{ backgroundColor: "#F3F4F6", borderRadius: 24, padding: 8 }}>
-            <MaterialIcons name="refresh" size={28} color="#FF6D00" />
-          </TouchableOpacity>
+          <ReloadButton onRefresh={() => refetch()} />
           <TouchableOpacity
             onPress={() => {
               resetForm();

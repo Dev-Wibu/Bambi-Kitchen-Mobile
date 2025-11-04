@@ -1,8 +1,9 @@
+import ReloadButton from "@/components/ReloadButton";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import type { Notification } from "@/interfaces/notification.interface";
 import {
-  useDeleteNotification,
+  useDeleteNotificationWithToast,
   useMarkAsRead,
   useNotifications,
 } from "@/services/notificationService";
@@ -21,8 +22,8 @@ export default function NotificationManagement() {
   const queryClient = useQueryClient();
 
   // Query hooks
-  const { data: notifications, isLoading } = useNotifications();
-  const deleteMutation = useDeleteNotification();
+  const { data: notifications, isLoading, refetch } = useNotifications();
+  const deleteMutation = useDeleteNotificationWithToast();
   const markAsReadMutation = useMarkAsRead();
 
   const handleDelete = (notification: Notification) => {
@@ -44,6 +45,7 @@ export default function NotificationManagement() {
       });
 
       queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+      refetch();
       setDeleteConfirm(null);
     } catch {
       Toast.show({
@@ -69,6 +71,7 @@ export default function NotificationManagement() {
       });
 
       queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+      refetch();
     } catch {
       Toast.show({
         type: "error",
@@ -140,10 +143,8 @@ export default function NotificationManagement() {
         {/* Header */}
         <View className="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
           <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center gap-3 flex-1">
-              <TouchableOpacity 
-                onPress={() => router.back()}
-                className="mr-2">
+            <View className="flex-1 flex-row items-center gap-3">
+              <TouchableOpacity onPress={() => router.back()} className="mr-2">
                 <MaterialIcons name="arrow-back" size={24} color="#FF6D00" />
               </TouchableOpacity>
               <View className="flex-1">
@@ -155,6 +156,7 @@ export default function NotificationManagement() {
                 </Text>
               </View>
             </View>
+            <ReloadButton onRefresh={() => refetch()} />
           </View>
         </View>
 

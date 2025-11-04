@@ -1,11 +1,10 @@
+import ReloadButton from "@/components/ReloadButton";
 import { Button } from "@/components/ui/button";
-
 import { Text } from "@/components/ui/text";
-
 import type { InventoryTransaction } from "@/interfaces/inventoryTransaction.interface";
 
 import {
-  useDeleteInventoryTransaction,
+  useDeleteInventoryTransactionWithToast,
   useInventoryTransactions,
 } from "@/services/inventoryTransactionService";
 
@@ -33,7 +32,7 @@ export default function InventoryTransactionManagement() {
 
   const { data: transactions, isLoading, refetch } = useInventoryTransactions();
 
-  const deleteMutation = useDeleteInventoryTransaction();
+  const deleteMutation = useDeleteInventoryTransactionWithToast();
 
   const handleDelete = (transaction: InventoryTransaction) => {
     setDeleteConfirm(transaction);
@@ -138,10 +137,8 @@ export default function InventoryTransactionManagement() {
 
         <View className="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
           <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center gap-3 flex-1">
-              <TouchableOpacity 
-                onPress={() => router.back()}
-                className="mr-2">
+            <View className="flex-1 flex-row items-center gap-3">
+              <TouchableOpacity onPress={() => router.back()} className="mr-2">
                 <MaterialIcons name="arrow-back" size={24} color="#FF6D00" />
               </TouchableOpacity>
               <View className="flex-1">
@@ -154,11 +151,7 @@ export default function InventoryTransactionManagement() {
                 </Text>
               </View>
             </View>
-            <TouchableOpacity
-              onPress={() => refetch()}
-              style={{ backgroundColor: "#F3F4F6", borderRadius: 24, padding: 8 }}>
-              <MaterialIcons name="refresh" size={28} color="#FF6D00" />
-            </TouchableOpacity>
+            <ReloadButton onRefresh={() => refetch()} />
           </View>
         </View>
 
