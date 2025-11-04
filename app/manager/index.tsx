@@ -20,6 +20,8 @@ import { useIngredients } from "@/services/ingredientService";
 
 import { useNotifications } from "@/services/notificationService";
 
+import { useOrders } from "@/services/orderService";
+
 import { MaterialIcons } from "@expo/vector-icons";
 
 import { useRouter } from "expo-router";
@@ -51,14 +53,18 @@ export default function ManagerTab() {
     const { data: accountsAPI } = useAccounts();
 
     const { data: ingredientsAPI } = useIngredients();
+    
+    const { data: ordersAPI } = useOrders();
 
     const dishesCount = Array.isArray(dishesAPI) ? dishesAPI.length : 0;
 
     const accountsCount = Array.isArray(accountsAPI) ? accountsAPI.length : 0;
 
     const ingredientsCount = Array.isArray(ingredientsAPI) ? ingredientsAPI.length : 0;
+    
+    const ordersCount = Array.isArray(ordersAPI) ? ordersAPI.length : 0;
 
-    const max = Math.max(dishesCount, accountsCount, ingredientsCount, 1);
+    const max = Math.max(dishesCount, accountsCount, ingredientsCount, ordersCount, 1);
 
     const items = [
       {
@@ -83,6 +89,14 @@ export default function ManagerTab() {
         value: ingredientsCount,
         color: "#60A5FA",
         route: "/manager/ingredients",
+      },
+      
+      {
+        key: "orders",
+        label: "Orders",
+        value: ordersCount,
+        color: "#FBBF24",
+        route: "/manager/orders",
       },
     ];
 
