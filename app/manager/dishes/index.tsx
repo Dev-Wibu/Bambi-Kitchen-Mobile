@@ -7,19 +7,12 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ActivityIndicator, FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 import DishForm from "./DishForm";
 
 export default function DishesManager() {
   const router = useRouter();
-  
+
   // Use /api/dish/get-all for admin - includes inactive and private dishes
   const { data, isLoading, refetch, isError } = useAllDishes();
   const togglePublicMutation = useToggleDishPublicWithToast();
