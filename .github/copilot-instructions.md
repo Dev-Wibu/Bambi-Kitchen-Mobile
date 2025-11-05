@@ -6,26 +6,27 @@
 
 **Common commands**:
 
-- `npm start` - Start Metro bundler
+- `npm start` - Start Metro bundler (Ctrl+C to stop)
 - `npm run android` - Run on Android (emulator or device)
 - `npm run ios` - Run on iOS (simulator or device)
-- `npm run generate-schema` - Sync types from backend OpenAPI spec
-- `npm run start-clean` - Clear cache (fix Zustand/React Query issues)
+- `npm run generate-schema` - Sync types from backend OpenAPI spec at `https://bambi.kdz.asia/v3/api-docs`
+- `npm run start-clean` - Clear Metro cache (fixes React Query/Zustand hydration issues)
 - `npm run typecheck` - TypeScript validation
 - `npm run lint` - ESLint + Prettier validation
 
 **File patterns**:
 
 - API: `services/[entity]Service.ts` exports `use[Entity]` hooks (e.g., `useDishes`, `useCreateDish`)
-- Screens: `app/(tabs)/[feature]/index.tsx` auto-registers routes via Expo Router
-- State: Zustand stores in `stores/` with AsyncStorage persistence
+- Screens: `app/(tabs)/[feature]/index.tsx` auto-registers routes via Expo Router file-based routing
+- State: Zustand stores in `stores/` with AsyncStorage persistence via `persistStorage.ts`
 - Types: Auto-generated in `schema-from-be.d.ts` from OpenAPI (NEVER edit manually)
 
 **Key constraints**:
 
-- Mobile is USER-role only (ADMIN/STAFF blocked in `app/(tabs)/_layout.tsx` and redirected)
+- Mobile is USER-role only (ADMIN redirected to `/manager`, STAFF blocked in `app/(tabs)/_layout.tsx`)
 - Auth uses JWT in `Authorization: Bearer` header (auto-injected via `libs/api.ts` middleware)
-- No `fetch()` calls except in `AuthContext.tsx` (login/register don't use JWT middleware yet)
+- OAuth2 callback uses custom scheme `fe://oauth2/callback` (configured in `app.json`)
+- No raw `fetch()` calls except in `AuthContext.tsx` (login/register/Google OAuth endpoints)
 
 ## Architecture Overview
 
@@ -120,19 +121,23 @@ export const useCartStore = create<CartState>()(
 );
 ```
 
-**Cache Invalidation**: After mutations, always invalidate React Query cache:
+**Cache Invalidation**: After mutations, manually invalidate React Query cache (don't use `useMutationHandler` - it's empty):
 
 ```typescript
-// ❌ WRONG: Hook exists but useMutationHandler.ts is empty - don't use it
-// ✅ CORRECT: Manual invalidation pattern used in codebase
+// ✅ CORRECT: Manual invalidation pattern
 const createMutation = useCreateDish();
 await createMutation.mutateAsync({ body: data });
 queryClient.invalidateQueries({ queryKey: ["get", "/api/dish"] }); // Match openapi-react-query format
 ```
 
+**Cart State Pattern** (see `stores/cartStore.ts`):
+- Merges identical simple items automatically
+- Generates unique IDs for customized dishes: `${dishId}-${timestamp}-${random}`
+- Uses derived state as functions: `getTotal()` instead of storing computed values
+
 ### 3. Authentication Flow
 
-**Login** → JWT token from `/api/user/login` → stored in Zustand → middleware injects into headers
+**JWT Login** → Token from `/api/user/login` (plain text response, not JSON) → stored in Zustand → middleware injects into headers
 
 ```typescript
 // libs/api.ts middleware (already implemented)
@@ -145,8 +150,14 @@ fetchClient.use({
 });
 ```
 
+**Google OAuth** → Modular service in `services/googleAuthService.ts` with 10+ helper functions:
+- `loginWithGoogle(setToken)` - Main orchestrator
+- `prepareGoogleAuth()` - WebBrowser setup (CRITICAL for iOS)
+- `generateRedirectUri()` - Creates `fe://oauth2/callback` URI
+- See `services/googleAuthExample.ts` for 6 usage patterns
+
 **Role-Based Routing**: Check `utils/roleNavigation.ts` before adding navigation logic.  
-**Mobile Restriction**: `app/(tabs)/_layout.tsx` enforces USER-only access—do not bypass this.
+**Mobile Restriction**: `app/(tabs)/_layout.tsx` enforces USER-only access (ADMIN→`/manager`, STAFF→blocked).
 
 ### 4. Styling with NativeWind
 
@@ -402,9 +413,10 @@ export const extractRole = (roles: any[]): ROLE_TYPE => {
 
 ## Recent Changes (2024-2025)
 
+- **Nov 2024**: Refactored Google OAuth into modular service (`googleAuthService.ts`) with 10+ helper functions
 - **Oct 2024**: Switched from mock auth to real JWT backend integration
-- **Oct 2024**: Enforced mobile-only USER access (ADMIN/STAFF blocked)
-- **Oct 2024**: Added push notification infrastructure (frontend complete, backend needs adapter)
+- **Oct 2024**: Enforced mobile-only USER access (ADMIN redirects to `/manager`, STAFF blocked completely)
+- **Oct 2024**: Added push notification infrastructure (frontend complete, backend needs Expo Push adapter)
 - **Oct 2024**: Converted all UI text from Vietnamese to English
 - **Oct 2024**: Standardized color scheme to orange-primary design system
 
