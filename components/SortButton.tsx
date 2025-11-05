@@ -1,8 +1,9 @@
-"use client";
-
-import { Button } from "@/components/Shadcn/ui/button";
-import { cn } from "@/utils/utils";
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
+import { cn } from "@/libs/utils";
 import * as React from "react";
+import { View } from "react-native";
+import Svg, { Path } from "react-native-svg";
 
 type SortDirection = "asc" | "desc" | "none";
 
@@ -14,61 +15,73 @@ interface SortButtonProps extends Omit<React.ComponentProps<typeof Button>, "onC
   children?: React.ReactNode;
 }
 
-// Custom Sort Icon với kích thước lớn hơn
-const CustomSortIcon = ({ direction, className }: { direction?: SortDirection; className?: string }) => {
-  const baseSize = 6; // Tăng kích thước lên 1.5 lần so với size-4 (4px)
+// Custom Sort Icon with larger size
+const CustomSortIcon = ({ direction }: { direction?: SortDirection }) => {
+  const baseSize = 24; // Increased size for better visibility on mobile
   const opacityUp = direction === "desc" ? 0.3 : 1;
   const opacityDown = direction === "asc" ? 0.3 : 1;
 
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" className={className} width={baseSize} height={baseSize} fill="currentColor">
-      <path d="M5 6 L8 2 L11 6 Z" opacity={opacityUp} />
-      <path d="M5 10 L8 14 L11 10 Z" opacity={opacityDown} />
-    </svg>
+    <Svg viewBox="0 0 16 16" width={baseSize} height={baseSize} fill="currentColor">
+      <Path d="M5 6 L8 2 L11 6 Z" opacity={opacityUp} />
+      <Path d="M5 10 L8 14 L11 10 Z" opacity={opacityDown} />
+    </Svg>
   );
 };
 
-// Tách function để render icon
+// Function to render icon
 const renderSortIcon = (direction: SortDirection) => {
-  return <CustomSortIcon direction={direction} className="size-6" />; // Tăng size-4 thành size-6
+  return <CustomSortIcon direction={direction} />;
 };
 
-// Tách function để get aria label
+// Function to get aria label
 const getSortAriaLabel = (direction: SortDirection) => {
   if (direction === "none") return "Sort";
   if (direction === "asc") return "Sort ascending";
   return "Sort descending";
 };
 
-// Tách function để tính next direction
+// Function to calculate next direction
 const getNextDirection = (currentDirection: SortDirection): SortDirection => {
   if (currentDirection === "none") return "asc";
   if (currentDirection === "asc") return "desc";
   return "none";
 };
 
-export function SortButton({ onChange, direction: externalDirection, label, className, children, ...props }: Readonly<SortButtonProps>) {
+export function SortButton({
+  onChange,
+  direction: externalDirection,
+  label,
+  className,
+  children,
+  ...props
+}: Readonly<SortButtonProps>) {
   const [internalDirection, setInternalDirection] = React.useState<SortDirection>("none");
 
   // Use external direction if provided, otherwise use internal state
   const direction = externalDirection ?? internalDirection;
 
-  const handleClick = () => {
+  const handlePress = () => {
     const newDirection = getNextDirection(direction);
     setInternalDirection(newDirection);
     onChange?.(newDirection);
   };
 
-  // Sử dụng children hoặc label nếu có
+  // Use children or label if available
   const displayLabel = children || label;
 
   return (
-    <div className="flex items-center gap-2">
-      <span className="whitespace-nowrap">{displayLabel}</span>
-      <Button variant="ghost" size="icon" className={cn("ml-1 h-6 w-6 p-0", className)} onClick={handleClick} {...props}>
+    <View className="flex-row items-center gap-2">
+      {displayLabel && <Text className="whitespace-nowrap">{displayLabel}</Text>}
+      <Button
+        variant="ghost"
+        size="icon"
+        className={cn("ml-1 h-6 w-6 p-0", className)}
+        onPress={handlePress}
+        accessibilityLabel={getSortAriaLabel(direction)}
+        {...props}>
         {renderSortIcon(direction)}
-        <span className="sr-only">{getSortAriaLabel(direction)}</span>
       </Button>
-    </div>
+    </View>
   );
 }

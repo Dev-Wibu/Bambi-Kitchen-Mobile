@@ -121,7 +121,7 @@ export const usePagination = ({
         onPageChange?.(newPage);
       }
     },
-    [currentPage, totalPages, onPageChange],
+    [currentPage, totalPages, onPageChange]
   );
 
   const nextPage = useCallback(() => {
@@ -183,7 +183,7 @@ export const useUrlPagination = (
   config: Omit<PaginationConfig, "initialPage" | "onPageChange">,
   searchParams: URLSearchParams,
   setSearchParams: (params: URLSearchParams) => void,
-  pageParam = "page",
+  pageParam = "page"
 ) => {
   const initialPage = parseInt(searchParams.get(pageParam) || "1", 10);
 
@@ -197,7 +197,7 @@ export const useUrlPagination = (
       }
       setSearchParams(newParams);
     },
-    [searchParams, setSearchParams, pageParam],
+    [searchParams, setSearchParams, pageParam]
   );
 
   return usePagination({

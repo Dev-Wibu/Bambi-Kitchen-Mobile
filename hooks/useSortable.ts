@@ -2,7 +2,7 @@ import * as React from "react";
 
 export type SortDirection = "asc" | "desc" | "none";
 
-// Helper functions để giảm Cognitive Complexity
+// Helper functions to reduce Cognitive Complexity
 const handleNullValues = (valueA: unknown, valueB: unknown, sortDirection: SortDirection) => {
   if (valueA === null || valueA === undefined) {
     return sortDirection === "asc" ? -1 : 1;
@@ -10,7 +10,7 @@ const handleNullValues = (valueA: unknown, valueB: unknown, sortDirection: SortD
   if (valueB === null || valueB === undefined) {
     return sortDirection === "asc" ? 1 : -1;
   }
-  return null; // Không phải null values
+  return null; // Not null values
 };
 
 const compareStrings = (valueA: string, valueB: string, sortDirection: SortDirection) => {
@@ -18,7 +18,7 @@ const compareStrings = (valueA: string, valueB: string, sortDirection: SortDirec
 };
 
 const compareOtherTypes = (valueA: unknown, valueB: unknown, sortDirection: SortDirection) => {
-  // Type assertion để so sánh an toàn
+  // Type assertion for safe comparison
   const a = valueA as string | number;
   const b = valueB as string | number;
 
@@ -31,7 +31,7 @@ const compareOtherTypes = (valueA: unknown, valueB: unknown, sortDirection: Sort
   return 0;
 };
 
-// Chuyển các helper functions thành return string thay vì JSX
+// Helper functions return string instead of JSX
 const getSortIconType = (column: string, sortField: string | null, sortOrder: string) => {
   if (column !== sortField) return "none";
   if (sortOrder === "asc") return "asc";
