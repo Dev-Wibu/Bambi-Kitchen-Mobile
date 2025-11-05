@@ -81,7 +81,9 @@ export default function ManagerLayout() {
     // Hidden tabs navigated via dashboard donuts
     "accounts/index",
     "dishes/index",
+    "dishes/DishForm",
     "ingredients/index",
+    "ingredients/IngredientForm",
     "orders/index",
   ];
 
@@ -110,6 +112,8 @@ export default function ManagerLayout() {
       <Tabs.Screen name="accounts/index" options={{ href: null }} />
 
       <Tabs.Screen name="dishes/index" options={{ href: null }} />
+
+      <Tabs.Screen name="dishes/DishForm" options={{ href: null }} />
 
       <Tabs.Screen name="orders/index" options={{ href: null }} />
 
@@ -466,6 +470,12 @@ export default function ManagerLayout() {
         }}
       />
 
+      <Tabs.Screen
+        name="ingredients/IngredientForm"
+        options={{
+          href: null,
+        }}
+      />
       {/* Explicitly hide notifications tab route */}
 
       <Tabs.Screen
