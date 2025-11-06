@@ -42,28 +42,9 @@ export const useUpdateInventoryTransaction = () => {
   return $api.useMutation("put", "/api/inventory-transaction/{id}" as any);
 };
 
-/**
- * Hook for deleting an inventory transaction
- * Uses DELETE /api/inventory-transaction/{id} endpoint (fixed from /api/inventory-transactions/{id})
- */
-export const useDeleteInventoryTransaction = () => {
-  return $api.useMutation("delete", "/api/inventory-transaction/{id}" as any);
-};
+// DELETE operation removed - inventory transactions should not be deleted for audit trail purposes
 
 // ==================== ENHANCED MUTATIONS WITH AUTO TOAST ====================
-
-/**
- * Hook for deleting inventory transaction with automatic toast notifications
- */
-export const useDeleteInventoryTransactionWithToast = () => {
-  const deleteMutation = useDeleteInventoryTransaction();
-  
-  return useMutationHandler({
-    mutationFn: (variables: any) => deleteMutation.mutateAsync(variables),
-    successMessage: "Xóa giao dịch thành công",
-    errorMessage: "Không thể xóa giao dịch",
-  });
-};
 
 // ==================== TRANSFORM FUNCTIONS ====================
 

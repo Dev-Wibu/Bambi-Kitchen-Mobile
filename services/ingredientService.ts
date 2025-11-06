@@ -49,13 +49,7 @@ export const useUpdateIngredient = () => {
   return $api.useMutation("put", "/api/ingredient");
 };
 
-/**
- * Hook for deleting an ingredient
- * Uses DELETE /api/ingredient/{id} endpoint
- */
-export const useDeleteIngredient = () => {
-  return $api.useMutation("delete", "/api/ingredient/{id}");
-};
+// DELETE operation removed - use toggle active status instead
 
 /**
  * Hook for toggling ingredient active status
@@ -93,18 +87,7 @@ export const useUpdateIngredientWithToast = () => {
   });
 };
 
-/**
- * Hook for deleting ingredient with automatic toast notifications
- */
-export const useDeleteIngredientWithToast = () => {
-  const deleteMutation = useDeleteIngredient();
-  
-  return useMutationHandler({
-    mutationFn: (variables: any) => deleteMutation.mutateAsync(variables),
-    successMessage: "Xóa nguyên liệu thành công",
-    errorMessage: "Không thể xóa nguyên liệu",
-  });
-};
+// DELETE operation removed - use toggle active status instead
 
 /**
  * Hook for toggling ingredient active status with automatic toast notifications

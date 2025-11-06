@@ -4,7 +4,6 @@ import { Text } from "@/components/ui/text";
 import type { Ingredient } from "@/interfaces/ingredient.interface";
 import { useIngredientCategories } from "@/services/ingredientCategoryService";
 import {
-  useDeleteIngredientWithToast,
   useIngredients,
   useToggleIngredientActiveWithToast,
 } from "@/services/ingredientService";
@@ -21,13 +20,12 @@ export default function IngredientManagement() {
   const router = useRouter();
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [selectedIngredient, setSelectedIngredient] = useState<Ingredient | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<Ingredient | null>(null);
+  const [toggleConfirm, setToggleConfirm] = useState<Ingredient | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   // Query hooks
   const { data: ingredients, isLoading, refetch } = useIngredients();
   const { data: categories, isLoading: categoriesLoading } = useIngredientCategories();
-  const deleteMutation = useDeleteIngredientWithToast();
   const toggleActiveMutation = useToggleIngredientActiveWithToast();
   const queryClient = useQueryClient();
 
@@ -57,12 +55,13 @@ export default function IngredientManagement() {
     console.log("✅ [Ingredients] Edit form opened");
   };
 
-  const handleDelete = (ingredient: Ingredient) => {
-    console.log("🗑️ [Ingredients] Opening delete confirmation for:", {
+  const handleToggleActive = (ingredient: Ingredient) => {
+    console.log("🔄 [Ingredients] Opening toggle confirmation for:", {
       id: ingredient.id,
       name: ingredient.name,
+      currentStatus: ingredient.active,
     });
-    setDeleteConfirm(ingredient);
+    setToggleConfirm(ingredient);
   };
 
   const handleFormSuccess = () => {
@@ -71,59 +70,19 @@ export default function IngredientManagement() {
     refetch();
   };
 
-  const confirmDelete = async () => {
-    if (!deleteConfirm?.id) return;
+  const confirmToggleActive = async () => {
+    if (!toggleConfirm?.id) return;
 
-    console.log("🗑️ [Ingredients] Confirming delete for:", {
-      id: deleteConfirm.id,
-      name: deleteConfirm.name,
-    });
-
-    try {
-      console.log("📤 [Ingredients] Calling delete mutation");
-      await deleteMutation.mutateAsync({
-        params: { path: { id: deleteConfirm.id } },
-      });
-
-      console.log("✅ [Ingredients] Delete successful");
-
-      Toast.show({
-        type: "success",
-
-        text1: "Success",
-
-        text2: "Ingredient deleted successfully",
-      });
-
-      console.log("🔄 [Ingredients] Invalidating queries and refetching");
-      queryClient.invalidateQueries({ queryKey: ["/api/ingredient"] });
-      refetch(); // Reload the list after delete
-      setDeleteConfirm(null);
-      console.log("✅ [Ingredients] Delete confirmation closed, list refreshed");
-    } catch (error) {
-      console.log("❌ [Ingredients] Delete failed:", error);
-      Toast.show({
-        type: "error",
-
-        text1: "Error",
-
-        text2: "Failed to delete ingredient",
-      });
-    }
-  };
-
-  const handleToggleActive = async (ingredient: Ingredient) => {
-    console.log("🔄 [Ingredients] Toggling active status:", {
-      id: ingredient.id,
-      name: ingredient.name,
-      currentStatus: ingredient.active,
-      newStatus: !ingredient.active,
+    console.log("🔄 [Ingredients] Confirming toggle for:", {
+      id: toggleConfirm.id,
+      name: toggleConfirm.name,
+      currentStatus: toggleConfirm.active,
     });
 
     try {
       console.log("📤 [Ingredients] Calling toggle mutation");
       await toggleActiveMutation.mutateAsync({
-        params: { path: { id: ingredient.id! } },
+        params: { path: { id: toggleConfirm.id! } },
       });
 
       console.log("✅ [Ingredients] Toggle successful");
@@ -133,13 +92,14 @@ export default function IngredientManagement() {
 
         text1: "Success",
 
-        text2: `Ingredient ${ingredient.active ? "deactivated" : "activated"}`,
+        text2: `Ingredient ${toggleConfirm.active ? "deactivated" : "activated"} successfully`,
       });
 
       console.log("🔄 [Ingredients] Invalidating queries and refetching");
       queryClient.invalidateQueries({ queryKey: ["/api/ingredient"] });
-      refetch(); // Reload the list after toggle
-      console.log("✅ [Ingredients] List refreshed after toggle");
+      refetch();
+      setToggleConfirm(null);
+      console.log("✅ [Ingredients] Toggle confirmation closed, list refreshed");
     } catch (error) {
       console.log("❌ [Ingredients] Toggle failed:", error);
       Toast.show({
@@ -252,23 +212,17 @@ export default function IngredientManagement() {
 
               <View className="mt-3 flex-row gap-2">
                 <TouchableOpacity
-                  onPress={() => handleToggleActive(ingredient)}
-                  className="flex-1 rounded-lg bg-blue-500 py-2">
-                  <Text className="text-center text-sm font-medium text-white">
-                    {ingredient.active ? "Deactivate" : "Activate"}
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
                   onPress={() => handleEdit(ingredient)}
                   className="flex-1 rounded-lg bg-[#FF6D00] py-2">
                   <Text className="text-center text-sm font-medium text-white">Edit</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  onPress={() => handleDelete(ingredient)}
-                  className="flex-1 rounded-lg bg-red-500 py-2">
-                  <Text className="text-center text-sm font-medium text-white">Delete</Text>
+                  onPress={() => handleToggleActive(ingredient)}
+                  className={`flex-1 rounded-lg py-2 ${ingredient.active ? "bg-orange-500" : "bg-green-500"}`}>
+                  <Text className="text-center text-sm font-medium text-white">
+                    {ingredient.active ? "Deactivate" : "Activate"}
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -282,25 +236,25 @@ export default function IngredientManagement() {
         )}
       </ScrollView>
 
-      {/* Delete Confirmation Modal */}
-      {deleteConfirm && (
+      {/* Toggle Active Status Confirmation Modal */}
+      {toggleConfirm && (
         <View className="absolute inset-0 items-center justify-center bg-black/50">
           <View className="mx-6 rounded-lg bg-white p-6 dark:bg-gray-800">
             <Text className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-              Delete Ingredient
+              {toggleConfirm.active ? "Deactivate" : "Activate"} Ingredient
             </Text>
             <Text className="mb-6 text-gray-600 dark:text-gray-400">
-              Are you sure you want to delete "{deleteConfirm.name}"?
+              Are you sure you want to {toggleConfirm.active ? "deactivate" : "activate"} "{toggleConfirm.name}"?
             </Text>
             <View className="flex-row gap-3">
               <Button
-                onPress={() => setDeleteConfirm(null)}
+                onPress={() => setToggleConfirm(null)}
                 variant="outline"
                 className="flex-1 border-gray-300">
                 <Text className="text-gray-700">Cancel</Text>
               </Button>
-              <Button onPress={confirmDelete} className="flex-1 bg-red-500">
-                <Text className="text-white">Delete</Text>
+              <Button onPress={confirmToggleActive} className={`flex-1 ${toggleConfirm.active ? "bg-orange-500" : "bg-green-500"}`}>
+                <Text className="text-white">{toggleConfirm.active ? "Deactivate" : "Activate"}</Text>
               </Button>
             </View>
           </View>

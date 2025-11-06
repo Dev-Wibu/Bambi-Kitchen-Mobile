@@ -54,13 +54,7 @@ export const useUpdateNotification = () => {
   return $api.useMutation("put", "/api/notification");
 };
 
-/**
- * Hook for deleting a notification
- * Uses DELETE /api/notification/{id} endpoint
- */
-export const useDeleteNotification = () => {
-  return $api.useMutation("delete", "/api/notification/{id}");
-};
+// DELETE operation removed - notifications should be marked as read instead of deleted
 
 /**
  * Hook for marking a notification as read
@@ -104,18 +98,7 @@ export const useRegisterDeviceToken = () => {
 
 // ==================== ENHANCED MUTATIONS WITH AUTO TOAST ====================
 
-/**
- * Hook for deleting notification with automatic toast notifications
- */
-export const useDeleteNotificationWithToast = () => {
-  const deleteMutation = useDeleteNotification();
-  
-  return useMutationHandler({
-    mutationFn: (variables: any) => deleteMutation.mutateAsync(variables),
-    successMessage: "Xóa thông báo thành công",
-    errorMessage: "Không thể xóa thông báo",
-  });
-};
+// DELETE operation removed - use mark as read instead
 
 /**
  * Hook for marking notification as read with automatic toast notifications

@@ -42,13 +42,7 @@ export const useUpdateIngredientCategory = () => {
   return $api.useMutation("put", "/api/ingredient-category");
 };
 
-/**
- * Hook for deleting an ingredient category
- * Uses DELETE /api/ingredient-category/{id} endpoint
- */
-export const useDeleteIngredientCategory = () => {
-  return $api.useMutation("delete", "/api/ingredient-category/{id}");
-};
+// DELETE operation removed - categories should not be deleted to maintain data integrity
 
 // ==================== ENHANCED MUTATIONS WITH AUTO TOAST ====================
 
@@ -78,18 +72,7 @@ export const useUpdateIngredientCategoryWithToast = () => {
   });
 };
 
-/**
- * Hook for deleting ingredient category with automatic toast notifications
- */
-export const useDeleteIngredientCategoryWithToast = () => {
-  const deleteMutation = useDeleteIngredientCategory();
-  
-  return useMutationHandler({
-    mutationFn: (variables: any) => deleteMutation.mutateAsync(variables),
-    successMessage: "Xóa danh mục thành công",
-    errorMessage: "Không thể xóa danh mục",
-  });
-};
+// DELETE operation removed - categories should not be deleted
 
 // ==================== TRANSFORM FUNCTIONS ====================
 

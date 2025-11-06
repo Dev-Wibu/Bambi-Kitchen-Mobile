@@ -8,7 +8,7 @@ import {
   transformAccountUpdateRequest,
   useAccounts,
   useCreateAccountWithToast,
-  useDeleteAccountWithToast,
+  useToggleAccountActiveWithToast,
   useUpdateAccountWithToast,
 } from "@/services/accountService";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -24,7 +24,7 @@ export default function AccountManagement() {
   const router = useRouter();
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<Account | null>(null);
+  const [toggleConfirm, setToggleConfirm] = useState<Account | null>(null);
 
   const queryClient = useQueryClient();
 
@@ -32,7 +32,7 @@ export default function AccountManagement() {
   const { data: accounts, isLoading, refetch } = useAccounts();
   const createMutation = useCreateAccountWithToast();
   const updateMutation = useUpdateAccountWithToast();
-  const deleteMutation = useDeleteAccountWithToast();
+  const toggleActiveMutation = useToggleAccountActiveWithToast();
 
   const handleAdd = () => {
     setSelectedAccount(null);
@@ -44,20 +44,28 @@ export default function AccountManagement() {
     setIsFormVisible(true);
   };
 
-  const handleDelete = (account: Account) => {
-    setDeleteConfirm(account);
+  const handleToggleActive = (account: Account) => {
+    setToggleConfirm(account);
   };
 
-  const confirmDelete = async () => {
-    if (!deleteConfirm?.id) return;
+  const confirmToggleActive = async () => {
+    if (!toggleConfirm?.id) return;
 
-    await deleteMutation.mutateAsync({
-      params: { path: { id: deleteConfirm.id } },
+    const updateData = transformAccountUpdateRequest({
+      id: toggleConfirm.id,
+      name: toggleConfirm.name,
+      email: toggleConfirm.mail,
+      role: toggleConfirm.role,
+      active: !toggleConfirm.active,
+    });
+
+    await toggleActiveMutation.mutateAsync({
+      body: updateData,
     });
 
     queryClient.invalidateQueries({ queryKey: ["/api/account"] });
-    refetch(); // Reload the list after delete
-    setDeleteConfirm(null);
+    refetch();
+    setToggleConfirm(null);
   };
 
   const handleSubmit = async (data: {
@@ -132,7 +140,7 @@ export default function AccountManagement() {
     );
   }
 
-  if (deleteConfirm) {
+  if (toggleConfirm) {
     return (
       <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">
         <View className="flex-1 items-center justify-center px-6">
@@ -144,26 +152,26 @@ export default function AccountManagement() {
               style={{ alignSelf: "center" }}
             />
             <Text className="mt-4 text-center text-xl font-bold text-[#000000] dark:text-white">
-              Confirm Delete
+              Confirm Status Change
             </Text>
             <Text className="mt-2 text-center text-base text-gray-600 dark:text-gray-300">
-              Are you sure you want to delete the account &quot;{deleteConfirm.name}&quot; (
-              {deleteConfirm.mail})?
+              Are you sure you want to {toggleConfirm.active ? "deactivate" : "activate"} the account &quot;{toggleConfirm.name}&quot; (
+              {toggleConfirm.mail})?
             </Text>
             <View className="mt-6 flex-row gap-3">
               <Button
                 className="flex-1 bg-gray-300 active:bg-gray-400"
-                onPress={() => setDeleteConfirm(null)}>
+                onPress={() => setToggleConfirm(null)}>
                 <Text className="font-semibold text-[#000000]">Cancel</Text>
               </Button>
               <Button
-                className="flex-1 bg-red-500 active:bg-red-600"
-                onPress={confirmDelete}
-                disabled={deleteMutation.isPending}>
-                {deleteMutation.isPending ? (
+                className={`flex-1 ${toggleConfirm.active ? "bg-orange-500 active:bg-orange-600" : "bg-green-500 active:bg-green-600"}`}
+                onPress={confirmToggleActive}
+                disabled={toggleActiveMutation.isPending}>
+                {toggleActiveMutation.isPending ? (
                   <ActivityIndicator color="white" />
                 ) : (
-                  <Text className="font-semibold text-white">Delete</Text>
+                  <Text className="font-semibold text-white">{toggleConfirm.active ? "Deactivate" : "Activate"}</Text>
                 )}
               </Button>
             </View>
@@ -275,9 +283,9 @@ export default function AccountManagement() {
                         <MaterialIcons name="edit" size={20} color="white" />
                       </TouchableOpacity>
                       <TouchableOpacity
-                        className="rounded-lg bg-red-500 p-2 active:bg-red-600"
-                        onPress={() => handleDelete(account)}>
-                        <MaterialIcons name="delete" size={20} color="white" />
+                        className={`rounded-lg p-2 ${account.active ? "bg-orange-500 active:bg-orange-600" : "bg-green-500 active:bg-green-600"}`}
+                        onPress={() => handleToggleActive(account)}>
+                        <MaterialIcons name={account.active ? "block" : "check-circle"} size={20} color="white" />
                       </TouchableOpacity>
                     </View>
                   </View>

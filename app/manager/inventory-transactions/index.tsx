@@ -1,72 +1,25 @@
 import ReloadButton from "@/components/ReloadButton";
-import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import type { InventoryTransaction } from "@/interfaces/inventoryTransaction.interface";
 
 import {
-  useDeleteInventoryTransactionWithToast,
   useInventoryTransactions,
 } from "@/services/inventoryTransactionService";
 
 import { MaterialIcons } from "@expo/vector-icons";
 
-import { useQueryClient } from "@tanstack/react-query";
-
 import { useRouter } from "expo-router";
-
-import { useState } from "react";
 
 import { ActivityIndicator, ScrollView, TouchableOpacity, View } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import Toast from "react-native-toast-message";
-
 export default function InventoryTransactionManagement() {
   const router = useRouter();
-  const [deleteConfirm, setDeleteConfirm] = useState<InventoryTransaction | null>(null);
-
-  const queryClient = useQueryClient();
 
   // Query hooks
 
   const { data: transactions, isLoading, refetch } = useInventoryTransactions();
-
-  const deleteMutation = useDeleteInventoryTransactionWithToast();
-
-  const handleDelete = (transaction: InventoryTransaction) => {
-    setDeleteConfirm(transaction);
-  };
-
-  const confirmDelete = async () => {
-    if (!deleteConfirm?.id) return;
-
-    try {
-      await deleteMutation.mutateAsync({
-        params: { path: { id: deleteConfirm.id } },
-      });
-
-      Toast.show({
-        type: "success",
-
-        text1: "Success",
-
-        text2: "Transaction deleted successfully",
-      });
-
-      queryClient.invalidateQueries({ queryKey: ["/api/inventory-transaction"] });
-
-      setDeleteConfirm(null);
-    } catch {
-      Toast.show({
-        type: "error",
-
-        text1: "Error",
-
-        text2: "Failed to delete transaction",
-      });
-    }
-  };
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return "";
@@ -82,50 +35,6 @@ export default function InventoryTransactionManagement() {
         <Text className="mt-4 text-base text-gray-600 dark:text-gray-300">
           Loading transactions...
         </Text>
-      </SafeAreaView>
-    );
-  }
-
-  if (deleteConfirm) {
-    return (
-      <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">
-        <View className="flex-1 items-center justify-center px-6">
-          <View className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg dark:bg-gray-800">
-            <MaterialIcons
-              name="warning"
-              size={48}
-              color="#FF6D00"
-              style={{ alignSelf: "center" }}
-            />
-
-            <Text className="mt-4 text-center text-xl font-bold text-[#000000] dark:text-white">
-              Confirm Delete
-            </Text>
-
-            <Text className="mt-2 text-center text-base text-gray-600 dark:text-gray-300">
-              Are you sure you want to delete this inventory transaction?
-            </Text>
-
-            <View className="mt-6 flex-row gap-3">
-              <Button
-                className="flex-1 bg-gray-300 active:bg-gray-400"
-                onPress={() => setDeleteConfirm(null)}>
-                <Text className="font-semibold text-[#000000]">Cancel</Text>
-              </Button>
-
-              <Button
-                className="flex-1 bg-red-500 active:bg-red-600"
-                onPress={confirmDelete}
-                disabled={deleteMutation.isPending}>
-                {deleteMutation.isPending ? (
-                  <ActivityIndicator color="white" />
-                ) : (
-                  <Text className="font-semibold text-white">Delete</Text>
-                )}
-              </Button>
-            </View>
-          </View>
-        </View>
       </SafeAreaView>
     );
   }
@@ -147,7 +56,7 @@ export default function InventoryTransactionManagement() {
                 </Text>
 
                 <Text className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                  View and manage inventory transactions
+                  View inventory transactions (read-only for audit trail)
                 </Text>
               </View>
             </View>
@@ -214,14 +123,6 @@ export default function InventoryTransactionManagement() {
                       <Text className="mt-1 text-xs text-gray-500">
                         {formatDate(transaction.createAt)}
                       </Text>
-                    </View>
-
-                    <View className="flex-row gap-2">
-                      <TouchableOpacity
-                        className="rounded-lg bg-red-500 p-2 active:bg-red-600"
-                        onPress={() => handleDelete(transaction)}>
-                        <MaterialIcons name="delete" size={20} color="white" />
-                      </TouchableOpacity>
                     </View>
                   </View>
                 </TouchableOpacity>
