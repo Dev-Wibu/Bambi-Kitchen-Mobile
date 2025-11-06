@@ -1,141 +1,144 @@
-# React Native Expo Restaurant App - AI Agent Guide
+# Bambi Kitchen Mobile - AI Agent Guide
 
-## Quick Reference
+React Native Expo restaurant app with dual USER/ADMIN interfaces, type-safe backend integration, and role-based routing.
 
-**Start here**: Run `npm run generate-schema` if backend changed → create service hook in `services/` → use `$api.useQuery()` or `$api.useMutation()` in components.
+## Quick Start
 
-**Common commands**:
+**New feature workflow**: `npm run generate-schema` → create service in `services/` → use `$api.useQuery()` or `$api.useMutation()` in screens.
 
-- `npm start` - Start Metro bundler (Ctrl+C to stop)
-- `npm run android` - Run on Android (emulator or device)
-- `npm run ios` - Run on iOS (simulator or device)
-- `npm run generate-schema` - Sync types from backend OpenAPI spec at `https://bambi.kdz.asia/v3/api-docs`
-- `npm run start-clean` - Clear Metro cache (fixes React Query/Zustand hydration issues)
-- `npm run typecheck` - TypeScript validation
-- `npm run lint` - ESLint + Prettier validation
+**Essential commands**:
+- `npm run generate-schema` - **Critical**: Regenerate types from backend OpenAPI (`https://bambi.kdz.asia/v3/api-docs`) after backend changes
+- `npm start` - Metro bundler (use `-c` flag if React Query/Zustand behaves oddly)
+- `npm run android` / `npm run ios` - Platform-specific builds
+- `npm run typecheck` - Validate TypeScript before committing
+- `npm run lint` - ESLint + Prettier (auto-runs Prettier via plugin)
 
-**File patterns**:
+**File structure patterns**:
+- **Services**: `services/dishService.ts` exports `useDishes()`, `useCreateDish()`, `useUpdateDish()`, etc.
+- **Screens**: `app/(tabs)/menu/index.tsx` auto-registers route `/menu` via Expo Router
+- **State**: Zustand stores in `stores/` with AsyncStorage persistence (see `cartStore.ts` pattern)
+- **Types**: `schema-from-be.d.ts` auto-generated (**NEVER edit manually**)
 
-- API: `services/[entity]Service.ts` exports `use[Entity]` hooks (e.g., `useDishes`, `useCreateDish`)
-- Screens: `app/(tabs)/[feature]/index.tsx` auto-registers routes via Expo Router file-based routing
-- State: Zustand stores in `stores/` with AsyncStorage persistence via `persistStorage.ts`
-- Types: Auto-generated in `schema-from-be.d.ts` from OpenAPI (NEVER edit manually)
+**Critical constraints**:
+- **Role separation**: USER → `(tabs)` routes, ADMIN → `/manager` routes, STAFF → blocked (see `app/(tabs)/_layout.tsx:15-30`)
+- **Auth flow**: JWT from `/api/user/login` → stored in `authStore` → auto-injected via `libs/api.ts` middleware
+- **OAuth scheme**: `fe://oauth2/callback` (configured in `app.json:6`)
+- **Fetch rule**: NO raw `fetch()` except `AuthContext.tsx` (login/register don't use JWT middleware)
 
-**Key constraints**:
+## Architecture
 
-- Mobile is USER-role only (ADMIN redirected to `/manager`, STAFF blocked in `app/(tabs)/_layout.tsx`)
-- Auth uses JWT in `Authorization: Bearer` header (auto-injected via `libs/api.ts` middleware)
-- OAuth2 callback uses custom scheme `fe://oauth2/callback` (configured in `app.json`)
-- No raw `fetch()` calls except in `AuthContext.tsx` (login/register/Google OAuth endpoints)
+**Stack**: Expo 54 + React Native 0.81 + TypeScript + NativeWind + React Query + Zustand  
+**Backend**: Spring Boot at `https://bambi.kdz.asia` with JWT auth  
+**Target**: Mobile app with dual USER/ADMIN interfaces (STAFF blocked)
 
-## Architecture Overview
+### Design Decisions Agents Must Understand
 
-**Tech Stack**: Expo 54 + React Native 0.81 + TypeScript + NativeWind (Tailwind) + React Query + Zustand  
-**Backend**: Spring Boot REST API at `https://bambi.kdz.asia` with JWT authentication  
-**Target**: Mobile-only app for USER role (ADMIN/STAFF use web interface)
+1. **Dual-Interface Architecture** (NOT mobile-only):
+   - USER role → `app/(tabs)/` - Customer ordering interface
+   - ADMIN role → `app/manager/` - Management dashboard on mobile
+   - STAFF role → Blocked on mobile (`app/(tabs)/_layout.tsx:15-30`)
+   
+2. **Type-Safe Backend Integration**:
+   - Backend OpenAPI spec → `npm run generate-schema` → `schema-from-be.d.ts` (auto-generated)
+   - Service hooks wrap `$api.useQuery(method, path)` from `openapi-react-query`
+   - See `services/dishService.ts` for canonical pattern
 
-### Critical Design Decisions
+3. **JWT Auth Flow**:
+   - Login → token from `/api/user/login` (plain text response, NOT JSON) → `authStore.ts`
+   - Middleware in `libs/api.ts:18` auto-injects `Authorization: Bearer` header
+   - Google OAuth via `services/googleAuthService.ts` (modular, 10+ helper functions)
 
-1. **Dual Auth Architecture**: JWT tokens (from `/api/user/login`) stored in Zustand (`authStore.ts`) + auto-injected via middleware in `libs/api.ts`
-2. **Mobile-Only Restriction**: ADMIN users redirect to `/manager`, STAFF users blocked completely at `app/(tabs)/_layout.tsx`
-3. **Type-Safe API**: Backend OpenAPI spec auto-generates TypeScript types via `npm run generate-schema` → `schema-from-be.d.ts`
-4. **File-Based Routing**: Expo Router with layout groups: `(auth)`, `(onboarding)`, `(tabs)` for distinct user flows
-5. **Provider Architecture**: All providers wrap in `app/_layout.tsx`: `QueryProvider` → `AuthProvider` → `ThemeProvider` → screens
+4. **State Management Split**:
+   - **Server state** → React Query (`$api` hooks invalidate via `queryClient`)
+   - **Client state** → Zustand with AsyncStorage persistence (see `stores/cartStore.ts:28`)
+   
+5. **Provider Nesting Order** (`app/_layout.tsx:33`):
+   ```
+   QueryProvider → AuthProvider → ThemeProvider → NavigationThemeProvider → Screens
+   ```
 
-## Development Workflow
+## Code Patterns (Enforce Strictly)
 
-```bash
-# Type generation (run after backend schema changes)
-npm run generate-schema # Fetches from https://bambi.kdz.asia/v3/api-docs
+### 1. API Integration - Service Layer Pattern
 
-# Development
-npm start           # Start with Metro bundler
-npm run start-clean # Clear cache if React Query/Zustand behaves oddly
-npm run android     # Android emulator (push notifications work)
-npm run ios         # iOS simulator (push notifications require physical device)
-
-# Code Quality
-npm run typecheck # TypeScript validation
-npm run lint      # ESLint (includes Prettier via plugin)
-npm run format    # Auto-fix formatting
-```
-
-**Common Issues**:
-
-- If auth breaks: Clear AsyncStorage (check `stores/persistStorage.ts`) or use `npm run start-clean`
-- Backend CORS errors: Backend must allow credentials + custom headers for JWT auth
-- Push notifications: Android emulator works, iOS requires physical device or Expo Go
-
-## Code Patterns You Must Follow
-
-### 1. API Integration (Service Layer)
-
-**NEVER** write raw `fetch()` calls except in `contexts/AuthContext.tsx` (login/register endpoints don't use standard middleware).
+**Rule**: NEVER write raw `fetch()` except in `contexts/AuthContext.tsx` (login/register endpoints bypass JWT middleware).
 
 ```typescript
-// ✅ CORRECT: Use openapi-react-query hooks from service files
-// services/dishService.ts
+// ✅ CORRECT: Service hook pattern (services/dishService.ts)
 export const useDishes = () => {
-  return $api.useQuery("get", "/api/dish");
+  return $api.useQuery("get", "/api/dish", {});
 };
 
 export const useCreateDish = () => {
   return $api.useMutation("post", "/api/dish");
 };
 
-// ✅ CORRECT: Transform functions standardize request/response shapes
-export const transformDishCreateRequest = (data: FormData): DishCreateRequest => ({
-  name: data.name,
-  price: data.price,
-  // ... map form fields to backend schema
+// ✅ Transform helpers for complex mappings
+export const transformDishCreateRequest = (formData: any) => ({
+  name: formData.name,
+  price: Number(formData.price),
+  // Map frontend form → backend DTO
 });
 ```
 
-**Pattern**: Every backend endpoint gets:
+**Every entity needs**:
+1. `use[Entity]` - GET query hook
+2. `useCreate[Entity]` - POST mutation hook  
+3. `useUpdate[Entity]` - PUT mutation hook
+4. `useDelete[Entity]` - DELETE mutation hook
+5. `transform[Entity][Action]Request` - Data transformation helpers
 
-1. `use[EntityName]` query hook (GET)
-2. `useCreate[EntityName]` mutation hook (POST)
-3. `useUpdate[EntityName]` mutation hook (PUT)
-4. `useDelete[EntityName]` mutation hook (DELETE)
-5. `transform[EntityName][Action]Request` helper functions
+**Cache invalidation** (manual, `useMutationHandler` is EMPTY):
+```typescript
+const createMutation = useCreateDish();
+await createMutation.mutateAsync({ body: data });
+queryClient.invalidateQueries({ queryKey: ["get", "/api/dish"] }); // openapi-react-query format
+```
 
-### 2. State Management
+### 2. State Management - Split Pattern
 
-**Server State** → React Query (via `$api` hooks)  
-**Client State** → Zustand with persistence (via `stores/`)
+**Server state** → React Query (`$api` hooks)  
+**Client state** → Zustand with AsyncStorage persistence
 
 ```typescript
-// ✅ CORRECT: Zustand store structure (see stores/cartStore.ts)
+// ✅ Zustand store structure (stores/cartStore.ts)
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
-      addItem: (item) => set((state) => ({ /* immutable update */ })),
-      getTotalPrice: () => get().items.reduce(...), // Derived state as function
+      addItem: (item) => {
+        // Auto-merge identical simple items
+        const canMerge = item.dishId > 0 && !item.recipe && !item.dishTemplate;
+        if (canMerge) {
+          const existing = get().items.find(i => i.dishId === item.dishId);
+          if (existing) {
+            set({ items: get().items.map(i => 
+              i.id === existing.id ? { ...i, quantity: i.quantity + item.quantity } : i
+            )});
+            return;
+          }
+        }
+        // Unique ID for customized items: ${dishId}-${timestamp}-${random}
+        const uniqueKey = `${item.dishId || "custom"}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+        set({ items: [...get().items, { ...item, id: uniqueKey }] });
+      },
+      // Derived state as functions (NOT stored values)
+      getTotal: () => get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),
     }),
     {
       name: "cart-storage",
-      storage: createJSONStorage(getPersistStorage), // Uses AsyncStorage wrapper
+      storage: createJSONStorage(getPersistStorage), // AsyncStorage wrapper
     }
   )
 );
 ```
 
-**Cache Invalidation**: After mutations, manually invalidate React Query cache (don't use `useMutationHandler` - it's empty):
+**Cart state principles**:
+- Merge identical simple items automatically
+- Generate unique IDs for customized dishes
+- Use derived state as **functions**, never store computed values
 
-```typescript
-// ✅ CORRECT: Manual invalidation pattern
-const createMutation = useCreateDish();
-await createMutation.mutateAsync({ body: data });
-queryClient.invalidateQueries({ queryKey: ["get", "/api/dish"] }); // Match openapi-react-query format
-```
-
-**Cart State Pattern** (see `stores/cartStore.ts`):
-- Merges identical simple items automatically
-- Generates unique IDs for customized dishes: `${dishId}-${timestamp}-${random}`
-- Uses derived state as functions: `getTotal()` instead of storing computed values
-
-### 3. Authentication Flow
+### 3. Authentication Flow - JWT + Google OAuth
 
 **JWT Login** → Token from `/api/user/login` (plain text response, not JSON) → stored in Zustand → middleware injects into headers
 
@@ -151,6 +154,7 @@ fetchClient.use({
 ```
 
 **Google OAuth** → Modular service in `services/googleAuthService.ts` with 10+ helper functions:
+
 - `loginWithGoogle(setToken)` - Main orchestrator
 - `prepareGoogleAuth()` - WebBrowser setup (CRITICAL for iOS)
 - `generateRedirectUri()` - Creates `fe://oauth2/callback` URI
@@ -238,45 +242,6 @@ await scheduleLocalNotification({ title: "Test", body: "Works!" }, 5);
 
 **Testing**: Use Android emulator or physical iOS device. Expo Push Tool: `https://expo.dev/notifications`
 
-## Project Structure
-
-```
-app/                     # File-based routing (Expo Router)
-├── _layout.tsx          # Root layout (providers wrap here)
-├── index.tsx            # Entry point (checks auth → redirects)
-├── (auth)/              # Auth flow: login, register, forgot-password
-├── (onboarding)/        # First-time user flow: welcome → intro-1/2/3
-└── (tabs)/              # Main app (tab navigation for USER role)
-    ├── home/            # Home screen
-    ├── menu/            # Menu browsing
-    ├── order/           # Order history
-    ├── profile/         # User profile
-    └── notifications/   # Notification center
-
-components/              # Reusable components
-├── ui/                  # RN Primitives (shadcn-style)
-├── CustomTabBar.tsx     # Custom tab bar with hiddenRoutes prop
-└── notifications/       # Notification UI components
-
-contexts/                # React contexts (wrap in _layout.tsx)
-├── AuthContext.tsx      # Auth provider (login/logout/register logic)
-├── QueryProvider.tsx    # React Query client wrapper
-└── ThemeContext.tsx     # Dark mode toggle
-
-hooks/                   # Custom hooks
-├── useAuth.ts           # Auth context consumer
-└── usePushNotifications.ts  # Auto-registers push tokens
-
-interfaces/              # TypeScript interfaces (match backend DTOs)
-libs/                    # Core utilities
-├── api.ts               # OpenAPI fetch client + React Query setup
-└── theme.ts             # Navigation theme (light/dark)
-
-services/                # API integration layer (use[Entity] hooks)
-stores/                  # Zustand stores (authStore, themeStore)
-utils/                   # Utility functions (roleNavigation.ts)
-```
-
 ## Key Files to Reference
 
 - **API Setup**: `libs/api.ts` (shows middleware pattern for JWT injection)
@@ -338,21 +303,6 @@ export const extractRole = (roles: any[]): ROLE_TYPE => {
 };
 ```
 
-### Debugging Auth Issues
-
-1. Check `stores/authStore.ts` state in Zustand DevTools
-2. Verify JWT token in `libs/api.ts` middleware logs
-3. Clear AsyncStorage: `npm run start-clean` or manually via code
-4. Check backend CORS allows `Authorization` header + credentials
-
-### Testing Push Notifications
-
-1. **Android**: Run `npm run android` (works on emulator)
-2. **iOS**: Use physical device or Expo Go app (simulator doesn't support push)
-3. **Get token**: Check logs or use `usePushNotifications` hook
-4. **Send test**: https://expo.dev/notifications (paste token)
-5. **Backend integration**: Ensure backend uses Expo Push API (not Firebase directly)
-
 ## Don'ts
 
 ❌ **Never** bypass role checks in `app/(tabs)/_layout.tsx`  
@@ -361,7 +311,9 @@ export const extractRole = (roles: any[]): ROLE_TYPE => {
 ❌ **Never** use `useMutationHandler` hook (file exists but is empty - use direct mutation patterns)
 ❌ **Never** store sensitive data in AsyncStorage without encryption  
 ❌ **Never** commit with ESLint errors (run `npm run lint` first)
-❌ **Never** forget to normalize phone numbers (`+84` → `0` prefix) in auth flows## Critical Gotchas
+❌ **Never** forget to normalize phone numbers (`+84` → `0` prefix) in auth flows
+
+## Critical Gotchas
 
 1. **Login endpoint quirk**: `/api/user/login` returns JWT as **plain text**, not JSON:
 
@@ -390,7 +342,7 @@ export const extractRole = (roles: any[]): ROLE_TYPE => {
 
 4. **Dark mode CSS variables**: NativeWind uses HSL format in `global.css`:
    ```css
-   --primary: 24 100% 52%; /* NOT #FF6D00 */
+   --primary: 24 100% 52%; /* NOT hex colors */
    ```
 
 ## Backend Integration Notes
@@ -427,7 +379,3 @@ export const extractRole = (roles: any[]): ROLE_TYPE => {
 3. **Does this need auth?** → Check if endpoint requires JWT (most do except login/register)
 4. **Is this a new screen?** → Add to `app/` directory (file-based routing)
 5. **Does this need push notifications?** → Check if backend supports Expo Push API first
-
----
-
-_For detailed push notification setup, see `PUSH_NOTIFICATION_README.md`. For backend integration specifics, see `copilot-instructions.md` (legacy guide). For Vietnamese documentation, check `_\_VI.md` files.\*
