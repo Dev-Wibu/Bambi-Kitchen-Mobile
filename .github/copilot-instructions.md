@@ -7,6 +7,7 @@ React Native Expo restaurant app with dual USER/ADMIN interfaces, type-safe back
 **New feature workflow**: `npm run generate-schema` → create service in `services/` → use `$api.useQuery()` or `$api.useMutation()` in screens.
 
 **Essential commands**:
+
 - `npm run generate-schema` - **Critical**: Regenerate types from backend OpenAPI (`https://bambi.kdz.asia/v3/api-docs`) after backend changes
 - `npm start` - Metro bundler (use `-c` flag if React Query/Zustand behaves oddly)
 - `npm run android` / `npm run ios` - Platform-specific builds
@@ -14,12 +15,14 @@ React Native Expo restaurant app with dual USER/ADMIN interfaces, type-safe back
 - `npm run lint` - ESLint + Prettier (auto-runs Prettier via plugin)
 
 **File structure patterns**:
+
 - **Services**: `services/dishService.ts` exports `useDishes()`, `useCreateDish()`, `useUpdateDish()`, etc.
 - **Screens**: `app/(tabs)/menu/index.tsx` auto-registers route `/menu` via Expo Router
 - **State**: Zustand stores in `stores/` with AsyncStorage persistence (see `cartStore.ts` pattern)
 - **Types**: `schema-from-be.d.ts` auto-generated (**NEVER edit manually**)
 
 **Critical constraints**:
+
 - **Role separation**: USER → `(tabs)` routes, ADMIN → `/manager` routes, STAFF → blocked (see `app/(tabs)/_layout.tsx:15-30`)
 - **Auth flow**: JWT from `/api/user/login` → stored in `authStore` → auto-injected via `libs/api.ts` middleware
 - **OAuth scheme**: `fe://oauth2/callback` (configured in `app.json:6`)
@@ -37,7 +40,6 @@ React Native Expo restaurant app with dual USER/ADMIN interfaces, type-safe back
    - USER role → `app/(tabs)/` - Customer ordering interface
    - ADMIN role → `app/manager/` - Management dashboard on mobile
    - STAFF role → Blocked on mobile (`app/(tabs)/_layout.tsx:15-30`)
-   
 2. **Type-Safe Backend Integration**:
    - Backend OpenAPI spec → `npm run generate-schema` → `schema-from-be.d.ts` (auto-generated)
    - Service hooks wrap `$api.useQuery(method, path)` from `openapi-react-query`
@@ -51,7 +53,6 @@ React Native Expo restaurant app with dual USER/ADMIN interfaces, type-safe back
 4. **State Management Split**:
    - **Server state** → React Query (`$api` hooks invalidate via `queryClient`)
    - **Client state** → Zustand with AsyncStorage persistence (see `stores/cartStore.ts:28`)
-   
 5. **Provider Nesting Order** (`app/_layout.tsx:33`):
    ```
    QueryProvider → AuthProvider → ThemeProvider → NavigationThemeProvider → Screens
@@ -82,13 +83,15 @@ export const transformDishCreateRequest = (formData: any) => ({
 ```
 
 **Every entity needs**:
+
 1. `use[Entity]` - GET query hook
-2. `useCreate[Entity]` - POST mutation hook  
+2. `useCreate[Entity]` - POST mutation hook
 3. `useUpdate[Entity]` - PUT mutation hook
 4. `useDelete[Entity]` - DELETE mutation hook
 5. `transform[Entity][Action]Request` - Data transformation helpers
 
 **Cache invalidation** (manual, `useMutationHandler` is EMPTY):
+
 ```typescript
 const createMutation = useCreateDish();
 await createMutation.mutateAsync({ body: data });
@@ -110,11 +113,13 @@ export const useCartStore = create<CartState>()(
         // Auto-merge identical simple items
         const canMerge = item.dishId > 0 && !item.recipe && !item.dishTemplate;
         if (canMerge) {
-          const existing = get().items.find(i => i.dishId === item.dishId);
+          const existing = get().items.find((i) => i.dishId === item.dishId);
           if (existing) {
-            set({ items: get().items.map(i => 
-              i.id === existing.id ? { ...i, quantity: i.quantity + item.quantity } : i
-            )});
+            set({
+              items: get().items.map((i) =>
+                i.id === existing.id ? { ...i, quantity: i.quantity + item.quantity } : i
+              ),
+            });
             return;
           }
         }
@@ -134,6 +139,7 @@ export const useCartStore = create<CartState>()(
 ```
 
 **Cart state principles**:
+
 - Merge identical simple items automatically
 - Generate unique IDs for customized dishes
 - Use derived state as **functions**, never store computed values
