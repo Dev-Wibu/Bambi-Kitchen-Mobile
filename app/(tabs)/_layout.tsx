@@ -105,6 +105,8 @@ export default function TabsLayout() {
     "menu/customize",
 
     "menu/[id]",
+
+    "menu/customize-from/[id]",
   ];
 
   return (

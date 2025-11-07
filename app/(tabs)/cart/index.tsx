@@ -1,12 +1,14 @@
 import { Text } from "@/components/ui/text";
 import { useAuth } from "@/hooks/useAuth";
+import { $api } from "@/libs/api";
+import { useDishTemplates } from "@/services/dishService";
 import { useIngredients } from "@/services/ingredientService";
 import { transformCartToMakeOrderRequest, useCreateOrder } from "@/services/orderService";
 import { useCartStore } from "@/stores/cartStore";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useMemo, useState } from "react";
-import { ActivityIndicator, Image, Pressable, ScrollView, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import { ActivityIndicator, Image, Linking, Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
@@ -15,16 +17,44 @@ type PaymentMethod = "CASH" | "MOMO" | "VNPAY";
 export default function CartScreen() {
   const router = useRouter();
   const { user } = useAuth();
-  const { items, removeItem, updateQuantity, clear, getTotal } = useCartStore();
+  const { items, removeItem, updateQuantity, clear, getTotal, fixMissingDishTemplates } =
+    useCartStore();
   const createOrder = useCreateOrder();
+
+  // Load dish templates to fix any missing ones in cart items
+  const { data: dishTemplatesRaw } = useDishTemplates();
+
+  // Fix any cart items with basedOnId but missing dishTemplate
+  useEffect(() => {
+    if (dishTemplatesRaw && dishTemplatesRaw.length > 0) {
+      const defaultTemplate =
+        dishTemplatesRaw.find((t: any) => t?.size === "M") || dishTemplatesRaw[0];
+      if (defaultTemplate) {
+        fixMissingDishTemplates(defaultTemplate);
+      }
+    }
+  }, [dishTemplatesRaw, fixMissingDishTemplates]);
 
   const [selectingPayment, setSelectingPayment] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>("CASH");
   const [note, setNote] = useState<string | undefined>(undefined);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [uiSubmitting, setUiSubmitting] = useState(false); // visual pending to ensure UX feedback
+  const [pollingOrderId, setPollingOrderId] = useState<number | null>(null);
+  const [errorState, setErrorState] = useState<{
+    show: boolean;
+    title: string;
+    message: string;
+    rawResponse?: string;
+    canRetry: boolean;
+  }>({
+    show: false,
+    title: "",
+    message: "",
+    canRetry: false,
+  });
 
-  const subtotal = useMemo(() => getTotal(), [items, getTotal]);
+  const subtotal = useMemo(() => getTotal(), [getTotal]);
   const isEmpty = items.length === 0;
 
   const increase = (id: string, qty: number) => updateQuantity(id, qty + 1);
@@ -58,6 +88,12 @@ export default function CartScreen() {
 
     try {
       setUiSubmitting(true);
+
+      // Debug cart items before transformation
+      if (__DEV__) {
+        console.log("Cart items before transformation:", JSON.stringify(items, null, 2));
+      }
+
       const payload = transformCartToMakeOrderRequest({
         accountId: user.userId,
         paymentMethod,
@@ -68,19 +104,100 @@ export default function CartScreen() {
       // Optional: debug payload in development
       try {
         if (__DEV__) {
-          console.log("POST /api/order payload", JSON.stringify(payload));
+          console.log("POST /api/order payload", JSON.stringify(payload, null, 2));
         }
       } catch {}
 
-      await createOrder.mutateAsync({ body: payload });
+      const resp = await createOrder.mutateAsync({ body: payload });
 
-      Toast.show({ type: "success", text1: "Order placed" });
-      clear();
-      router.replace("/(tabs)/order");
+      // Debug: log createOrder response in development
+      try {
+        if (__DEV__) console.log("createOrder response:", resp);
+      } catch {}
+
+      // If payment method requires external flow (MOMO/VNPAY), backend may return a redirect URL
+      if (
+        paymentMethod &&
+        paymentMethod !== "CASH" &&
+        typeof resp === "string" &&
+        resp.startsWith("http")
+      ) {
+        // Open external payment page (will return via callback to backend)
+        try {
+          await Linking.openURL(resp);
+        } catch (err) {
+          console.error("Failed to open payment url", err);
+          Toast.show({ type: "info", text1: "Order created. Open payment URL failed." });
+        }
+        // Order is created; keep cart cleared to avoid duplicates
+        clear();
+        router.replace("/(tabs)/order");
+      } else if (resp && typeof resp === "object" && (resp as any).orderId) {
+        // Backend returned an order object / orderId — show polling modal until payment is completed
+        const oid = Number((resp as any).orderId);
+        if (oid) {
+          setPollingOrderId(oid);
+          // Do not clear cart yet; we'll clear when status becomes PAID/COMPLETED in the polling effect
+        } else {
+          Toast.show({ type: "success", text1: "Order placed" });
+          clear();
+          router.replace("/(tabs)/order");
+        }
+      } else {
+        // Cash or no useful redirect URL provided
+        Toast.show({ type: "success", text1: "Order placed" });
+        clear();
+        router.replace("/(tabs)/order");
+      }
     } catch (e: any) {
       console.error("Place order failed", e);
-      const message = e?.message || e?.data?.message || "Failed to place order";
-      Toast.show({ type: "error", text1: message });
+
+      // Enhanced error handling for JSON parse errors and backend debugging
+      let errorTitle = "Order Failed";
+      let errorMessage = "Failed to place order";
+      let rawResponse = "";
+      let canRetry = true;
+
+      if (
+        e?.message?.includes("JSON Parse error") ||
+        e?.message?.includes("Unexpected character")
+      ) {
+        errorTitle = "Backend Response Error";
+        errorMessage = "Server returned invalid response format";
+        rawResponse = e?.response || e?.data || e?.message || "";
+        canRetry = true;
+      } else if (e?.message?.includes("Network")) {
+        errorTitle = "Network Error";
+        errorMessage = "Check your internet connection";
+        canRetry = true;
+      } else if (e?.response?.status === 400) {
+        errorTitle = "Invalid Order";
+        errorMessage = e?.response?.data?.message || "Order data is invalid";
+        canRetry = false;
+      } else if (e?.response?.status === 401) {
+        errorTitle = "Authentication Error";
+        errorMessage = "Please log in again";
+        canRetry = false;
+      } else {
+        errorMessage = e?.message || e?.data?.message || "Unknown error occurred";
+      }
+
+      // Show detailed error modal instead of simple toast
+      setErrorState({
+        show: true,
+        title: errorTitle,
+        message: errorMessage,
+        rawResponse: rawResponse ? rawResponse.substring(0, 200) : undefined,
+        canRetry,
+      });
+
+      // Also log for backend team debugging
+      if (__DEV__) {
+        console.log("Raw error object:", e);
+        if (rawResponse) {
+          console.log("Raw response excerpt:", rawResponse.substring(0, 500));
+        }
+      }
     } finally {
       // ensure the overlay is visible briefly even on super-fast responses
       setTimeout(() => setUiSubmitting(false), 400);
@@ -182,14 +299,32 @@ export default function CartScreen() {
 
                         {expanded[item.id] && (
                           <View className="mt-2 rounded-lg bg-gray-50 p-3 dark:bg-gray-900/40">
-                            {item.recipe.map((r, idx) => (
-                              <View key={idx} className="mb-1 flex-row items-center">
-                                <View className="mr-2 h-1.5 w-1.5 rounded-full bg-[#FF6D00]" />
-                                <Text className="text-xs text-gray-700 dark:text-gray-300">
-                                  {ingNameById.get(r.ingredientId || 0) || `#${r.ingredientId}`}
-                                </Text>
-                              </View>
-                            ))}
+                            {item.recipe.map((r, idx) => {
+                              const name =
+                                ingNameById.get(r.ingredientId || 0) || `#${r.ingredientId}`;
+                              const isRemoved =
+                                (r.sourceType || "") === "REMOVED" ||
+                                (r.quantity === 0 && (r.sourceType || "") === "REMOVED");
+                              const qtyText = isRemoved
+                                ? "-1 phần"
+                                : r.quantity
+                                  ? `${r.quantity / 100} phần (${r.quantity}g)`
+                                  : "";
+
+                              return (
+                                <View
+                                  key={idx}
+                                  className="mb-1 flex-row items-center justify-between">
+                                  <View className="flex-row items-center">
+                                    <View className="mr-2 h-1.5 w-1.5 rounded-full bg-[#FF6D00]" />
+                                    <Text className="text-xs text-gray-700 dark:text-gray-300">
+                                      {name}
+                                    </Text>
+                                  </View>
+                                  <Text className="text-xs text-gray-500">{qtyText}</Text>
+                                </View>
+                              );
+                            })}
                           </View>
                         )}
                       </View>
@@ -250,6 +385,20 @@ export default function CartScreen() {
         </View>
       )}
 
+      {/* Polling overlay when backend returns orderId */}
+      {pollingOrderId && (
+        <OrderPollingModal
+          orderId={pollingOrderId}
+          onFinalized={() => {
+            // Clear cart and navigate when order is finalized
+            clear();
+            setPollingOrderId(null);
+            router.replace("/(tabs)/order");
+          }}
+          onCancel={() => setPollingOrderId(null)}
+        />
+      )}
+
       {/* Bottom Bar */}
       <View className="border-t border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
         <View className="flex-row items-center justify-between">
@@ -270,6 +419,69 @@ export default function CartScreen() {
           </Pressable>
         </View>
       </View>
+
+      {/* Error Modal */}
+      {errorState.show && (
+        <View className="absolute inset-0 items-center justify-center bg-black/50">
+          <View className="mx-4 w-full max-w-sm rounded-2xl bg-white p-6 dark:bg-gray-800">
+            <View className="mb-4 items-center">
+              <MaterialIcons name="error-outline" size={48} color="#EF4444" />
+              <Text className="mt-2 text-center text-lg font-bold text-[#000000] dark:text-white">
+                {errorState.title}
+              </Text>
+            </View>
+
+            <Text className="mb-4 text-center text-sm text-gray-600 dark:text-gray-300">
+              {errorState.message}
+            </Text>
+
+            {/* Show raw response excerpt for backend debugging */}
+            {errorState.rawResponse && (
+              <View className="mb-4 rounded-lg bg-gray-100 p-3 dark:bg-gray-700">
+                <Text className="mb-1 text-xs font-semibold text-gray-500">
+                  Raw Response (for debugging):
+                </Text>
+                <Text className="text-xs text-gray-600 dark:text-gray-400">
+                  {errorState.rawResponse}...
+                </Text>
+              </View>
+            )}
+
+            <View className="flex-row gap-3">
+              <Pressable
+                onPress={() => setErrorState({ ...errorState, show: false })}
+                className="flex-1 rounded-xl border border-gray-300 py-3">
+                <Text className="text-center text-base font-semibold text-gray-700">Close</Text>
+              </Pressable>
+
+              {errorState.canRetry && (
+                <Pressable
+                  onPress={() => {
+                    setErrorState({ ...errorState, show: false });
+                    // Retry the order placement
+                    setTimeout(() => placeOrder(), 100);
+                  }}
+                  className="flex-1 rounded-xl bg-[#FF6D00] py-3 active:bg-[#FF4D00]">
+                  <Text className="text-center text-base font-semibold text-white">Retry</Text>
+                </Pressable>
+              )}
+
+              {/* Fallback to CASH if available */}
+              {paymentMethod !== "CASH" && (
+                <Pressable
+                  onPress={() => {
+                    setPaymentMethod("CASH");
+                    setErrorState({ ...errorState, show: false });
+                    Toast.show({ type: "info", text1: "Switched to cash payment" });
+                  }}
+                  className="flex-1 rounded-xl bg-gray-600 py-3 active:bg-gray-700">
+                  <Text className="text-center text-base font-semibold text-white">Use Cash</Text>
+                </Pressable>
+              )}
+            </View>
+          </View>
+        </View>
+      )}
 
       {/* Simple Payment Sheet */}
       {selectingPayment && (
@@ -309,5 +521,54 @@ export default function CartScreen() {
         </View>
       )}
     </SafeAreaView>
+  );
+}
+
+// Small modal component that polls order status via $api every 3s until final state
+function OrderPollingModal({
+  orderId,
+  onFinalized,
+  onCancel,
+}: {
+  orderId: number;
+  onFinalized: () => void;
+  onCancel: () => void;
+}) {
+  const { data, isFetching, refetch } = $api.useQuery("get", "/api/order/{id}", {
+    params: { path: { id: orderId } },
+    // Poll every 3 seconds
+    refetchInterval: 3000,
+  });
+
+  useEffect(() => {
+    if (!data) return;
+    const status = (data as any)?.status;
+    if (status === "PAID" || status === "COMPLETED") {
+      Toast.show({ type: "success", text1: "Payment completed" });
+      onFinalized();
+    }
+  }, [data, onFinalized]);
+
+  return (
+    <View className="absolute inset-0 items-center justify-center bg-black/30">
+      <View className="w-[320px] rounded-xl bg-white p-4">
+        <Text className="text-base font-semibold text-[#000]">Processing payment</Text>
+        <Text className="mt-2 text-sm text-gray-600">
+          Order #{orderId} — waiting for payment confirmation...
+        </Text>
+        <View className="mt-4 flex-row items-center justify-between">
+          <Pressable
+            onPress={() => {
+              onCancel();
+            }}
+            className="rounded-lg border px-4 py-2">
+            <Text>Cancel</Text>
+          </Pressable>
+          <Pressable onPress={() => refetch()} className="rounded-lg bg-[#FF6D00] px-4 py-2">
+            <Text className="text-white">Refresh</Text>
+          </Pressable>
+        </View>
+      </View>
+    </View>
   );
 }

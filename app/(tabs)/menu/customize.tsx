@@ -200,14 +200,16 @@ export default function CustomizeBowlScreen() {
     }
 
     // Validate per-size limits for each role
-    const countsByRole: Record<"CARB" | "PROTEIN" | "VEGETABLE", number> = {
+    const countsByRole: Record<Role, number> = {
       CARB: 0,
       PROTEIN: 0,
       VEGETABLE: 0,
+      OTHER: 0,
     };
     categories.forEach((c: any) => {
       const role = detectCategoryRole(c?.name);
       const count = (selectedByCategory[c.id!] || []).length;
+      // role is narrowed to Role; safe to index
       countsByRole[role] += count;
     });
     const over: { role: "CARB" | "PROTEIN" | "VEGETABLE"; max: number; count: number } | null = ((
