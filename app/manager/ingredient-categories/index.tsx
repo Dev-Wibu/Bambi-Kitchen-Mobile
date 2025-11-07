@@ -1,6 +1,11 @@
+import { type FilterCriteria } from "@/components/Filter";
 import ReloadButton from "@/components/ReloadButton";
+import { SearchBar } from "@/components/SearchBar";
+import { SortButton } from "@/components/SortButton";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
+import { getPageInfo, usePagination } from "@/hooks/usePagination";
+import { useSortable } from "@/hooks/useSortable";
 import type { IngredientCategory } from "@/interfaces/ingredientCategory.interface";
 import {
   transformIngredientCategoryCreateRequest,
@@ -12,8 +17,8 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { useState } from "react";
-import { ActivityIndicator, ScrollView, TouchableOpacity, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import { ActivityIndicator, FlatList, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import IngredientCategoryForm from "./IngredientCategoryForm";
@@ -22,6 +27,9 @@ export default function IngredientCategoryManagement() {
   const router = useRouter();
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<IngredientCategory | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterCriteria, setFilterCriteria] = useState<FilterCriteria[]>([]);
+  const [pageSize, setPageSize] = useState(10);
 
   const queryClient = useQueryClient();
 
@@ -29,6 +37,57 @@ export default function IngredientCategoryManagement() {
   const { data: categories, isLoading, refetch } = useIngredientCategories();
   const createMutation = useCreateIngredientCategoryWithToast();
   const updateMutation = useUpdateIngredientCategoryWithToast();
+
+  // Reverse the list to show newest first
+  const reversedCategories = useMemo(() => {
+    return categories ? [...categories].reverse() : [];
+  }, [categories]);
+
+  // Filter and search
+  const filteredCategories = useMemo(() => {
+    let filtered = reversedCategories;
+
+    // Apply search
+    if (searchTerm) {
+      const lowerSearch = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (category) =>
+          category.name?.toLowerCase().includes(lowerSearch) ||
+          category.description?.toLowerCase().includes(lowerSearch)
+      );
+    }
+
+    return filtered;
+  }, [reversedCategories, searchTerm]);
+
+  // Sorting
+  const { sortedData, getSortProps } = useSortable<IngredientCategory>(filteredCategories);
+
+  // Pagination
+  const pagination = usePagination({
+    totalCount: sortedData.length,
+    pageSize,
+    initialPage: 1,
+  });
+
+  // Current page data
+  const currentPageData = useMemo(() => {
+    return sortedData.slice(pagination.startIndex, pagination.endIndex + 1);
+  }, [sortedData, pagination.startIndex, pagination.endIndex]);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    pagination.setPage(1);
+  }, [searchTerm, filterCriteria]);
+
+  // Search options
+  const searchOptions = useMemo(
+    () => [
+      { value: "name", label: "Name" },
+      { value: "description", label: "Description" },
+    ],
+    []
+  );
 
   const handleAdd = () => {
     setSelectedCategory(null);
@@ -149,21 +208,52 @@ export default function IngredientCategoryManagement() {
         </View>
 
         {/* Categories List */}
-        <ScrollView className="flex-1" contentContainerClassName="p-6">
-          {!categories || categories.length === 0 ? (
+        <View className="flex-1 px-6 pt-4">
+          {/* Search and Filter */}
+          <View className="mb-4 gap-3">
+            <SearchBar
+              searchOptions={searchOptions}
+              onSearchChange={setSearchTerm}
+              placeholder="Search by name or description..."
+              resetPagination={pagination.reset}
+            />
+          </View>
+
+          {/* Table Header with Sort */}
+          <View className="mb-2 flex-row items-center border-b border-gray-200 pb-2 dark:border-gray-700">
+            <View className="flex-1">
+              <SortButton {...getSortProps("name")} label="Name" />
+            </View>
+            <View className="flex-1">
+              <SortButton {...getSortProps("description")} label="Description" />
+            </View>
+            <View className="w-20">
+              <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                Actions
+              </Text>
+            </View>
+          </View>
+
+          {/* Categories FlatList */}
+          {isLoading ? (
+            <View className="flex-1 items-center justify-center py-12">
+              <ActivityIndicator size="large" color="#FF6D00" />
+            </View>
+          ) : currentPageData.length === 0 ? (
             <View className="items-center py-12">
               <MaterialIcons name="category" size={64} color="#ccc" />
               <Text className="mt-4 text-center text-base text-gray-600 dark:text-gray-300">
-                No ingredient categories found
+                {searchTerm
+                  ? "No categories found matching your search"
+                  : "No ingredient categories found"}
               </Text>
             </View>
           ) : (
-            <View className="gap-3">
-              {categories.map((category: IngredientCategory) => (
-                <TouchableOpacity
-                  key={category.id}
-                  className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
-                  activeOpacity={0.7}>
+            <FlatList
+              data={currentPageData}
+              keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
+              renderItem={({ item: category }) => (
+                <View className="mb-3 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
                   <View className="flex-row items-start justify-between">
                     <View className="flex-1">
                       <Text className="text-lg font-bold text-[#000000] dark:text-white">
@@ -183,11 +273,34 @@ export default function IngredientCategoryManagement() {
                       </TouchableOpacity>
                     </View>
                   </View>
-                </TouchableOpacity>
-              ))}
-            </View>
+                </View>
+              )}
+              ListFooterComponent={
+                <View className="mt-4 flex-row items-center justify-between border-t border-gray-200 pt-4 dark:border-gray-700">
+                  <Text className="text-sm text-gray-600 dark:text-gray-300">
+                    {getPageInfo(pagination, sortedData.length)}
+                  </Text>
+                  <View className="flex-row gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onPress={pagination.prevPage}
+                      disabled={pagination.currentPage === 1}>
+                      <MaterialIcons name="chevron-left" size={20} />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onPress={pagination.nextPage}
+                      disabled={pagination.currentPage === pagination.totalPages}>
+                      <MaterialIcons name="chevron-right" size={20} />
+                    </Button>
+                  </View>
+                </View>
+              }
+            />
           )}
-        </ScrollView>
+        </View>
       </View>
     </SafeAreaView>
   );

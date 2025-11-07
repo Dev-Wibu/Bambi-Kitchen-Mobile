@@ -1,10 +1,10 @@
+import { useMutationHandler } from "@/hooks/useMutationHandler";
 import type {
   Notification,
   NotificationCreateRequest,
   NotificationUpdateRequest,
 } from "@/interfaces/notification.interface";
 import { $api } from "@/libs/api";
-import { useMutationHandler } from "@/hooks/useMutationHandler";
 
 // ==================== NOTIFICATION API HOOKS ====================
 
@@ -105,7 +105,7 @@ export const useRegisterDeviceToken = () => {
  */
 export const useMarkAsReadWithToast = () => {
   const markAsReadMutation = useMarkAsRead();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => markAsReadMutation.mutateAsync(variables),
     showSuccessToast: false, // Don't show toast for mark as read
@@ -118,7 +118,7 @@ export const useMarkAsReadWithToast = () => {
  */
 export const useCreateNotificationWithToast = () => {
   const createMutation = useCreateNotification();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => createMutation.mutateAsync(variables),
     successMessage: "Tạo thông báo thành công",
@@ -131,7 +131,7 @@ export const useCreateNotificationWithToast = () => {
  */
 export const useUpdateNotificationWithToast = () => {
   const updateMutation = useUpdateNotification();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => updateMutation.mutateAsync(variables),
     successMessage: "Cập nhật thông báo thành công",

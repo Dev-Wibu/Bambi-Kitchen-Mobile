@@ -1,9 +1,9 @@
+import { useMutationHandler } from "@/hooks/useMutationHandler";
 import type {
   IngredientCategoryCreateRequest,
   IngredientCategoryUpdateRequest,
 } from "@/interfaces/ingredientCategory.interface";
 import { $api } from "@/libs/api";
-import { useMutationHandler } from "@/hooks/useMutationHandler";
 
 // ==================== INGREDIENT CATEGORY API HOOKS ====================
 
@@ -51,7 +51,7 @@ export const useUpdateIngredientCategory = () => {
  */
 export const useCreateIngredientCategoryWithToast = () => {
   const createMutation = useCreateIngredientCategory();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => createMutation.mutateAsync(variables),
     successMessage: "Tạo danh mục thành công",
@@ -64,7 +64,7 @@ export const useCreateIngredientCategoryWithToast = () => {
  */
 export const useUpdateIngredientCategoryWithToast = () => {
   const updateMutation = useUpdateIngredientCategory();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => updateMutation.mutateAsync(variables),
     successMessage: "Cập nhật danh mục thành công",

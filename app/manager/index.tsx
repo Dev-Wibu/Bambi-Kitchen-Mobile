@@ -53,7 +53,7 @@ export default function ManagerTab() {
     const { data: accountsAPI } = useAccounts();
 
     const { data: ingredientsAPI } = useIngredients();
-    
+
     const { data: ordersAPI } = useOrders();
 
     const dishesCount = Array.isArray(dishesAPI) ? dishesAPI.length : 0;
@@ -61,7 +61,7 @@ export default function ManagerTab() {
     const accountsCount = Array.isArray(accountsAPI) ? accountsAPI.length : 0;
 
     const ingredientsCount = Array.isArray(ingredientsAPI) ? ingredientsAPI.length : 0;
-    
+
     const ordersCount = Array.isArray(ordersAPI) ? ordersAPI.length : 0;
 
     const max = Math.max(dishesCount, accountsCount, ingredientsCount, ordersCount, 1);
@@ -90,7 +90,7 @@ export default function ManagerTab() {
         color: "#60A5FA",
         route: "/manager/ingredients",
       },
-      
+
       {
         key: "orders",
         label: "Orders",

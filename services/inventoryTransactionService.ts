@@ -3,7 +3,6 @@ import type {
   InventoryTransactionUpdateRequest,
 } from "@/interfaces/inventoryTransaction.interface";
 import { $api } from "@/libs/api";
-import { useMutationHandler } from "@/hooks/useMutationHandler";
 
 // ==================== INVENTORY TRANSACTION API HOOKS ====================
 

@@ -1,15 +1,21 @@
+import { Filter, type FilterCriteria } from "@/components/Filter";
 import ReloadButton from "@/components/ReloadButton";
+import { SearchBar } from "@/components/SearchBar";
+import { SortButton } from "@/components/SortButton";
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
+import { getPageInfo, usePagination } from "@/hooks/usePagination";
+import { useSortable } from "@/hooks/useSortable";
 import { useOrders } from "@/services/orderService";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
   Modal,
   Pressable,
   ScrollView,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -22,7 +28,9 @@ export default function OrdersManager() {
 
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
-  const [filterStatus, setFilterStatus] = useState<OrderStatus | "ALL">("ALL");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterCriteria, setFilterCriteria] = useState<FilterCriteria[]>([]);
+  const [pageSize, setPageSize] = useState(10);
 
   const openOrderDetails = (order: any) => {
     setSelectedOrder(order);
@@ -59,11 +67,127 @@ export default function OrdersManager() {
     }
   };
 
-  const filteredOrders = React.useMemo(() => {
-    if (!data) return [];
-    if (filterStatus === "ALL") return data;
-    return data.filter((order: any) => order.status === filterStatus);
-  }, [data, filterStatus]);
+  // Reverse the list to show newest first
+  const reversedOrders = useMemo(() => {
+    return data ? [...data].reverse() : [];
+  }, [data]);
+
+  // Filter and search
+  const filteredOrders = useMemo(() => {
+    let filtered = reversedOrders;
+
+    // Apply search
+    if (searchTerm) {
+      const lowerSearch = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (order: any) =>
+          order.id?.toString().includes(searchTerm) ||
+          order.userId?.toString().includes(searchTerm) ||
+          order.staffId?.toString().includes(searchTerm) ||
+          order.note?.toLowerCase().includes(lowerSearch)
+      );
+    }
+
+    // Apply filters
+    filterCriteria.forEach((filter) => {
+      if (filter.field === "status" && typeof filter.value === "string") {
+        filtered = filtered.filter((order: any) => order.status === filter.value);
+      }
+      if (filter.field === "totalPrice" && typeof filter.value === "object") {
+        const range = filter.value as { from: number | undefined; to: number | undefined };
+        filtered = filtered.filter((order: any) => {
+          const price = order.totalPrice || 0;
+          if (range.from !== undefined && price < range.from) return false;
+          if (range.to !== undefined && price > range.to) return false;
+          return true;
+        });
+      }
+      if (filter.field === "ranking" && typeof filter.value === "object") {
+        const range = filter.value as { from: number | undefined; to: number | undefined };
+        filtered = filtered.filter((order: any) => {
+          const ranking = order.ranking || 0;
+          if (range.from !== undefined && ranking < range.from) return false;
+          if (range.to !== undefined && ranking > range.to) return false;
+          return true;
+        });
+      }
+    });
+
+    return filtered;
+  }, [reversedOrders, searchTerm, filterCriteria]);
+
+  // Sorting
+  const { sortedData, getSortProps } = useSortable<any>(filteredOrders);
+
+  // Pagination
+  const pagination = usePagination({
+    totalCount: sortedData.length,
+    pageSize,
+    initialPage: 1,
+  });
+
+  // Current page data
+  const currentPageData = useMemo(() => {
+    return sortedData.slice(pagination.startIndex, pagination.endIndex + 1);
+  }, [sortedData, pagination.startIndex, pagination.endIndex]);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    pagination.setPage(1);
+  }, [searchTerm, filterCriteria]);
+
+  // Filter options
+  const filterOptions = useMemo(
+    () => [
+      {
+        label: "Status",
+        value: "status",
+        type: "select" as const,
+        selectOptions: [
+          { value: "PENDING", label: "Pending" },
+          { value: "COMPLETED", label: "Completed" },
+          { value: "PAID", label: "Paid" },
+          { value: "CANCELLED", label: "Cancelled" },
+        ],
+      },
+      {
+        label: "Total Price",
+        value: "totalPrice",
+        type: "numberRange" as const,
+        numberRangeConfig: {
+          fromPlaceholder: "Min price",
+          toPlaceholder: "Max price",
+          min: 0,
+          step: 1000,
+          suffix: "$",
+        },
+      },
+      {
+        label: "Rating",
+        value: "ranking",
+        type: "numberRange" as const,
+        numberRangeConfig: {
+          fromPlaceholder: "Min rating",
+          toPlaceholder: "Max rating",
+          min: 0,
+          max: 5,
+          step: 1,
+        },
+      },
+    ],
+    []
+  );
+
+  // Search options
+  const searchOptions = useMemo(
+    () => [
+      { value: "id", label: "Order ID" },
+      { value: "userId", label: "Customer ID" },
+      { value: "staffId", label: "Staff ID" },
+      { value: "note", label: "Note" },
+    ],
+    []
+  );
 
   const renderOrderItem = ({ item }: { item: any }) => (
     <Pressable
@@ -184,53 +308,88 @@ export default function OrdersManager() {
             </TouchableOpacity>
             <View className="flex-1">
               <Text className="text-2xl font-bold">Order Management</Text>
-              <Text className="mt-1 text-sm text-gray-600">
-                Total: {filteredOrders.length} orders
-              </Text>
+              <Text className="mt-1 text-sm text-gray-600">Total: {sortedData.length} orders</Text>
             </View>
           </View>
-          <ReloadButton onRefresh={() => refetch()} />
+          <ReloadButton onRefetch={() => refetch()} />
         </View>
 
-        {/* Filter Status */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-2 mt-4">
-          <View className="flex-row gap-2 px-2">
-            {["ALL", "PENDING", "PAID", "COMPLETED", "CANCELLED"].map((status) => (
-              <TouchableOpacity
-                key={status}
-                onPress={() => setFilterStatus(status as any)}
-                style={{
-                  backgroundColor: filterStatus === status ? "#FF6D00" : "#F3F4F6",
-                  paddingHorizontal: 16,
-                  paddingVertical: 8,
-                  borderRadius: 20,
-                }}>
-                <Text
-                  style={{
-                    color: filterStatus === status ? "white" : "#757575",
-                    fontWeight: filterStatus === status ? "600" : "normal",
-                  }}>
-                  {status === "ALL" ? "All" : getStatusText(status as OrderStatus)}
-                </Text>
-              </TouchableOpacity>
-            ))}
+        {/* Search and Filter */}
+        <View className="mt-4 gap-3">
+          <SearchBar
+            searchOptions={searchOptions}
+            onSearchChange={setSearchTerm}
+            placeholder="Search by order ID, customer ID, staff ID, or note..."
+            resetPagination={pagination.reset}
+          />
+          <Filter
+            filterOptions={filterOptions}
+            onFilterChange={(criteria) => {
+              setFilterCriteria(criteria);
+              pagination.setPage(1);
+            }}
+          />
+        </View>
+
+        {/* Table Header with Sort */}
+        <View className="mt-4 flex-row items-center border-b border-gray-200 pb-2">
+          <View className="flex-1">
+            <SortButton {...getSortProps("id")} label="Order #" />
           </View>
-        </ScrollView>
+          <View className="flex-1">
+            <SortButton {...getSortProps("status")} label="Status" />
+          </View>
+          <View className="flex-1">
+            <SortButton {...getSortProps("totalPrice")} label="Total" />
+          </View>
+          <View className="flex-1">
+            <SortButton {...getSortProps("createAt")} label="Date" />
+          </View>
+        </View>
       </View>
 
       {/* List */}
-      <FlatList
-        data={filteredOrders}
-        renderItem={renderOrderItem}
-        keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={{ padding: 16 }}
-        ListEmptyComponent={
-          <View className="flex-1 items-center justify-center py-20">
-            <MaterialIcons name="inbox" size={64} color="#BDBDBD" />
-            <Text className="mt-4 text-lg text-gray-600">No orders found</Text>
+      <View className="flex-1 p-4">
+        {currentPageData.length === 0 ? (
+          <View className="flex-1 items-center justify-center">
+            <MaterialIcons name="receipt-long" size={64} color="#9CA3AF" />
+            <Text className="mt-4 text-center text-gray-500">
+              {searchTerm || filterCriteria.length > 0
+                ? "No orders found matching your criteria"
+                : "No orders available"}
+            </Text>
           </View>
-        }
-      />
+        ) : (
+          <FlatList
+            data={currentPageData}
+            keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
+            renderItem={renderOrderItem}
+            ListFooterComponent={
+              <View className="mt-4 flex-row items-center justify-between border-t border-gray-200 bg-white p-4">
+                <Text className="text-sm text-gray-600">
+                  {getPageInfo(pagination, sortedData.length)}
+                </Text>
+                <View className="flex-row gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onPress={pagination.prevPage}
+                    disabled={pagination.currentPage === 1}>
+                    <MaterialIcons name="chevron-left" size={20} />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onPress={pagination.nextPage}
+                    disabled={pagination.currentPage === pagination.totalPages}>
+                    <MaterialIcons name="chevron-right" size={20} />
+                  </Button>
+                </View>
+              </View>
+            }
+          />
+        )}
+      </View>
 
       {/* Order Details Modal */}
       <Modal

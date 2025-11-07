@@ -1,5 +1,5 @@
-import { $api } from "@/libs/api";
 import { useMutationHandler } from "@/hooks/useMutationHandler";
+import { $api } from "@/libs/api";
 
 // ==================== INGREDIENT API HOOKS ====================
 
@@ -66,7 +66,7 @@ export const useToggleIngredientActive = () => {
  */
 export const useCreateIngredientWithToast = () => {
   const createMutation = useCreateIngredient();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => createMutation.mutateAsync(variables),
     successMessage: "Tạo nguyên liệu thành công",
@@ -79,7 +79,7 @@ export const useCreateIngredientWithToast = () => {
  */
 export const useUpdateIngredientWithToast = () => {
   const updateMutation = useUpdateIngredient();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => updateMutation.mutateAsync(variables),
     successMessage: "Cập nhật nguyên liệu thành công",
@@ -94,7 +94,7 @@ export const useUpdateIngredientWithToast = () => {
  */
 export const useToggleIngredientActiveWithToast = () => {
   const toggleMutation = useToggleIngredientActive();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => toggleMutation.mutateAsync(variables),
     successMessage: "Đã thay đổi trạng thái nguyên liệu",

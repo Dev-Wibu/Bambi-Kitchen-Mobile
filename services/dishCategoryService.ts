@@ -1,9 +1,9 @@
+import { useMutationHandler } from "@/hooks/useMutationHandler";
 import type {
   DishCategoryCreateRequest,
   DishCategoryUpdateRequest,
 } from "@/interfaces/dishCategory.interface";
 import { $api } from "@/libs/api";
-import { useMutationHandler } from "@/hooks/useMutationHandler";
 
 // ==================== DISH CATEGORY API HOOKS ====================
 
@@ -51,7 +51,7 @@ export const useUpdateDishCategory = () => {
  */
 export const useCreateDishCategoryWithToast = () => {
   const createMutation = useCreateDishCategory();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => createMutation.mutateAsync(variables),
     successMessage: "Tạo danh mục món ăn thành công",
@@ -64,7 +64,7 @@ export const useCreateDishCategoryWithToast = () => {
  */
 export const useUpdateDishCategoryWithToast = () => {
   const updateMutation = useUpdateDishCategory();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => updateMutation.mutateAsync(variables),
     successMessage: "Cập nhật danh mục món ăn thành công",

@@ -1,8 +1,8 @@
+import { useMutationHandler } from "@/hooks/useMutationHandler";
 import type { AccountCreateRequest, AccountUpdateRequest } from "@/interfaces/account.interface";
 import type { LoginRequest } from "@/interfaces/auth.interface";
 import { ROLES, type ROLE_TYPE } from "@/interfaces/role.interface";
 import { $api } from "@/libs/api";
-import { useMutationHandler } from "@/hooks/useMutationHandler";
 
 // ==================== ACCOUNT API HOOKS ====================
 
@@ -65,7 +65,7 @@ export const useGetAccountById = (id: number) => {
  */
 export const useCreateAccountWithToast = () => {
   const createMutation = useCreateAccount();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => createMutation.mutateAsync(variables),
     successMessage: "Tạo tài khoản thành công",
@@ -79,7 +79,7 @@ export const useCreateAccountWithToast = () => {
  */
 export const useUpdateAccountWithToast = () => {
   const updateMutation = useUpdateAccount();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => updateMutation.mutateAsync(variables),
     successMessage: "Cập nhật tài khoản thành công",
@@ -93,7 +93,7 @@ export const useUpdateAccountWithToast = () => {
  */
 export const useToggleAccountActiveWithToast = () => {
   const updateMutation = useUpdateAccount();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => updateMutation.mutateAsync(variables),
     successMessage: "Đã thay đổi trạng thái tài khoản",
@@ -111,12 +111,14 @@ export const transformAccountCreateRequest = (data: {
   email: string;
   password: string;
   role: ROLE_TYPE;
+  active?: boolean;
 }): AccountCreateRequest => {
   return {
     name: data.name,
     mail: data.email,
     password: data.password,
     role: data.role,
+    active: data.active ?? true,
   };
 };
 

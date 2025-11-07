@@ -208,11 +208,17 @@ function Filter({
   };
 
   const renderSelectFilter = (option: FilterOption) => {
-    const value = (tempValues[option.value] as string) || "";
+    const stringValue = (tempValues[option.value] as string) || "";
+    // Find the matching option to create the Option object
+    const selectedOption = option.selectOptions?.find((opt) => opt.value === stringValue);
+    const value = selectedOption || undefined;
+
     return (
       <View className="gap-2">
         <Text className="text-sm font-medium">{option.label}</Text>
-        <Select value={value} onValueChange={(val) => handleTempValueChange(option.value, val)}>
+        <Select
+          value={value}
+          onValueChange={(val) => handleTempValueChange(option.value, val?.value || "")}>
           <SelectTrigger>
             <SelectValue
               placeholder={option.placeholder || `Select ${option.label.toLowerCase()}`}
@@ -221,12 +227,15 @@ function Filter({
           <SelectContent>
             {option.selectOptions ? (
               option.selectOptions.map((selectOption) => (
-                <SelectItem key={selectOption.value} value={selectOption.value}>
+                <SelectItem
+                  key={selectOption.value}
+                  value={selectOption.value}
+                  label={selectOption.label}>
                   {selectOption.label}
                 </SelectItem>
               ))
             ) : (
-              <SelectItem value="" disabled>
+              <SelectItem value="" label="No options" disabled>
                 No options
               </SelectItem>
             )}

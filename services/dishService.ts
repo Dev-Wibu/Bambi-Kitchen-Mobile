@@ -1,5 +1,5 @@
-import { $api } from "@/libs/api";
 import { useMutationHandler } from "@/hooks/useMutationHandler";
+import { $api } from "@/libs/api";
 
 // ==================== DISH API HOOKS ====================
 
@@ -126,7 +126,7 @@ export const useDeleteDishTemplate = () => {
  */
 export const useCreateDishWithToast = () => {
   const createMutation = useCreateDish();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => createMutation.mutateAsync(variables),
     successMessage: "Lưu món ăn thành công",
@@ -139,7 +139,7 @@ export const useCreateDishWithToast = () => {
  */
 export const useUpdateDishWithToast = () => {
   const updateMutation = useUpdateDish();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => updateMutation.mutateAsync(variables),
     successMessage: "Cập nhật món ăn thành công",
@@ -152,7 +152,7 @@ export const useUpdateDishWithToast = () => {
  */
 export const useToggleDishPublicWithToast = () => {
   const toggleMutation = useToggleDishPublic();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => toggleMutation.mutateAsync(variables),
     successMessage: "Đã thay đổi trạng thái công khai",
@@ -165,7 +165,7 @@ export const useToggleDishPublicWithToast = () => {
  */
 export const useToggleDishActiveWithToast = () => {
   const toggleMutation = useToggleDishActive();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => toggleMutation.mutateAsync(variables),
     successMessage: "Đã thay đổi trạng thái hoạt động",

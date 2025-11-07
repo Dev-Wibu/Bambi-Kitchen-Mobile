@@ -1,3 +1,5 @@
+import { API_BASE_URL } from "@/libs/api";
+import type { components } from "@/schema-from-be";
 import { useIngredients } from "@/services/ingredientService";
 import { useAuthStore } from "@/stores/authStore";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -16,8 +18,6 @@ import {
   View,
 } from "react-native";
 import Toast from "react-native-toast-message";
-import { API_BASE_URL } from "@/libs/api";
-import type { components } from "@/schema-from-be";
 
 type IngredientDetail = components["schemas"]["IngredientDetail"];
 type IngredientsGetByDishResponse = components["schemas"]["IngredientsGetByDishResponse"];

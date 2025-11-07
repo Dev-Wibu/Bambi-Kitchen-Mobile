@@ -5,7 +5,7 @@ import type { IngredientCategory } from "@/interfaces/ingredientCategory.interfa
 import { API_BASE_URL } from "@/libs/api";
 import { useAuthStore } from "@/stores/authStore";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, TextInput, TouchableOpacity, View } from "react-native";
 import Toast from "react-native-toast-message";
 
@@ -102,7 +102,7 @@ export default function IngredientForm({
       formData.append("quantity", quantity || "0");
       formData.append("unit", unit);
       formData.append("pricePerUnit", pricePerUnit || "0");
-      
+
       // IMPORTANT: Always send a file field to prevent BE NullPointerException
       // BE code calls file.isEmpty() without null check, so file must not be null
       // Send an empty blob when no image is selected (React Native compatible)
@@ -114,11 +114,13 @@ export default function IngredientForm({
       };
       formData.append("file", emptyBlob as any);
 
+      // Always send active status for both create and update
+      formData.append("active", String(active));
+
       if (ingredient?.id) {
         // Update mode: add id field and preserve stock fields
         formData.append("id", ingredient.id.toString());
-        formData.append("active", String(active));
-        
+
         // Preserve existing stock values when updating
         // These fields are required by IngredientUpdateRequest
         if (ingredient.quantity !== undefined) {
