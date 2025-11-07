@@ -118,7 +118,6 @@ export const transformAccountCreateRequest = (data: {
     mail: data.email,
     password: data.password,
     role: data.role,
-    active: data.active ?? true,
   };
 };
 

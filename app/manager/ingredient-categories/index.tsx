@@ -1,4 +1,4 @@
-import { type FilterCriteria } from "@/components/Filter";
+import { Filter, type FilterCriteria } from "@/components/Filter";
 import ReloadButton from "@/components/ReloadButton";
 import { SearchBar } from "@/components/SearchBar";
 import { SortButton } from "@/components/SortButton";
@@ -243,9 +243,7 @@ export default function IngredientCategoryManagement() {
             <View className="items-center py-12">
               <MaterialIcons name="category" size={64} color="#ccc" />
               <Text className="mt-4 text-center text-base text-gray-600 dark:text-gray-300">
-                {searchTerm
-                  ? "No categories found matching your search"
-                  : "No ingredient categories found"}
+                {searchTerm ? "No categories found matching your search" : "No ingredient categories found"}
               </Text>
             </View>
           ) : (
@@ -278,7 +276,7 @@ export default function IngredientCategoryManagement() {
               ListFooterComponent={
                 <View className="mt-4 flex-row items-center justify-between border-t border-gray-200 pt-4 dark:border-gray-700">
                   <Text className="text-sm text-gray-600 dark:text-gray-300">
-                    {getPageInfo(pagination, sortedData.length)}
+                    {getPageInfo(pagination)}
                   </Text>
                   <View className="flex-row gap-2">
                     <Button

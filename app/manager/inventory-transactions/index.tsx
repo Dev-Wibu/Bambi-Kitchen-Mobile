@@ -2,8 +2,8 @@ import { Filter, type FilterCriteria } from "@/components/Filter";
 import ReloadButton from "@/components/ReloadButton";
 import { SearchBar } from "@/components/SearchBar";
 import { SortButton } from "@/components/SortButton";
-import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
+import { Button } from "@/components/ui/button";
 import { getPageInfo, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import type { InventoryTransaction } from "@/interfaces/inventoryTransaction.interface";
@@ -274,7 +274,7 @@ export default function InventoryTransactionManagement() {
               ListFooterComponent={
                 <View className="mt-4 flex-row items-center justify-between border-t border-gray-200 pt-4 dark:border-gray-700">
                   <Text className="text-sm text-gray-600 dark:text-gray-300">
-                    {getPageInfo(pagination, sortedData.length)}
+                    {getPageInfo(pagination)}
                   </Text>
                   <View className="flex-row gap-2">
                     <Button
