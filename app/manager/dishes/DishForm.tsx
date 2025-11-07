@@ -1,8 +1,10 @@
+import { API_BASE_URL } from "@/libs/api";
+import type { components } from "@/schema-from-be";
 import { useIngredients } from "@/services/ingredientService";
 import { useAuthStore } from "@/stores/authStore";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -17,6 +19,15 @@ import {
 } from "react-native";
 import Toast from "react-native-toast-message";
 
+type IngredientDetail = components["schemas"]["IngredientDetail"];
+type IngredientsGetByDishResponse = components["schemas"]["IngredientsGetByDishResponse"];
+
+interface FileUpload {
+  uri: string;
+  type: string;
+  name: string;
+}
+
 interface DishFormProps {
   visible: boolean;
   dish: any | null;
@@ -26,7 +37,7 @@ interface DishFormProps {
 
 export default function DishForm({ visible, dish, onClose, onSuccess }: DishFormProps) {
   const { data: availableIngredients, isLoading: loadingIngredients } = useIngredients();
-  
+
   const [id, setId] = useState<number | null>(null);
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
@@ -52,11 +63,53 @@ export default function DishForm({ visible, dish, onClose, onSuccess }: DishForm
       setDishType(dish.dishType || "PRESET");
       setImage(dish.imageUrl || null);
       setFile(null);
-      setIngredients(dish.ingredients || {});
+      // Don't set ingredients here - will be fetched from API in separate useEffect
     } else {
       resetForm();
     }
   }, [dish]);
+
+  // Fetch recipe/ingredients when editing a dish
+  // Similar to WEB EditDishModal.tsx (lines 80-124)
+  useEffect(() => {
+    const fetchRecipe = async () => {
+      if (dish?.id) {
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/recipe/by-dish/${dish.id}`, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${useAuthStore.getState().token}`,
+            },
+          });
+
+          if (response.ok) {
+            const data: IngredientsGetByDishResponse = await response.json();
+            // Response format: IngredientsGetByDishResponse with ingredients array
+            // Each ingredient has: { id, name, neededQuantity, storedQuantity, ... }
+            if (data && Array.isArray(data.ingredients)) {
+              const recipe: { [key: number]: number } = {};
+              data.ingredients.forEach((item: IngredientDetail) => {
+                if (typeof item.id === "number" && typeof item.neededQuantity === "number") {
+                  recipe[item.id] = item.neededQuantity;
+                }
+              });
+              setIngredients(recipe);
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching recipe:", error);
+          // Keep ingredients empty if fetch fails
+        }
+      } else {
+        // When creating new dish, reset ingredients
+        setIngredients({});
+      }
+    };
+
+    if (visible) {
+      fetchRecipe();
+    }
+  }, [visible, dish?.id]);
 
   const resetForm = () => {
     setId(null);
@@ -129,12 +182,13 @@ export default function DishForm({ visible, dish, onClose, onSuccess }: DishForm
       return;
     }
 
-    // Validate that at least one ingredient is selected
-    if (!ingredients || Object.keys(ingredients).length === 0) {
-      Toast.show({ 
-        type: "error", 
+    // Validate that at least one ingredient is selected with quantity > 0
+    const validIngredients = Object.entries(ingredients).filter(([, qty]) => qty > 0);
+    if (validIngredients.length === 0) {
+      Toast.show({
+        type: "error",
         text1: "At least one ingredient required",
-        text2: "Please select ingredients for this dish"
+        text2: "Please select ingredients for this dish",
       });
       return;
     }
@@ -158,25 +212,39 @@ export default function DishForm({ visible, dish, onClose, onSuccess }: DishForm
       formData.append("dishType", dishType);
       formData.append("account.id", String(account.id));
 
-      // Append file if user selected one
+      // Append file - BE expects this field to always be present
+      // If user selected a new file, use it. Otherwise, send an empty file.
       if (file && file.uri) {
-        const fileToUpload: any = {
+        const fileToUpload: FileUpload = {
           uri: file.uri,
           type: file.mimeType || "image/jpeg",
           name: file.fileName || "dish_image.jpg",
         };
-        formData.append("file", fileToUpload);
+        formData.append("file", fileToUpload as any);
+      } else {
+        // Send empty file object to prevent null pointer exception in BE
+        // React Native FormData expects an object with uri, type, and name
+        // Using data URI for empty file (0 bytes) - same pattern as IngredientForm fix
+        const emptyFile: FileUpload = {
+          uri: "data:application/octet-stream;base64,",
+          type: "application/octet-stream",
+          name: "empty.txt",
+        };
+        formData.append("file", emptyFile as any);
       }
 
       // Send ingredients map - BE requires Map<Integer, Integer>
       // User must select at least one ingredient
-      Object.entries(ingredients).forEach(([key, value]) => {
-        formData.append(`ingredients[${key}]`, String(value));
-      });
+      // Filter to only send ingredients with quantity > 0
+      Object.entries(ingredients)
+        .filter(([, qty]) => qty > 0)
+        .forEach(([key, value]) => {
+          formData.append(`ingredients[${key}]`, String(value));
+        });
 
       if (id) formData.append("id", String(id));
 
-      const response = await fetch("https://bambi.kdz.asia/api/dish", {
+      const response = await fetch(`${API_BASE_URL}/api/dish`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${useAuthStore.getState().token}`,
@@ -340,10 +408,14 @@ export default function DishForm({ visible, dish, onClose, onSuccess }: DishForm
                     <View
                       key={ingredientId}
                       className="mb-1 flex-row items-center justify-between rounded-md bg-gray-100 p-2">
-                      <Text className="flex-1 text-sm">{getIngredientName(Number(ingredientId))}</Text>
+                      <Text className="flex-1 text-sm">
+                        {getIngredientName(Number(ingredientId))}
+                      </Text>
                       <View className="flex-row items-center">
                         <Pressable
-                          onPress={() => updateIngredientQuantity(Number(ingredientId), quantity - 1)}
+                          onPress={() =>
+                            updateIngredientQuantity(Number(ingredientId), quantity - 1)
+                          }
                           className="rounded bg-gray-300 px-2 py-1">
                           <Text>-</Text>
                         </Pressable>
@@ -357,7 +429,9 @@ export default function DishForm({ visible, dish, onClose, onSuccess }: DishForm
                           keyboardType="numeric"
                         />
                         <Pressable
-                          onPress={() => updateIngredientQuantity(Number(ingredientId), quantity + 1)}
+                          onPress={() =>
+                            updateIngredientQuantity(Number(ingredientId), quantity + 1)
+                          }
                           className="rounded bg-gray-300 px-2 py-1">
                           <Text>+</Text>
                         </Pressable>

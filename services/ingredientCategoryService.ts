@@ -1,9 +1,9 @@
+import { useMutationHandler } from "@/hooks/useMutationHandler";
 import type {
   IngredientCategoryCreateRequest,
   IngredientCategoryUpdateRequest,
 } from "@/interfaces/ingredientCategory.interface";
 import { $api } from "@/libs/api";
-import { useMutationHandler } from "@/hooks/useMutationHandler";
 
 // ==================== INGREDIENT CATEGORY API HOOKS ====================
 
@@ -42,13 +42,7 @@ export const useUpdateIngredientCategory = () => {
   return $api.useMutation("put", "/api/ingredient-category");
 };
 
-/**
- * Hook for deleting an ingredient category
- * Uses DELETE /api/ingredient-category/{id} endpoint
- */
-export const useDeleteIngredientCategory = () => {
-  return $api.useMutation("delete", "/api/ingredient-category/{id}");
-};
+// DELETE operation removed - categories should not be deleted to maintain data integrity
 
 // ==================== ENHANCED MUTATIONS WITH AUTO TOAST ====================
 
@@ -57,7 +51,7 @@ export const useDeleteIngredientCategory = () => {
  */
 export const useCreateIngredientCategoryWithToast = () => {
   const createMutation = useCreateIngredientCategory();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => createMutation.mutateAsync(variables),
     successMessage: "Tạo danh mục thành công",
@@ -70,7 +64,7 @@ export const useCreateIngredientCategoryWithToast = () => {
  */
 export const useUpdateIngredientCategoryWithToast = () => {
   const updateMutation = useUpdateIngredientCategory();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => updateMutation.mutateAsync(variables),
     successMessage: "Cập nhật danh mục thành công",
@@ -78,18 +72,7 @@ export const useUpdateIngredientCategoryWithToast = () => {
   });
 };
 
-/**
- * Hook for deleting ingredient category with automatic toast notifications
- */
-export const useDeleteIngredientCategoryWithToast = () => {
-  const deleteMutation = useDeleteIngredientCategory();
-  
-  return useMutationHandler({
-    mutationFn: (variables: any) => deleteMutation.mutateAsync(variables),
-    successMessage: "Xóa danh mục thành công",
-    errorMessage: "Không thể xóa danh mục",
-  });
-};
+// DELETE operation removed - categories should not be deleted
 
 // ==================== TRANSFORM FUNCTIONS ====================
 

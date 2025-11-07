@@ -1,9 +1,9 @@
+import { useMutationHandler } from "@/hooks/useMutationHandler";
 import type {
   DishCategoryCreateRequest,
   DishCategoryUpdateRequest,
 } from "@/interfaces/dishCategory.interface";
 import { $api } from "@/libs/api";
-import { useMutationHandler } from "@/hooks/useMutationHandler";
 
 // ==================== DISH CATEGORY API HOOKS ====================
 
@@ -42,13 +42,7 @@ export const useUpdateDishCategory = () => {
   return $api.useMutation("put", "/api/dish-category");
 };
 
-/**
- * Hook for deleting a dish category
- * Uses DELETE /api/dish-category/{id} endpoint
- */
-export const useDeleteDishCategory = () => {
-  return $api.useMutation("delete", "/api/dish-category/{id}");
-};
+// DELETE operation removed - categories should not be deleted to maintain data integrity
 
 // ==================== ENHANCED MUTATIONS WITH AUTO TOAST ====================
 
@@ -57,7 +51,7 @@ export const useDeleteDishCategory = () => {
  */
 export const useCreateDishCategoryWithToast = () => {
   const createMutation = useCreateDishCategory();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => createMutation.mutateAsync(variables),
     successMessage: "Tạo danh mục món ăn thành công",
@@ -70,7 +64,7 @@ export const useCreateDishCategoryWithToast = () => {
  */
 export const useUpdateDishCategoryWithToast = () => {
   const updateMutation = useUpdateDishCategory();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => updateMutation.mutateAsync(variables),
     successMessage: "Cập nhật danh mục món ăn thành công",
@@ -78,18 +72,7 @@ export const useUpdateDishCategoryWithToast = () => {
   });
 };
 
-/**
- * Hook for deleting dish category with automatic toast notifications
- */
-export const useDeleteDishCategoryWithToast = () => {
-  const deleteMutation = useDeleteDishCategory();
-  
-  return useMutationHandler({
-    mutationFn: (variables: any) => deleteMutation.mutateAsync(variables),
-    successMessage: "Xóa danh mục món ăn thành công",
-    errorMessage: "Không thể xóa danh mục món ăn",
-  });
-};
+// DELETE operation removed - categories should not be deleted
 
 // ==================== TRANSFORM FUNCTIONS ====================
 

@@ -1,5 +1,5 @@
-import { $api } from "@/libs/api";
 import { useMutationHandler } from "@/hooks/useMutationHandler";
+import { $api } from "@/libs/api";
 
 // ==================== INGREDIENT API HOOKS ====================
 
@@ -49,13 +49,7 @@ export const useUpdateIngredient = () => {
   return $api.useMutation("put", "/api/ingredient");
 };
 
-/**
- * Hook for deleting an ingredient
- * Uses DELETE /api/ingredient/{id} endpoint
- */
-export const useDeleteIngredient = () => {
-  return $api.useMutation("delete", "/api/ingredient/{id}");
-};
+// DELETE operation removed - use toggle active status instead
 
 /**
  * Hook for toggling ingredient active status
@@ -72,7 +66,7 @@ export const useToggleIngredientActive = () => {
  */
 export const useCreateIngredientWithToast = () => {
   const createMutation = useCreateIngredient();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => createMutation.mutateAsync(variables),
     successMessage: "Tạo nguyên liệu thành công",
@@ -85,7 +79,7 @@ export const useCreateIngredientWithToast = () => {
  */
 export const useUpdateIngredientWithToast = () => {
   const updateMutation = useUpdateIngredient();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => updateMutation.mutateAsync(variables),
     successMessage: "Cập nhật nguyên liệu thành công",
@@ -93,25 +87,14 @@ export const useUpdateIngredientWithToast = () => {
   });
 };
 
-/**
- * Hook for deleting ingredient with automatic toast notifications
- */
-export const useDeleteIngredientWithToast = () => {
-  const deleteMutation = useDeleteIngredient();
-  
-  return useMutationHandler({
-    mutationFn: (variables: any) => deleteMutation.mutateAsync(variables),
-    successMessage: "Xóa nguyên liệu thành công",
-    errorMessage: "Không thể xóa nguyên liệu",
-  });
-};
+// DELETE operation removed - use toggle active status instead
 
 /**
  * Hook for toggling ingredient active status with automatic toast notifications
  */
 export const useToggleIngredientActiveWithToast = () => {
   const toggleMutation = useToggleIngredientActive();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => toggleMutation.mutateAsync(variables),
     successMessage: "Đã thay đổi trạng thái nguyên liệu",

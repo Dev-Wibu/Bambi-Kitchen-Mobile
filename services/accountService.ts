@@ -1,8 +1,8 @@
+import { useMutationHandler } from "@/hooks/useMutationHandler";
 import type { AccountCreateRequest, AccountUpdateRequest } from "@/interfaces/account.interface";
 import type { LoginRequest } from "@/interfaces/auth.interface";
 import { ROLES, type ROLE_TYPE } from "@/interfaces/role.interface";
 import { $api } from "@/libs/api";
-import { useMutationHandler } from "@/hooks/useMutationHandler";
 
 // ==================== ACCOUNT API HOOKS ====================
 
@@ -30,13 +30,7 @@ export const useUpdateAccount = () => {
   return $api.useMutation("put", "/api/account");
 };
 
-/**
- * Hook for deleting an account
- * Uses DELETE /api/account/{id} endpoint
- */
-export const useDeleteAccount = () => {
-  return $api.useMutation("delete", "/api/account/{id}");
-};
+// DELETE operation removed - use active/inactive status toggle instead
 
 /**
  * Hook for getting current user info
@@ -71,7 +65,7 @@ export const useGetAccountById = (id: number) => {
  */
 export const useCreateAccountWithToast = () => {
   const createMutation = useCreateAccount();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => createMutation.mutateAsync(variables),
     successMessage: "Tạo tài khoản thành công",
@@ -85,7 +79,7 @@ export const useCreateAccountWithToast = () => {
  */
 export const useUpdateAccountWithToast = () => {
   const updateMutation = useUpdateAccount();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => updateMutation.mutateAsync(variables),
     successMessage: "Cập nhật tài khoản thành công",
@@ -94,16 +88,16 @@ export const useUpdateAccountWithToast = () => {
 };
 
 /**
- * Hook for deleting account with automatic toast notifications
- * Wraps useDeleteAccount with useMutationHandler to auto-show success/error messages
+ * Hook for toggling account active status with automatic toast notifications
+ * Replaces delete functionality - accounts should be deactivated instead of deleted
  */
-export const useDeleteAccountWithToast = () => {
-  const deleteMutation = useDeleteAccount();
-  
+export const useToggleAccountActiveWithToast = () => {
+  const updateMutation = useUpdateAccount();
+
   return useMutationHandler({
-    mutationFn: (variables: any) => deleteMutation.mutateAsync(variables),
-    successMessage: "Xóa tài khoản thành công",
-    errorMessage: "Không thể xóa tài khoản",
+    mutationFn: (variables: any) => updateMutation.mutateAsync(variables),
+    successMessage: "Đã thay đổi trạng thái tài khoản",
+    errorMessage: "Không thể thay đổi trạng thái tài khoản",
   });
 };
 
@@ -117,6 +111,7 @@ export const transformAccountCreateRequest = (data: {
   email: string;
   password: string;
   role: ROLE_TYPE;
+  active?: boolean;
 }): AccountCreateRequest => {
   return {
     name: data.name,

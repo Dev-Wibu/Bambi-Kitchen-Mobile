@@ -1,10 +1,10 @@
+import { useMutationHandler } from "@/hooks/useMutationHandler";
 import type {
   Notification,
   NotificationCreateRequest,
   NotificationUpdateRequest,
 } from "@/interfaces/notification.interface";
 import { $api } from "@/libs/api";
-import { useMutationHandler } from "@/hooks/useMutationHandler";
 
 // ==================== NOTIFICATION API HOOKS ====================
 
@@ -54,13 +54,7 @@ export const useUpdateNotification = () => {
   return $api.useMutation("put", "/api/notification");
 };
 
-/**
- * Hook for deleting a notification
- * Uses DELETE /api/notification/{id} endpoint
- */
-export const useDeleteNotification = () => {
-  return $api.useMutation("delete", "/api/notification/{id}");
-};
+// DELETE operation removed - notifications should be marked as read instead of deleted
 
 /**
  * Hook for marking a notification as read
@@ -104,25 +98,14 @@ export const useRegisterDeviceToken = () => {
 
 // ==================== ENHANCED MUTATIONS WITH AUTO TOAST ====================
 
-/**
- * Hook for deleting notification with automatic toast notifications
- */
-export const useDeleteNotificationWithToast = () => {
-  const deleteMutation = useDeleteNotification();
-  
-  return useMutationHandler({
-    mutationFn: (variables: any) => deleteMutation.mutateAsync(variables),
-    successMessage: "Xóa thông báo thành công",
-    errorMessage: "Không thể xóa thông báo",
-  });
-};
+// DELETE operation removed - use mark as read instead
 
 /**
  * Hook for marking notification as read with automatic toast notifications
  */
 export const useMarkAsReadWithToast = () => {
   const markAsReadMutation = useMarkAsRead();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => markAsReadMutation.mutateAsync(variables),
     showSuccessToast: false, // Don't show toast for mark as read
@@ -135,7 +118,7 @@ export const useMarkAsReadWithToast = () => {
  */
 export const useCreateNotificationWithToast = () => {
   const createMutation = useCreateNotification();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => createMutation.mutateAsync(variables),
     successMessage: "Tạo thông báo thành công",
@@ -148,7 +131,7 @@ export const useCreateNotificationWithToast = () => {
  */
 export const useUpdateNotificationWithToast = () => {
   const updateMutation = useUpdateNotification();
-  
+
   return useMutationHandler({
     mutationFn: (variables: any) => updateMutation.mutateAsync(variables),
     successMessage: "Cập nhật thông báo thành công",

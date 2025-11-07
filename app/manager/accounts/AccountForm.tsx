@@ -201,25 +201,23 @@ export default function AccountForm({ account, onSubmit, onCancel, isLoading }: 
           </View>
 
           {/* Active Toggle */}
-          {account && (
-            <View className="mb-6">
-              <View className="flex-row items-center justify-between">
-                <View>
-                  <Text className="text-sm font-semibold text-[#757575]">Active Status</Text>
-                  <Text className="mt-1 text-xs text-gray-500">
-                    {active ? "Account is active" : "Account is inactive"}
-                  </Text>
-                </View>
-                <Switch
-                  value={active}
-                  onValueChange={setActive}
-                  disabled={isLoading}
-                  trackColor={{ false: "#ccc", true: "#FF6D00" }}
-                  thumbColor="#fff"
-                />
+          <View className="mb-6">
+            <View className="flex-row items-center justify-between">
+              <View>
+                <Text className="text-sm font-semibold text-[#757575]">Active Status</Text>
+                <Text className="mt-1 text-xs text-gray-500">
+                  {active ? "Account is active" : "Account is inactive"}
+                </Text>
               </View>
+              <Switch
+                value={active}
+                onValueChange={setActive}
+                disabled={isLoading}
+                trackColor={{ false: "#ccc", true: "#FF6D00" }}
+                thumbColor="#fff"
+              />
             </View>
-          )}
+          </View>
 
           {/* Buttons */}
           <View className="mt-6 gap-3">

@@ -948,6 +948,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/payments/total-revenue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAll"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAllOrder"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/ingredients/low-stock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getLowStockIngredients"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/dishes/most-popular": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMostPopularDishes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/account/{id}": {
         parameters: {
             query?: never;
@@ -1267,10 +1331,10 @@ export interface components {
             parent?: unknown;
             id?: string;
             displayName?: string;
-            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             /** Format: int64 */
             startupDate?: number;
             applicationName?: string;
+            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             environment?: components["schemas"]["Environment"];
             /** Format: int32 */
             beanDefinitionCount?: number;
@@ -1375,8 +1439,8 @@ export interface components {
         BeanFactory: unknown;
         DefaultHttpStatusCode: components["schemas"]["HttpStatusCode"];
         Environment: {
-            defaultProfiles?: string[];
             activeProfiles?: string[];
+            defaultProfiles?: string[];
         };
         FilterRegistration: {
             servletNameMappings?: string[];
@@ -1391,30 +1455,30 @@ export interface components {
         HttpStatus: "100 CONTINUE" | "101 SWITCHING_PROTOCOLS" | "102 PROCESSING" | "103 EARLY_HINTS" | "103 CHECKPOINT" | "200 OK" | "201 CREATED" | "202 ACCEPTED" | "203 NON_AUTHORITATIVE_INFORMATION" | "204 NO_CONTENT" | "205 RESET_CONTENT" | "206 PARTIAL_CONTENT" | "207 MULTI_STATUS" | "208 ALREADY_REPORTED" | "226 IM_USED" | "300 MULTIPLE_CHOICES" | "301 MOVED_PERMANENTLY" | "302 FOUND" | "302 MOVED_TEMPORARILY" | "303 SEE_OTHER" | "304 NOT_MODIFIED" | "305 USE_PROXY" | "307 TEMPORARY_REDIRECT" | "308 PERMANENT_REDIRECT" | "400 BAD_REQUEST" | "401 UNAUTHORIZED" | "402 PAYMENT_REQUIRED" | "403 FORBIDDEN" | "404 NOT_FOUND" | "405 METHOD_NOT_ALLOWED" | "406 NOT_ACCEPTABLE" | "407 PROXY_AUTHENTICATION_REQUIRED" | "408 REQUEST_TIMEOUT" | "409 CONFLICT" | "410 GONE" | "411 LENGTH_REQUIRED" | "412 PRECONDITION_FAILED" | "413 PAYLOAD_TOO_LARGE" | "413 REQUEST_ENTITY_TOO_LARGE" | "414 URI_TOO_LONG" | "414 REQUEST_URI_TOO_LONG" | "415 UNSUPPORTED_MEDIA_TYPE" | "416 REQUESTED_RANGE_NOT_SATISFIABLE" | "417 EXPECTATION_FAILED" | "418 I_AM_A_TEAPOT" | "419 INSUFFICIENT_SPACE_ON_RESOURCE" | "420 METHOD_FAILURE" | "421 DESTINATION_LOCKED" | "422 UNPROCESSABLE_ENTITY" | "423 LOCKED" | "424 FAILED_DEPENDENCY" | "425 TOO_EARLY" | "426 UPGRADE_REQUIRED" | "428 PRECONDITION_REQUIRED" | "429 TOO_MANY_REQUESTS" | "431 REQUEST_HEADER_FIELDS_TOO_LARGE" | "451 UNAVAILABLE_FOR_LEGAL_REASONS" | "500 INTERNAL_SERVER_ERROR" | "501 NOT_IMPLEMENTED" | "502 BAD_GATEWAY" | "503 SERVICE_UNAVAILABLE" | "504 GATEWAY_TIMEOUT" | "505 HTTP_VERSION_NOT_SUPPORTED" | "506 VARIANT_ALSO_NEGOTIATES" | "507 INSUFFICIENT_STORAGE" | "508 LOOP_DETECTED" | "509 BANDWIDTH_LIMIT_EXCEEDED" | "510 NOT_EXTENDED" | "511 NETWORK_AUTHENTICATION_REQUIRED";
         HttpStatusCode: {
             error?: boolean;
-            is1xxInformational?: boolean;
+            is4xxClientError?: boolean;
             is5xxServerError?: boolean;
             is2xxSuccessful?: boolean;
+            is1xxInformational?: boolean;
             is3xxRedirection?: boolean;
-            is4xxClientError?: boolean;
         };
         JspConfigDescriptor: {
-            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
             taglibs?: components["schemas"]["TaglibDescriptor"][];
+            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            pageEncoding?: string;
-            includeCodas?: string[];
-            includePreludes?: string[];
-            elIgnored?: string;
-            errorOnELNotFound?: string;
-            scriptingInvalid?: string;
-            deferredSyntaxAllowedAsLiteral?: string;
-            errorOnUndeclaredNamespace?: string;
-            trimDirectiveWhitespaces?: string;
-            isXml?: string;
             buffer?: string;
             defaultContentType?: string;
             urlPatterns?: string[];
+            errorOnUndeclaredNamespace?: string;
+            isXml?: string;
+            trimDirectiveWhitespaces?: string;
+            deferredSyntaxAllowedAsLiteral?: string;
+            errorOnELNotFound?: string;
+            scriptingInvalid?: string;
+            elIgnored?: string;
+            pageEncoding?: string;
+            includePreludes?: string[];
+            includeCodas?: string[];
         };
         RedirectView: {
             applicationContext?: components["schemas"]["ApplicationContext"];
@@ -1437,14 +1501,14 @@ export interface components {
             expandUriTemplateVariables?: boolean;
             propagateQueryParams?: boolean;
             hosts?: string[];
-            propagateQueryProperties?: boolean;
             redirectView?: boolean;
+            propagateQueryProperties?: boolean;
+            attributesMap?: {
+                [key: string]: unknown;
+            };
             attributesCSV?: string;
             attributes?: {
                 [key: string]: string;
-            };
-            attributesMap?: {
-                [key: string]: unknown;
             };
         };
         ServletContext: {
@@ -1472,28 +1536,28 @@ export interface components {
             attributeNames?: unknown;
             contextPath?: string;
             initParameterNames?: unknown;
-            virtualServerName?: string;
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            virtualServerName?: string;
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            requestCharacterEncoding?: string;
+            responseCharacterEncoding?: string;
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             /** Format: int32 */
             sessionTimeout?: number;
             sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             servletRegistrations?: {
                 [key: string]: components["schemas"]["ServletRegistration"];
             };
-            responseCharacterEncoding?: string;
-            requestCharacterEncoding?: string;
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            serverInfo?: string;
-            /** Format: int32 */
-            effectiveMinorVersion?: number;
             /** Format: int32 */
             effectiveMajorVersion?: number;
+            /** Format: int32 */
+            effectiveMinorVersion?: number;
             filterRegistrations?: {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
-            servletContextName?: string;
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
+            servletContextName?: string;
+            serverInfo?: string;
         };
         ServletRegistration: {
             mappings?: string[];
@@ -1505,7 +1569,6 @@ export interface components {
             };
         };
         SessionCookieConfig: {
-            domain?: string;
             /** Format: int32 */
             maxAge?: number;
             name?: string;
@@ -1517,6 +1580,7 @@ export interface components {
             comment?: string;
             secure?: boolean;
             httpOnly?: boolean;
+            domain?: string;
         };
         TaglibDescriptor: {
             taglibLocation?: string;
@@ -1543,6 +1607,17 @@ export interface components {
             quantity?: number;
             dish?: components["schemas"]["Dish"];
         };
+        IngredientDetail: {
+            /** Format: int32 */
+            id?: number;
+            name?: string;
+            /** Format: double */
+            storedQuantity?: number;
+            /** Format: int32 */
+            neededQuantity?: number;
+            category?: components["schemas"]["IngredientCategory"];
+            imageUrl?: string;
+        };
         IngredientsGetByDishResponse: {
             /** Format: int32 */
             id?: number;
@@ -1553,7 +1628,7 @@ export interface components {
             imageUrl?: string;
             publicId?: string;
             account?: components["schemas"]["Account"];
-            ingredients?: components["schemas"]["Ingredient"][];
+            ingredients?: components["schemas"]["IngredientDetail"][];
             /** @enum {string} */
             dishType?: "PRESET" | "CUSTOM";
             public?: boolean;
@@ -3396,6 +3471,86 @@ export interface operations {
                 };
                 content: {
                     "*/*": string;
+                };
+            };
+        };
+    };
+    getAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Payment"][];
+                };
+            };
+        };
+    };
+    getAllOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Orders"][];
+                };
+            };
+        };
+    };
+    getLowStockIngredients: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": unknown[];
+                };
+            };
+        };
+    };
+    getMostPopularDishes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Dish"][];
                 };
             };
         };
