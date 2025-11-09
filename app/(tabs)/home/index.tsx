@@ -175,7 +175,7 @@ export default function HomeTab() {
                 <View key={category.id} className="mr-4 items-center">
                   <View className="mb-2 h-16 w-16 items-center justify-center rounded-full bg-[#FF6D00]/10">
                     <MaterialIcons
-                      name={mapIngredientIcon(category?.name)}
+                      name={mapIngredientIcon(category?.name) as any}
                       size={28}
                       color="#FF6D00"
                     />
