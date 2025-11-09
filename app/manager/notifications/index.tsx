@@ -2,8 +2,8 @@ import { Filter, type FilterCriteria } from "@/components/Filter";
 import ReloadButton from "@/components/ReloadButton";
 import { SearchBar } from "@/components/SearchBar";
 import { SortButton } from "@/components/SortButton";
-import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
 import { getPageInfo, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import type { Notification } from "@/interfaces/notification.interface";
@@ -50,7 +50,9 @@ export default function NotificationManagement() {
     // Apply filters
     filterCriteria.forEach((filter) => {
       if (filter.field === "read" && typeof filter.value === "string") {
-        filtered = filtered.filter((notification) => notification.read === (filter.value === "true"));
+        filtered = filtered.filter(
+          (notification) => notification.read === (filter.value === "true")
+        );
       }
     });
 
@@ -194,9 +196,7 @@ export default function NotificationManagement() {
               <SortButton {...getSortProps("createdAt")} label="Date" />
             </View>
             <View className="w-20">
-              <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                Status
-              </Text>
+              <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300">Status</Text>
             </View>
           </View>
 

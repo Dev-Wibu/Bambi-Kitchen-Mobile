@@ -308,9 +308,7 @@ export default function OrdersManager() {
             </TouchableOpacity>
             <View className="flex-1">
               <Text className="text-2xl font-bold">Order Management</Text>
-              <Text className="mt-1 text-sm text-gray-600">
-                Total: {sortedData.length} orders
-              </Text>
+              <Text className="mt-1 text-sm text-gray-600">Total: {sortedData.length} orders</Text>
             </View>
           </View>
           <ReloadButton onRefresh={() => refetch()} />
@@ -368,9 +366,7 @@ export default function OrdersManager() {
             renderItem={renderOrderItem}
             ListFooterComponent={
               <View className="mt-4 flex-row items-center justify-between border-t border-gray-200 bg-white p-4">
-                <Text className="text-sm text-gray-600">
-                  {getPageInfo(pagination)}
-                </Text>
+                <Text className="text-sm text-gray-600">{getPageInfo(pagination)}</Text>
                 <View className="flex-row gap-2">
                   <Button
                     variant="outline"
