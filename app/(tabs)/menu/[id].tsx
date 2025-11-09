@@ -225,13 +225,9 @@ export default function DishDetail() {
                 const first = recipeRaw.find((r) => Array.isArray(r?.ingredients)) || recipeRaw[0];
                 return first?.ingredients || first?.items || first?.content || first?.result || [];
               }
-              return (
-                recipeRaw?.ingredients ||
-                recipeRaw?.items ||
-                recipeRaw?.content ||
-                recipeRaw?.result ||
-                []
-              );
+              // Cast to any to safely access potential properties from different backend formats
+              const raw = recipeRaw as any;
+              return raw?.ingredients || raw?.items || raw?.content || raw?.result || [];
             })();
 
             const ingredientsToShow: any[] =

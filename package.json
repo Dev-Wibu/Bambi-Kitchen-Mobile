@@ -57,7 +57,7 @@
     "date-fns": "^4.1.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
-    "expo": "^52.0.47",
+    "expo": "54.0.23",
     "expo-auth-session": "^7.0.8",
     "expo-constants": "~18.0.9",
     "expo-device": "^8.0.9",
