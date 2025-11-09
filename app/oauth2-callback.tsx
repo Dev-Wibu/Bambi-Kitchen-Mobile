@@ -57,7 +57,7 @@ export default function OAuth2Callback() {
           });
 
           // Navigate based on role
-          const targetRoute = authData.role === "ADMIN" ? "/manager" : "/(tabs)/home";
+          const targetRoute = authData.role === "STAFF" ? "/manager" : "/(tabs)/home";
           router.replace(targetRoute);
         } else {
           throw new Error("Failed to fetch user information");

@@ -11,17 +11,17 @@ export default function ManagerLayout() {
 
   const router = useRouter();
 
-  // Check if user is ADMIN - only ADMIN can access manager on mobile
+  // Check if user is STAFF - only STAFF can access manager on mobile
 
   useEffect(() => {
-    if (user && user.role !== "ADMIN") {
-      if (user.role === "STAFF") {
+    if (user && user.role !== "STAFF") {
+      if (user.role === "ADMIN") {
         Toast.show({
           type: "info",
 
-          text1: "Staff Access Not Available",
+          text1: "Admin Access Not Available",
 
-          text2: "Staff features are not available on mobile. Please use the web application.",
+          text2: "Admin features are not available on mobile. Please use the web application.",
 
           visibilityTime: 5000,
         });
@@ -31,7 +31,7 @@ export default function ManagerLayout() {
 
           text1: "Access Denied",
 
-          text2: "Manager features require ADMIN role.",
+          text2: "Manager features require STAFF role.",
 
           visibilityTime: 5000,
         });
@@ -63,9 +63,9 @@ export default function ManagerLayout() {
     return <Redirect href="/(auth)/login" />;
   }
 
-  // If user is not ADMIN role, show loading while we logout
+  // If user is not STAFF role, show loading while we logout
 
-  if (user.role !== "ADMIN") {
+  if (user.role !== "STAFF") {
     return (
       <View className="flex-1 items-center justify-center bg-white dark:bg-gray-900">
         <ActivityIndicator size="large" color="#FF6D00" />

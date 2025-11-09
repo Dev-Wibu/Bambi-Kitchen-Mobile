@@ -74,15 +74,6 @@ export default function ManagerTab() {
         color: "#FF6B6B",
         route: "/manager/dishes",
       },
-
-      {
-        key: "accounts",
-        label: "Accounts",
-        value: accountsCount,
-        color: "#34D399",
-        route: "/manager/accounts",
-      },
-
       {
         key: "ingredients",
         label: "Ingredients",
@@ -90,7 +81,6 @@ export default function ManagerTab() {
         color: "#60A5FA",
         route: "/manager/ingredients",
       },
-
       {
         key: "orders",
         label: "Orders",

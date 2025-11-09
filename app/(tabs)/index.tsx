@@ -9,7 +9,7 @@ export default function TabsIndexRedirect() {
   }
 
   const targetRoute =
-    user.role === "ADMIN" || user.role === "STAFF" ? "/(tabs)/manager" : "/(tabs)/home";
+    user.role === "STAFF" || user.role === "ADMIN" ? "/(tabs)/manager" : "/(tabs)/home";
 
   return <Redirect href={targetRoute} />;
 }

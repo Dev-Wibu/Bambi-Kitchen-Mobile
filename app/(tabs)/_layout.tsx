@@ -23,13 +23,13 @@ export default function TabsLayout() {
 
   useEffect(() => {
     if (user) {
-      if (user.role === "STAFF") {
+      if (user.role === "ADMIN") {
         Toast.show({
           type: "info",
 
-          text1: "Staff Access Not Available",
+          text1: "ADMIN Access Not Available",
 
-          text2: "Staff features are not available on mobile. Please use the web application.",
+          text2: "ADMIN features are not available on mobile. Please use the web application.",
 
           visibilityTime: 5000,
         });
@@ -41,8 +41,8 @@ export default function TabsLayout() {
 
           router.replace("/(auth)/login");
         }, 2000);
-      } else if (user.role === "ADMIN") {
-        // Redirect ADMIN to manager interface
+      } else if (user.role === "STAFF") {
+        // Redirect STAFF to manager interface
 
         router.replace("/manager");
       }
