@@ -1,4 +1,4 @@
-import { Filter, type FilterCriteria } from "@/components/Filter";
+import { type FilterCriteria } from "@/components/Filter";
 import ReloadButton from "@/components/ReloadButton";
 import { SearchBar } from "@/components/SearchBar";
 import { SortButton } from "@/components/SortButton";
@@ -243,7 +243,9 @@ export default function IngredientCategoryManagement() {
             <View className="items-center py-12">
               <MaterialIcons name="category" size={64} color="#ccc" />
               <Text className="mt-4 text-center text-base text-gray-600 dark:text-gray-300">
-                {searchTerm ? "No categories found matching your search" : "No ingredient categories found"}
+                {searchTerm
+                  ? "No categories found matching your search"
+                  : "No ingredient categories found"}
               </Text>
             </View>
           ) : (
