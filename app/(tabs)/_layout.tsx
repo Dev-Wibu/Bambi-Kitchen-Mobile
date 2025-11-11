@@ -107,6 +107,10 @@ export default function TabsLayout() {
     "menu/[id]",
 
     "menu/customize-from/[id]",
+
+    // Hide profile edit screen from tab bar
+
+    "profile/edit",
   ];
 
   return (
@@ -184,3 +188,4 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
+
