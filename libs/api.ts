@@ -14,7 +14,7 @@ const fetchClient = createFetchClient<paths>({
   },
 });
 
-// Add middleware to include JWT token in Authorization header
+// Add middleware to include JWT token in Authorization header and log requests/responses
 fetchClient.use({
   async onRequest({ request }) {
     // Dynamically import to avoid circular dependency
@@ -25,7 +25,53 @@ fetchClient.use({
       request.headers.set("Authorization", `Bearer ${token}`);
     }
 
+    // Log API request
+    console.log("🚀 API Request:", {
+      method: request.method,
+      url: request.url,
+      headers: Object.fromEntries(request.headers.entries()),
+      timestamp: new Date().toISOString(),
+    });
+
+    // Log request body if present (for POST/PUT requests)
+    if (request.method === "POST" || request.method === "PUT") {
+      try {
+        const clonedRequest = request.clone();
+        const body = await clonedRequest.text();
+        if (body) {
+          console.log("📦 Request Body:", JSON.parse(body));
+        }
+      } catch (error) {
+        console.log("📦 Request Body: (unable to parse)");
+      }
+    }
+
     return request;
+  },
+  async onResponse({ response }) {
+    // Log API response
+    const clonedResponse = response.clone();
+    
+    try {
+      const data = await clonedResponse.json();
+      console.log("✅ API Response:", {
+        status: response.status,
+        statusText: response.statusText,
+        url: response.url,
+        data: data,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.log("✅ API Response:", {
+        status: response.status,
+        statusText: response.statusText,
+        url: response.url,
+        body: "(unable to parse JSON)",
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    return response;
   },
 });
 
