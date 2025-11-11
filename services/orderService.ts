@@ -2,28 +2,35 @@ import { useMutationHandler } from "@/hooks/useMutationHandler";
 
 import type { MakeOrderRequest, OrderItemDTO, RecipeItemDTO } from "@/interfaces/order.interface";
 
-import { $api } from "@/libs/api";
+import { $api, fetchClient } from "@/libs/api";
 
 import type { CartItem } from "@/stores/cartStore";
+import { useMutation } from "@tanstack/react-query";
 
 // ==================== ORDER API HOOKS ====================
 
 /**
-
-
-
  * Hook for creating a new order
-
-
-
  * Uses POST /api/order endpoint
-
-
-
+ * 
+ * NOTE: This endpoint returns a plain text URL (payment redirect) instead of JSON,
+ * so we use the raw fetchClient and parse as text to avoid JSON parse errors.
  */
-
 export const useCreateOrder = () => {
-  return $api.useMutation("post", "/api/order");
+  return useMutation({
+    mutationFn: async (variables: { body: MakeOrderRequest }) => {
+      const response = await fetchClient.POST("/api/order", {
+        body: variables.body,
+        parseAs: "text", // Parse response as text instead of JSON
+      });
+      
+      if (response.error) {
+        throw new Error(response.error as any);
+      }
+      
+      return response.data; // This will be the payment URL as a string
+    },
+  });
 };
 
 /**
@@ -139,22 +146,13 @@ export const useOrderById = (id: number) => {
 };
 
 /**
-
-
-
  * Hook for getting orders by user ID
-
-
-
  * Uses GET /api/order/user/{userId} endpoint
-
-
-
  */
-
-export const useOrdersByUserId = (userId: number) => {
+export const useOrdersByUserId = (userId: number, options?: { enabled?: boolean }) => {
   return $api.useQuery("get", "/api/order/user/{userId}", {
     params: { path: { userId } },
+    ...options,
   });
 };
 
@@ -271,7 +269,7 @@ export const computeCartTotalMinorUnit = (items: CartItem[]): number => {
 type BuildOrderPayloadInput = {
   accountId: number;
 
-  paymentMethod: "CASH" | "MOMO" | "VNPAY" | string;
+  paymentMethod: "MOMO" | "VNPAY" | string;
 
   note?: string;
 
@@ -369,7 +367,7 @@ export const transformCartToMakeOrderRequest = (
   const payload: MakeOrderRequest = {
     accountId: input.accountId as any,
 
-    paymentMethod: String(input.paymentMethod).toUpperCase() as any,
+    paymentMethod: input.paymentMethod?.toUpperCase() as any,
 
     note: input.note,
 
@@ -428,4 +426,3 @@ export const useFeedbackOrderWithToast = () => {
     errorMessage: "Unable to submit feedback",
   });
 };
-

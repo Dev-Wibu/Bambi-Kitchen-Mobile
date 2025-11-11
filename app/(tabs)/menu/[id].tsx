@@ -5,6 +5,7 @@ import { useIngredientCategories } from "@/services/ingredientCategoryService";
 import { useIngredients } from "@/services/ingredientService";
 import { useCartStore } from "@/stores/cartStore";
 import { useCustomizeStore } from "@/stores/customizeStore";
+import { formatMoney } from "@/utils/currency";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
@@ -204,7 +205,7 @@ export default function DishDetail() {
           <Text className="text-2xl font-bold text-[#000000] dark:text-white">{dishData.name}</Text>
           <View className="mt-2 flex-row items-center justify-between">
             <Text className="text-xl font-bold text-[#FF6D00]">
-              ${((dishData.price || 0) / 100).toFixed(2)}
+              {formatMoney(dishData.price || 0)}
             </Text>
           </View>
 
@@ -225,13 +226,9 @@ export default function DishDetail() {
                 const first = recipeRaw.find((r) => Array.isArray(r?.ingredients)) || recipeRaw[0];
                 return first?.ingredients || first?.items || first?.content || first?.result || [];
               }
-              return (
-                recipeRaw?.ingredients ||
-                recipeRaw?.items ||
-                recipeRaw?.content ||
-                recipeRaw?.result ||
-                []
-              );
+              // Cast to any to safely access potential properties from different backend formats
+              const raw = recipeRaw as any;
+              return raw?.ingredients || raw?.items || raw?.content || raw?.result || [];
             })();
 
             const ingredientsToShow: any[] =
@@ -386,7 +383,7 @@ export default function DishDetail() {
                                       ? s[id]
                                       : presetIdsSet.has(id)
                                         ? 1
-                                        : 0;
+                                        : 1; // Will become 2 after increment (200g default per BE requirement)
                                     return { ...s, [id]: curr + 1 };
                                   })
                                 }
@@ -412,7 +409,7 @@ export default function DishDetail() {
         <View className="mb-3 flex-row items-center justify-between">
           <Text className="text-sm text-gray-600 dark:text-gray-400">Qty • {qty}</Text>
           <Text className="text-2xl font-bold text-[#FF6D00]">
-            ${(((dishData.price || 0) * qty) / 100).toFixed(2)}
+            {formatMoney((dishData.price || 0) * qty)}
           </Text>
         </View>
 
@@ -472,10 +469,22 @@ export default function DishDetail() {
                     return;
                   }
 
+                  // Calculate price for basedOnId: base dish price + added ingredients cost
+                  // As per BE requirement: "baseonid dish = original dish + amount of ingredients it adds"
+                  let basePrice = dishData.price || 0;
+                  let addedIngredientsCost = 0;
+                  added.forEach((item) => {
+                    const ing = ingredientsRaw?.find((i: any) => i.id === item.ingredientId);
+                    if (ing) {
+                      addedIngredientsCost += (ing.pricePerUnit || 0) * item.quantity;
+                    }
+                  });
+                  const totalPrice = basePrice + addedIngredientsCost;
+
                   addItem({
                     dishId: Number(dishData.id ?? 0),
                     name: `${dishData.name} (custom)`,
-                    price: dishData.price || 0,
+                    price: totalPrice,
                     quantity: 1,
                     imageUrl: dishData.imageUrl || null,
                     recipe: recipeItems,

@@ -3,6 +3,7 @@ import { Text } from "@/components/ui/text";
 import { $api } from "@/libs/api";
 
 import { useDishCategories } from "@/services/dishCategoryService";
+import { formatMoney } from "@/utils/currency";
 
 import { MaterialIcons } from "@expo/vector-icons";
 
@@ -155,51 +156,6 @@ export default function MenuTab() {
 
         {/* Categories Filter */}
 
-        {categories && categories.length > 0 && (
-          <View className="mb-6">
-            <Text className="mb-3 text-base font-semibold text-[#000000] dark:text-white">
-              Categories
-            </Text>
-
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <Pressable
-                onPress={() => setSelectedCategory(null)}
-                className={`mr-3 rounded-full px-5 py-2 ${
-                  selectedCategory === null
-                    ? "bg-[#FF6D00]"
-                    : "border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800"
-                }`}>
-                <Text
-                  className={`font-medium ${
-                    selectedCategory === null ? "text-white" : "text-[#000000] dark:text-white"
-                  }`}>
-                  All
-                </Text>
-              </Pressable>
-
-              {categories.map((category) => (
-                <Pressable
-                  key={category.id}
-                  onPress={() => handleCategoryPress(category.id!)}
-                  className={`mr-3 rounded-full px-5 py-2 ${
-                    selectedCategory === category.id
-                      ? "bg-[#FF6D00]"
-                      : "border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800"
-                  }`}>
-                  <Text
-                    className={`font-medium ${
-                      selectedCategory === category.id
-                        ? "text-white"
-                        : "text-[#000000] dark:text-white"
-                    }`}>
-                    {category.name}
-                  </Text>
-                </Pressable>
-              ))}
-            </ScrollView>
-          </View>
-        )}
-
         {/* Featured Dishes */}
 
         {filteredDishes && filteredDishes.length > 0 && (
@@ -273,7 +229,7 @@ export default function MenuTab() {
 
                       <View className="flex-row items-center justify-between">
                         <Text className="text-xl font-bold text-[#FF6D00]">
-                          ${(dish.price! / 100).toFixed(2)}
+                          {formatMoney(dish.price || 0)}
                         </Text>
 
                         <Pressable

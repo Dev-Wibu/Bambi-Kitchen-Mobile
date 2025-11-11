@@ -3,6 +3,7 @@ import { useDishTemplates } from "@/services/dishService";
 import { useIngredientCategories } from "@/services/ingredientCategoryService";
 import { useIngredients } from "@/services/ingredientService";
 import { useCartStore } from "@/stores/cartStore";
+import { formatMoney } from "@/utils/currency";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
@@ -159,11 +160,31 @@ export default function CustomizeBowlScreen() {
         ...current,
         {
           ingredientId: ingredient.id!,
-          quantity: 1,
+          quantity: 200, // Default to 200g (2 portions) - updated from 100g per BE requirement
           sourceType: "ADDON",
         },
       ],
     });
+  };
+
+  // Update ingredient quantity
+  const updateIngredientQuantity = (categoryId: number, ingredientId: number, newQuantity: number) => {
+    const current = selectedByCategory[categoryId] || [];
+    setSelectedByCategory({
+      ...selectedByCategory,
+      [categoryId]: current.map((item) =>
+        item.ingredientId === ingredientId
+          ? { ...item, quantity: Math.max(200, Math.min(1000, newQuantity)) } // Min 200g, max 1000g (increments of 200g as per BE requirement)
+          : item
+      ),
+    });
+  };
+
+  // Get ingredient from selection
+  const getIngredientQuantity = (categoryId: number, ingredientId: number): number => {
+    const current = selectedByCategory[categoryId] || [];
+    const item = current.find((item) => item.ingredientId === ingredientId);
+    return item?.quantity || 200; // Default 200g per BE requirement
   };
 
   // Check if ingredient is selected
@@ -173,19 +194,24 @@ export default function CustomizeBowlScreen() {
   };
 
   // Calculate total price
+  // Formula for CUSTOM dish (no base): SUM(ingredient costs) × priceRatio = finalPrice
+  // As per BE requirement: "Adding the price of a custom dish is adding the total of the ingredients 
+  // and multiplying it by the price ratio to get the final price"
   const calculateTotal = () => {
-    let total = 1800; // Base $18
-    if (selectedTemplate) {
-      total = Math.round(total * (selectedTemplate.priceRatio || 1));
-    }
-    // Add ingredient prices (use pricePerUnit if available)
+    // Calculate ingredient costs
+    let ingredientCosts = 0;
     Object.values(selectedByCategory).forEach((items) => {
       items.forEach((item) => {
         const ing = ingredientsRaw?.find((i: any) => i.id === item.ingredientId);
-        if (ing) total += (ing.pricePerUnit || 0) * item.quantity;
+        if (ing) ingredientCosts += (ing.pricePerUnit || 0) * item.quantity;
       });
     });
-    return total;
+    
+    // Apply priceRatio to ingredient total for custom bowls (no base price for 100% custom)
+    const priceRatio = selectedTemplate?.priceRatio || 1;
+    const finalPrice = Math.round(ingredientCosts * priceRatio);
+    
+    return finalPrice;
   };
 
   // Handle add to cart
@@ -261,7 +287,7 @@ export default function CustomizeBowlScreen() {
     Toast.show({
       type: "success",
       text1: "Added to cart!",
-      text2: `${quantity}× Custom ${selectedTemplate.size} Bowl - $${((calculateTotal() * quantity) / 100).toFixed(2)}`,
+      text2: `${quantity}× Custom ${selectedTemplate.size} Bowl - ${formatMoney(calculateTotal() * quantity)}`,
     });
 
     // Go straight to Cart to review and select payment
@@ -345,9 +371,6 @@ export default function CustomizeBowlScreen() {
                       </Text>
                       <Text className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                         {template.name}
-                      </Text>
-                      <Text className="mt-1 text-sm font-semibold text-[#FF6D00]">
-                        Price ratio: {template.priceRatio}x
                       </Text>
                     </View>
                     <MaterialIcons
@@ -433,14 +456,42 @@ export default function CustomizeBowlScreen() {
                               +{ingredient.pricePerUnit}
                             </Text>
                           ) : null}
-                          <View className="mt-2 items-end">
-                            <View
-                              className={`h-6 w-6 items-center justify-center rounded ${
-                                picked ? "bg-[#FF6D00]" : "border-2 border-gray-300"
-                              }`}>
-                              {picked && <MaterialIcons name="check" size={16} color="white" />}
+                          
+                          {/* Quantity controls - shown when ingredient is selected */}
+                          {picked ? (
+                            <View className="mt-2 flex-row items-center justify-between">
+                              <Pressable
+                                onPress={(e) => {
+                                  e.stopPropagation();
+                                  const currentQty = getIngredientQuantity(cat.id!, ingredient.id);
+                                  updateIngredientQuantity(cat.id!, ingredient.id, currentQty - 200);
+                                }}
+                                className="h-6 w-6 items-center justify-center rounded-full bg-gray-200">
+                                <MaterialIcons name="remove" size={12} color="#000000" />
+                              </Pressable>
+                              <Text className="text-xs font-semibold text-[#FF6D00]">
+                                {getIngredientQuantity(cat.id!, ingredient.id)}g
+                              </Text>
+                              <Pressable
+                                onPress={(e) => {
+                                  e.stopPropagation();
+                                  const currentQty = getIngredientQuantity(cat.id!, ingredient.id);
+                                  updateIngredientQuantity(cat.id!, ingredient.id, currentQty + 200);
+                                }}
+                                className="h-6 w-6 items-center justify-center rounded-full bg-gray-200">
+                                <MaterialIcons name="add" size={12} color="#000000" />
+                              </Pressable>
                             </View>
-                          </View>
+                          ) : (
+                            <View className="mt-2 items-end">
+                              <View
+                                className={`h-6 w-6 items-center justify-center rounded ${
+                                  picked ? "bg-[#FF6D00]" : "border-2 border-gray-300"
+                                }`}>
+                                {picked && <MaterialIcons name="check" size={16} color="white" />}
+                              </View>
+                            </View>
+                          )}
                         </Pressable>
                       );
                     })}
@@ -461,7 +512,7 @@ export default function CustomizeBowlScreen() {
               ingredients
             </Text>
             <Text className="text-2xl font-bold text-[#FF6D00]">
-              ${(calculateTotal() / 100).toFixed(2)}
+              {formatMoney(calculateTotal())}
             </Text>
           </View>
 

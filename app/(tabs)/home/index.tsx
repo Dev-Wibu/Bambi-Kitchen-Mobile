@@ -12,6 +12,8 @@ import { useIngredientCategories } from "@/services/ingredientCategoryService";
 
 import { useDishTemplates, useDishes } from "@/services/dishService";
 
+import { formatMoney } from "@/utils/currency";
+
 import { ActivityIndicator, Image, Pressable, ScrollView, View } from "react-native";
 
 import { MaterialIcons } from "@expo/vector-icons";
@@ -297,7 +299,7 @@ export default function HomeTab() {
                     </Text>
 
                     <Text className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                      ${((dish.price || 0) / 100).toFixed(2)}
+                      {formatMoney(dish.price || 0)}
                     </Text>
                   </View>
                 </Pressable>

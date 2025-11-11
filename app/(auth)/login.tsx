@@ -33,9 +33,9 @@ export default function Login() {
     // ADMIN -> manager interface with tabs
     // STAFF -> blocked (show notification and logout)
     switch (role) {
-      case "ADMIN":
-        return "/manager" as const;
       case "STAFF":
+        return "/manager" as const;
+      case "ADMIN":
         return null; // Will show notification for STAFF
       case "USER":
       default:
@@ -74,7 +74,7 @@ export default function Login() {
         Toast.show({
           type: "error",
           text1: "Access Restricted",
-          text2: "Staff features are not available on mobile. Please use the web application.",
+          text2: "Admin features are not available on mobile. Please use the web application.",
           visibilityTime: 5000,
         });
         // Logout the user since they can't use the mobile app
@@ -85,7 +85,7 @@ export default function Login() {
       Toast.show({
         type: "success",
         text1: "Login Successful",
-        text2: authData?.role === "ADMIN" ? "Welcome to Manager Dashboard!" : "Welcome back!",
+        text2: authData?.role === "STAFF" ? "Welcome to Manager Dashboard!" : "Welcome back!",
       });
 
       // Navigate to appropriate route based on role
@@ -126,7 +126,7 @@ export default function Login() {
       Toast.show({
         type: "success",
         text1: "Login Successful",
-        text2: currentUser?.role === "ADMIN" ? "Welcome to Manager Dashboard!" : "Welcome back!",
+        text2: currentUser?.role === "STAFF" ? "Welcome to Manager Dashboard!" : "Welcome back!",
       });
 
       router.replace(targetRoute);

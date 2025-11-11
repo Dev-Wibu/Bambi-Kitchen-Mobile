@@ -5,19 +5,20 @@ import { useDishTemplates } from "@/services/dishService";
 import { useIngredients } from "@/services/ingredientService";
 import { transformCartToMakeOrderRequest, useCreateOrder } from "@/services/orderService";
 import { useCartStore } from "@/stores/cartStore";
+import { formatMoney } from "@/utils/currency";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Image, Linking, Pressable, ScrollView, View } from "react-native";
+import { ActivityIndicator, Image, Linking, Pressable, ScrollView, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
-type PaymentMethod = "CASH" | "MOMO" | "VNPAY";
+type PaymentMethod = "MOMO" | "VNPAY";
 
 export default function CartScreen() {
   const router = useRouter();
   const { user } = useAuth();
-  const { items, removeItem, updateQuantity, clear, getTotal, fixMissingDishTemplates } =
+  const { items, removeItem, updateQuantity, updateItemNote, clear, getTotal, fixMissingDishTemplates } =
     useCartStore();
   const createOrder = useCreateOrder();
 
@@ -36,9 +37,10 @@ export default function CartScreen() {
   }, [dishTemplatesRaw, fixMissingDishTemplates]);
 
   const [selectingPayment, setSelectingPayment] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>("CASH");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>("MOMO");
   const [note, setNote] = useState<string | undefined>(undefined);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [editingNoteFor, setEditingNoteFor] = useState<string | null>(null);
   const [uiSubmitting, setUiSubmitting] = useState(false); // visual pending to ensure UX feedback
   const [pollingOrderId, setPollingOrderId] = useState<number | null>(null);
   const [errorState, setErrorState] = useState<{
@@ -54,13 +56,12 @@ export default function CartScreen() {
     canRetry: false,
   });
 
-  const subtotal = useMemo(() => getTotal(), [getTotal]);
+  // Recalculate subtotal whenever items change (fix for price not updating bug)
+  const subtotal = useMemo(() => getTotal(), [items, getTotal]);
   const isEmpty = items.length === 0;
 
   const increase = (id: string, qty: number) => updateQuantity(id, qty + 1);
   const decrease = (id: string, qty: number) => updateQuantity(id, Math.max(1, qty - 1));
-
-  const formatMoney = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
   // Load ingredients to resolve names for recipe display
   const { data: ingredientsRaw } = useIngredients();
@@ -71,6 +72,23 @@ export default function CartScreen() {
   }, [ingredientsRaw]);
 
   const toggleExpanded = (id: string) => setExpanded((e) => ({ ...e, [id]: !e[id] }));
+
+  // Navigate to dish detail page when user clicks on a cart item to review/edit
+  const handleItemClick = (item: typeof items[0]) => {
+    // For custom dishes (has recipe), navigate to customize page
+    if (item.recipe && item.recipe.length > 0) {
+      // If it's based on a dish, go to that dish detail to customize
+      if (item.basedOnId && item.basedOnId > 0) {
+        router.push(`/(tabs)/menu/${item.basedOnId}`);
+      } else {
+        // Fully custom dish, go to customize page
+        router.push(`/(tabs)/menu/customize`);
+      }
+    } else if (item.dishId && item.dishId > 0) {
+      // Navigate to dish detail page for preset dishes
+      router.push(`/(tabs)/menu/${item.dishId}`);
+    }
+  };
 
   const placeOrder = async () => {
     if (!user?.userId) {
@@ -118,7 +136,6 @@ export default function CartScreen() {
       // If payment method requires external flow (MOMO/VNPAY), backend may return a redirect URL
       if (
         paymentMethod &&
-        paymentMethod !== "CASH" &&
         typeof resp === "string" &&
         resp.startsWith("http")
       ) {
@@ -233,101 +250,144 @@ export default function CartScreen() {
                 key={item.id}
                 className="overflow-hidden rounded-2xl bg-white shadow-sm dark:bg-gray-800">
                 <View className="flex-row p-3">
-                  <View className="h-16 w-16 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700">
-                    {item.imageUrl ? (
-                      <Image
-                        source={{ uri: item.imageUrl }}
-                        style={{ width: 64, height: 64 }}
-                        resizeMode="cover"
-                      />
-                    ) : (
-                      <View className="h-16 w-16 items-center justify-center">
-                        <MaterialIcons name="restaurant-menu" size={28} color="#FF6D00" />
+                  {/* Clickable dish image and name section */}
+                  <Pressable
+                    onPress={() => handleItemClick(item)}
+                    className="flex-row flex-1">
+                    <View className="h-16 w-16 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700">
+                      {item.imageUrl ? (
+                        <Image
+                          source={{ uri: item.imageUrl }}
+                          style={{ width: 64, height: 64 }}
+                          resizeMode="cover"
+                        />
+                      ) : (
+                        <View className="h-16 w-16 items-center justify-center">
+                          <MaterialIcons name="restaurant-menu" size={28} color="#FF6D00" />
+                        </View>
+                      )}
+                    </View>
+
+                    <View className="ml-3 flex-1">
+                      <View className="mb-1 flex-row items-start justify-between">
+                        <Text className="flex-1 pr-2 font-semibold text-[#000000] dark:text-white">
+                          {item.name}
+                        </Text>
+                        <View className="items-end">
+                          <Text className="text-base font-bold text-[#FF6D00]">
+                            {formatMoney(item.price)}
+                          </Text>
+                        </View>
                       </View>
-                    )}
+                      {/* Hint text to indicate clickability */}
+                      <Text className="text-xs text-gray-500">
+                        {item.recipe && item.recipe.length > 0 ? "Tap to customize again" : "Tap to view details"}
+                      </Text>
+                    </View>
+                  </Pressable>
+                </View>
+
+                {/* Quantity controls and other buttons */}
+                <View className="px-3 pb-3">
+                  <View className="flex-row items-center gap-3">
+                    <Pressable
+                      onPress={() => decrease(item.id, item.quantity)}
+                      className="h-8 w-8 items-center justify-center rounded-full border border-gray-300">
+                      <MaterialIcons name="remove" size={18} color="#000000" />
+                    </Pressable>
+                    <Text className="w-8 text-center text-base font-bold text-[#000000] dark:text-white">
+                      {item.quantity}
+                    </Text>
+                    <Pressable
+                      onPress={() => increase(item.id, item.quantity)}
+                      className="h-8 w-8 items-center justify-center rounded-full border border-gray-300">
+                      <MaterialIcons name="add" size={18} color="#000000" />
+                    </Pressable>
+
+                    <Pressable onPress={() => removeItem(item.id)} className="ml-auto p-1">
+                      <MaterialIcons name="delete-outline" size={20} color="#EF4444" />
+                    </Pressable>
                   </View>
 
-                  <View className="ml-3 flex-1">
-                    <View className="mb-1 flex-row items-start justify-between">
-                      <Text className="flex-1 pr-2 font-semibold text-[#000000] dark:text-white">
-                        {item.name}
-                      </Text>
-                      <View className="items-end">
-                        <Text className="text-base font-bold text-[#FF6D00]">
-                          {formatMoney(item.price)}
+                  {/* Recipe details */}
+                  {item.recipe && item.recipe.length > 0 && (
+                    <View className="mt-2">
+                      {/* Inline toggle row beside ingredients area */}
+                      <Pressable
+                        onPress={() => toggleExpanded(item.id)}
+                        className="flex-row items-center">
+                        <MaterialIcons
+                          name={expanded[item.id] ? "expand-less" : "expand-more"}
+                          size={18}
+                          color="#9CA3AF"
+                        />
+                        <Text className="ml-1 text-xs text-gray-500">
+                          {expanded[item.id] ? "Hide ingredients" : "View ingredients"}
                         </Text>
-                      </View>
-                    </View>
-
-                    {/* Quantity controls */}
-                    <View className="mt-1 flex-row items-center gap-3">
-                      <Pressable
-                        onPress={() => decrease(item.id, item.quantity)}
-                        className="h-8 w-8 items-center justify-center rounded-full border border-gray-300">
-                        <MaterialIcons name="remove" size={18} color="#000000" />
-                      </Pressable>
-                      <Text className="w-8 text-center text-base font-bold text-[#000000] dark:text-white">
-                        {item.quantity}
-                      </Text>
-                      <Pressable
-                        onPress={() => increase(item.id, item.quantity)}
-                        className="h-8 w-8 items-center justify-center rounded-full border border-gray-300">
-                        <MaterialIcons name="add" size={18} color="#000000" />
                       </Pressable>
 
-                      <Pressable onPress={() => removeItem(item.id)} className="ml-auto p-1">
-                        <MaterialIcons name="delete-outline" size={20} color="#EF4444" />
-                      </Pressable>
-                    </View>
+                      {expanded[item.id] && (
+                        <View className="mt-2 rounded-lg bg-gray-50 p-3 dark:bg-gray-900/40">
+                          {item.recipe.map((r, idx) => {
+                            const name =
+                              ingNameById.get(r.ingredientId || 0) || `#${r.ingredientId}`;
+                            const isRemoved =
+                              (r.sourceType || "") === "REMOVED" ||
+                              (r.quantity === 0 && (r.sourceType || "") === "REMOVED");
+                            const qtyText = isRemoved
+                              ? "-1 phần"
+                              : r.quantity
+                                ? `${r.quantity / 100} phần (${r.quantity}g)`
+                                : "";
 
-                    {/* Recipe details */}
-                    {item.recipe && item.recipe.length > 0 && (
-                      <View className="mt-2">
-                        {/* Inline toggle row beside ingredients area */}
-                        <Pressable
-                          onPress={() => toggleExpanded(item.id)}
-                          className="flex-row items-center">
-                          <MaterialIcons
-                            name={expanded[item.id] ? "expand-less" : "expand-more"}
-                            size={18}
-                            color="#9CA3AF"
-                          />
-                          <Text className="ml-1 text-xs text-gray-500">
-                            {expanded[item.id] ? "Hide ingredients" : "View ingredients"}
-                          </Text>
-                        </Pressable>
-
-                        {expanded[item.id] && (
-                          <View className="mt-2 rounded-lg bg-gray-50 p-3 dark:bg-gray-900/40">
-                            {item.recipe.map((r, idx) => {
-                              const name =
-                                ingNameById.get(r.ingredientId || 0) || `#${r.ingredientId}`;
-                              const isRemoved =
-                                (r.sourceType || "") === "REMOVED" ||
-                                (r.quantity === 0 && (r.sourceType || "") === "REMOVED");
-                              const qtyText = isRemoved
-                                ? "-1 phần"
-                                : r.quantity
-                                  ? `${r.quantity / 100} phần (${r.quantity}g)`
-                                  : "";
-
-                              return (
-                                <View
-                                  key={idx}
-                                  className="mb-1 flex-row items-center justify-between">
-                                  <View className="flex-row items-center">
-                                    <View className="mr-2 h-1.5 w-1.5 rounded-full bg-[#FF6D00]" />
-                                    <Text className="text-xs text-gray-700 dark:text-gray-300">
-                                      {name}
-                                    </Text>
-                                  </View>
-                                  <Text className="text-xs text-gray-500">{qtyText}</Text>
+                            return (
+                              <View
+                                key={idx}
+                                className="mb-1 flex-row items-center justify-between">
+                                <View className="flex-row items-center">
+                                  <View className="mr-2 h-1.5 w-1.5 rounded-full bg-[#FF6D00]" />
+                                  <Text className="text-xs text-gray-700 dark:text-gray-300">
+                                    {name}
+                                  </Text>
                                 </View>
-                              );
-                            })}
-                          </View>
-                        )}
+                                <Text className="text-xs text-gray-500">{qtyText}</Text>
+                              </View>
+                            );
+                          })}
+                        </View>
+                      )}
+                    </View>
+                  )}
+
+                  {/* Item Note */}
+                  <View className="mt-2">
+                    {editingNoteFor === item.id ? (
+                      <View className="rounded-lg border border-gray-300 bg-white p-2 dark:border-gray-600 dark:bg-gray-800">
+                        <TextInput
+                          value={item.note || ""}
+                          onChangeText={(text) => updateItemNote(item.id, text)}
+                          placeholder="Ghi chú cho món này..."
+                          placeholderTextColor="#9CA3AF"
+                          multiline
+                          numberOfLines={2}
+                          className="text-xs text-[#000000] dark:text-white"
+                          style={{ minHeight: 40, textAlignVertical: 'top' }}
+                        />
+                        <Pressable
+                          onPress={() => setEditingNoteFor(null)}
+                          className="mt-1 self-end">
+                          <Text className="text-xs font-semibold text-[#FF6D00]">Xong</Text>
+                        </Pressable>
                       </View>
+                    ) : (
+                      <Pressable
+                        onPress={() => setEditingNoteFor(item.id)}
+                        className="flex-row items-center">
+                        <MaterialIcons name="note-add" size={16} color="#9CA3AF" />
+                        <Text className="ml-1 text-xs text-gray-500">
+                          {item.note ? `Ghi chú: ${item.note}` : "Thêm ghi chú cho món này"}
+                        </Text>
+                      </Pressable>
                     )}
                   </View>
                 </View>
@@ -335,6 +395,25 @@ export default function CartScreen() {
             ))}
           </View>
         )}
+
+        {/* Order Note */}
+        <View className="mt-6">
+          <Text className="mb-2 text-sm font-semibold text-[#000000] dark:text-white">
+            Ghi chú đơn hàng (tuỳ chọn)
+          </Text>
+          <View className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+            <TextInput
+              value={note || ""}
+              onChangeText={setNote}
+              placeholder="Ví dụ: Giao hàng trước 7 giờ tối..."
+              placeholderTextColor="#9CA3AF"
+              multiline
+              numberOfLines={3}
+              className="px-4 py-3 text-sm text-[#000000] dark:text-white"
+              style={{ minHeight: 80, textAlignVertical: 'top' }}
+            />
+          </View>
+        </View>
 
         {/* Payment method selector */}
         <View className="mt-6 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
@@ -465,19 +544,6 @@ export default function CartScreen() {
                   <Text className="text-center text-base font-semibold text-white">Retry</Text>
                 </Pressable>
               )}
-
-              {/* Fallback to CASH if available */}
-              {paymentMethod !== "CASH" && (
-                <Pressable
-                  onPress={() => {
-                    setPaymentMethod("CASH");
-                    setErrorState({ ...errorState, show: false });
-                    Toast.show({ type: "info", text1: "Switched to cash payment" });
-                  }}
-                  className="flex-1 rounded-xl bg-gray-600 py-3 active:bg-gray-700">
-                  <Text className="text-center text-base font-semibold text-white">Use Cash</Text>
-                </Pressable>
-              )}
             </View>
           </View>
         </View>
@@ -491,7 +557,7 @@ export default function CartScreen() {
             <Text className="mb-2 text-center text-base font-semibold text-[#000000] dark:text-white">
               Select Payment Method
             </Text>
-            {(["CASH", "MOMO", "VNPAY"] as PaymentMethod[]).map((method) => (
+            {(["MOMO", "VNPAY"] as PaymentMethod[]).map((method) => (
               <Pressable
                 key={method}
                 onPress={() => {

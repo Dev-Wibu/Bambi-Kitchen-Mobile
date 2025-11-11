@@ -1,15 +1,9 @@
 import { CustomTabBar } from "@/components/CustomTabBar";
-
 import { useAuth } from "@/hooks/useAuth";
-
 import { MaterialIcons } from "@expo/vector-icons";
-
 import { Redirect, Tabs, useRouter } from "expo-router";
-
 import { useEffect } from "react";
-
 import { ActivityIndicator, View } from "react-native";
-
 import Toast from "react-native-toast-message";
 
 export default function TabsLayout() {
@@ -23,13 +17,13 @@ export default function TabsLayout() {
 
   useEffect(() => {
     if (user) {
-      if (user.role === "STAFF") {
+      if (user.role === "ADMIN") {
         Toast.show({
           type: "info",
 
-          text1: "Staff Access Not Available",
+          text1: "ADMIN Access Not Available",
 
-          text2: "Staff features are not available on mobile. Please use the web application.",
+          text2: "ADMIN features are not available on mobile. Please use the web application.",
 
           visibilityTime: 5000,
         });
@@ -41,8 +35,8 @@ export default function TabsLayout() {
 
           router.replace("/(auth)/login");
         }, 2000);
-      } else if (user.role === "ADMIN") {
-        // Redirect ADMIN to manager interface
+      } else if (user.role === "STAFF") {
+        // Redirect STAFF to manager interface
 
         router.replace("/manager");
       }
@@ -79,34 +73,22 @@ export default function TabsLayout() {
 
   const hiddenRoutes = [
     "index",
-
     "manager/accounts/index",
-
     "manager/accounts/AccountForm",
-
     "manager/dish-categories/index",
-
     "manager/dish-categories/DishCategoryForm",
-
     "manager/ingredient-categories/index",
-
     "manager/ingredient-categories/IngredientCategoryForm",
-
     "manager/inventory-transactions/index",
-
     "manager/notifications/index",
-
     "manager/index",
-
     "notifications/index", // Hide manager tab for all mobile users
-
     // Hide internal menu screens from tab bar
-
     "menu/customize",
-
     "menu/[id]",
-
     "menu/customize-from/[id]",
+    "order/components/OrderDetailModal",
+    "order/components/OrderDetailItem",
 
     // Hide profile edit screen from tab bar
 
@@ -162,6 +144,12 @@ export default function TabsLayout() {
         }}
       />
 
+      <Tabs.Screen
+        name="order/components/OrderDetailModal"
+        options={{
+          href: null, // Hide from tab bar
+        }}
+      />
       <Tabs.Screen
         name="cart/index"
         options={{
