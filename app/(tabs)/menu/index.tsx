@@ -3,6 +3,7 @@ import { Text } from "@/components/ui/text";
 import { $api } from "@/libs/api";
 
 import { useDishCategories } from "@/services/dishCategoryService";
+import { formatMoney } from "@/utils/currency";
 
 import { MaterialIcons } from "@expo/vector-icons";
 
@@ -228,7 +229,7 @@ export default function MenuTab() {
 
                       <View className="flex-row items-center justify-between">
                         <Text className="text-xl font-bold text-[#FF6D00]">
-                          ${(dish.price! / 100).toFixed(2)}
+                          {formatMoney(dish.price || 0)}
                         </Text>
 
                         <Pressable
