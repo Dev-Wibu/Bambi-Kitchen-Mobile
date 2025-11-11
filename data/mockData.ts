@@ -526,56 +526,6 @@ export const mockNotifications: Notification[] = [
   },
 ];
 
-// Mock Orders
-
-export const mockOrders: Orders[] = [
-  {
-    id: 1,
-
-    createAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
-
-    totalPrice: 48500,
-
-    status: "COMPLETED",
-
-    userId: 1,
-
-    note: "Please make it spicy",
-
-    ranking: 5,
-  },
-
-  {
-    id: 2,
-
-    createAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-
-    totalPrice: 33000,
-
-    status: "COMPLETED",
-
-    userId: 1,
-
-    note: "",
-
-    ranking: 4,
-  },
-
-  {
-    id: 3,
-
-    createAt: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
-
-    totalPrice: 16500,
-
-    status: "PENDING",
-
-    userId: 1,
-
-    note: "Extra vegetables please",
-  },
-];
-
 // Mock Accounts
 
 export const mockAccounts: Account[] = [

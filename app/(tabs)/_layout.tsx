@@ -1,15 +1,9 @@
 import { CustomTabBar } from "@/components/CustomTabBar";
-
 import { useAuth } from "@/hooks/useAuth";
-
 import { MaterialIcons } from "@expo/vector-icons";
-
 import { Redirect, Tabs, useRouter } from "expo-router";
-
 import { useEffect } from "react";
-
 import { ActivityIndicator, View } from "react-native";
-
 import Toast from "react-native-toast-message";
 
 export default function TabsLayout() {
@@ -79,34 +73,22 @@ export default function TabsLayout() {
 
   const hiddenRoutes = [
     "index",
-
     "manager/accounts/index",
-
     "manager/accounts/AccountForm",
-
     "manager/dish-categories/index",
-
     "manager/dish-categories/DishCategoryForm",
-
     "manager/ingredient-categories/index",
-
     "manager/ingredient-categories/IngredientCategoryForm",
-
     "manager/inventory-transactions/index",
-
     "manager/notifications/index",
-
     "manager/index",
-
     "notifications/index", // Hide manager tab for all mobile users
-
     // Hide internal menu screens from tab bar
-
     "menu/customize",
-
     "menu/[id]",
-
     "menu/customize-from/[id]",
+    "order/components/OrderDetailModal",
+    "order/components/OrderDetailItem",
   ];
 
   return (
@@ -158,6 +140,12 @@ export default function TabsLayout() {
         }}
       />
 
+      <Tabs.Screen
+        name="order/components/OrderDetailModal"
+        options={{
+          href: null, // Hide from tab bar
+        }}
+      />
       <Tabs.Screen
         name="cart/index"
         options={{
