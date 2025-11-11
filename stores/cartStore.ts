@@ -25,6 +25,7 @@ interface CartState {
   addItem: (item: Omit<CartItem, "id">) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, qty: number) => void;
+  updateItemNote: (id: string, note: string) => void;
   clear: () => void;
   getTotal: () => number;
   // Fix existing basedOnId items missing dishTemplate
@@ -93,6 +94,8 @@ export const useCartStore = create<CartState>()(
       removeItem: (id) => set({ items: get().items.filter((i) => i.id !== id) }),
       updateQuantity: (id, qty) =>
         set({ items: get().items.map((i) => (i.id === id ? { ...i, quantity: qty } : i)) }),
+      updateItemNote: (id, note) =>
+        set({ items: get().items.map((i) => (i.id === id ? { ...i, note } : i)) }),
       clear: () => set({ items: [] }),
       getTotal: () => get().items.reduce((s, i) => s + i.price * i.quantity, 0),
       // Fix existing basedOnId items that are missing dishTemplate
