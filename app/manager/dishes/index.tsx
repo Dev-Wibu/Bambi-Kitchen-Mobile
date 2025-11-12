@@ -21,7 +21,8 @@ export default function DishesManager() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCriteria, setFilterCriteria] = useState<FilterCriteria[]>([]);
-  const [pageSize, setPageSize] = useState(10);
+  const [statusFilter, setStatusFilter] = useState<boolean | undefined>(undefined); // All, Active, Inactive
+  const [pageSize, setPageSize] = useState(50);
 
   // Use /api/dish/get-all for admin - includes inactive and private dishes
   const { data, isLoading, refetch, isError } = useAllDishes();
@@ -59,9 +60,6 @@ export default function DishesManager() {
       if (filter.field === "public" && typeof filter.value === "string") {
         filtered = filtered.filter((dish: any) => dish.public === (filter.value === "true"));
       }
-      if (filter.field === "active" && typeof filter.value === "string") {
-        filtered = filtered.filter((dish: any) => dish.active === (filter.value === "true"));
-      }
       if (filter.field === "price" && typeof filter.value === "object") {
         const range = filter.value as { from: number | undefined; to: number | undefined };
         filtered = filtered.filter((dish: any) => {
@@ -73,8 +71,13 @@ export default function DishesManager() {
       }
     });
 
+    // Apply status filter (separate from filterCriteria)
+    if (statusFilter !== undefined) {
+      filtered = filtered.filter((dish: any) => dish.active === statusFilter);
+    }
+
     return filtered;
-  }, [reversedDishes, searchTerm, filterCriteria]);
+  }, [reversedDishes, searchTerm, filterCriteria, statusFilter]);
 
   // Sorting
   const { sortedData, getSortProps } = useSortable<any>(filteredDishes);
@@ -94,7 +97,7 @@ export default function DishesManager() {
   // Reset pagination when filters change
   useEffect(() => {
     pagination.setPage(1);
-  }, [searchTerm, filterCriteria]);
+  }, [searchTerm, filterCriteria, statusFilter]);
 
   // Filter options
   const filterOptions = useMemo(
@@ -106,15 +109,6 @@ export default function DishesManager() {
         selectOptions: [
           { value: "true", label: "Public" },
           { value: "false", label: "Private" },
-        ],
-      },
-      {
-        label: "Status",
-        value: "active",
-        type: "select" as const,
-        selectOptions: [
-          { value: "true", label: "Active" },
-          { value: "false", label: "Inactive" },
         ],
       },
       {
@@ -133,14 +127,6 @@ export default function DishesManager() {
   );
 
   // Search options
-  const searchOptions = useMemo(
-    () => [
-      { value: "name", label: "Name" },
-      { value: "description", label: "Description" },
-    ],
-    []
-  );
-
   return (
     <View className="flex-1 bg-white dark:bg-gray-900">
       {/* Header */}
@@ -167,9 +153,10 @@ export default function DishesManager() {
       {/* Search and Filter */}
       <View className="border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
         <SearchBar
-          searchOptions={searchOptions}
+          searchOptions={[]}
           onSearchChange={setSearchTerm}
           placeholder="Search dishes..."
+          limitedFields={false}
           resetPagination={() => pagination.setPage(1)}
         />
         <View className="mt-2">
@@ -179,11 +166,42 @@ export default function DishesManager() {
 
       {/* Sort Controls */}
       <View className="border-b border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-900">
-        <View className="flex-row items-center gap-2">
-          <Text className="text-sm font-medium text-gray-600 dark:text-gray-300">Sort by:</Text>
-          <SortButton {...getSortProps("name")} label="Name" />
-          <SortButton {...getSortProps("price")} label="Price" />
-          <SortButton {...getSortProps("active")} label="Status" />
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center gap-2">
+            <Text className="text-sm font-medium text-gray-600 dark:text-gray-300">Sort by:</Text>
+            <SortButton {...getSortProps("name")} label="Name" />
+            <SortButton {...getSortProps("price")} label="Price" />
+          </View>
+
+          {/* Status Filter Toggle */}
+          <View className="flex-row items-center gap-2">
+            <View className="flex-row rounded-lg border border-gray-300 dark:border-gray-600">
+              <TouchableOpacity
+                onPress={() => setStatusFilter(true)}
+                className={`border-x border-gray-300 px-3 py-1 dark:border-gray-600 ${
+                  statusFilter === true ? "bg-green-500" : "bg-transparent"
+                }`}>
+                <Text
+                  className={`text-xs font-medium ${
+                    statusFilter === true ? "text-white" : "text-gray-600 dark:text-gray-400"
+                  }`}>
+                  Active
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setStatusFilter(false)}
+                className={`rounded-r-lg px-3 py-1 ${
+                  statusFilter === false ? "bg-red-500" : "bg-transparent"
+                }`}>
+                <Text
+                  className={`text-xs font-medium ${
+                    statusFilter === false ? "text-white" : "text-gray-600 dark:text-gray-400"
+                  }`}>
+                  Inactive
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       </View>
 

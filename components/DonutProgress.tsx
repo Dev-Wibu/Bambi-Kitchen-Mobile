@@ -57,7 +57,7 @@ export default function DonutProgress({
           transform={`rotate(-90 ${cx} ${cy})`}
         />
       </Svg>
-      <View style={{ position: "absolute", alignItems: "center" }}>
+      <View style={{ position: "relative", alignItems: "center" }}>
         <Text style={{ fontSize: centerValueFontSize, fontWeight: "700", color: "#111827" }}>
           {value}
         </Text>

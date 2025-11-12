@@ -1,11 +1,19 @@
 import { Filter, type FilterCriteria } from "@/components/Filter";
+
 import ReloadButton from "@/components/ReloadButton";
+
 import { SearchBar } from "@/components/SearchBar";
+
 import { SortButton } from "@/components/SortButton";
+
 import { Button } from "@/components/ui/button";
+
 import { Text } from "@/components/ui/text";
+
 import { getPageInfo, usePagination } from "@/hooks/usePagination";
+
 import { useSortable } from "@/hooks/useSortable";
+
 import type { InventoryTransaction } from "@/interfaces/inventoryTransaction.interface";
 
 import { useInventoryTransactions } from "@/services/inventoryTransactionService";
@@ -15,37 +23,46 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
 import { useEffect, useMemo, useState } from "react";
+
 import { ActivityIndicator, FlatList, TouchableOpacity, View } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function InventoryTransactionManagement() {
   const router = useRouter();
+
   const [searchTerm, setSearchTerm] = useState("");
+
   const [filterCriteria, setFilterCriteria] = useState<FilterCriteria[]>([]);
-  const [pageSize, setPageSize] = useState(10);
+
+  const [pageSize, setPageSize] = useState(50);
 
   // Query hooks
 
   const { data: transactions, isLoading, refetch } = useInventoryTransactions();
 
   // Process transactions data
+
   const transactionsArray = useMemo(() => {
     return Array.isArray(transactions) ? transactions : [];
   }, [transactions]);
 
   // Reverse the list to show newest first
+
   const reversedTransactions = useMemo(() => {
     return transactionsArray ? [...transactionsArray].reverse() : [];
   }, [transactionsArray]);
 
   // Filter and search
+
   const filteredTransactions = useMemo(() => {
     let filtered = reversedTransactions;
 
     // Apply search
+
     if (searchTerm) {
       const lowerSearch = searchTerm.toLowerCase();
+
       filtered = filtered.filter(
         (transaction) =>
           transaction.ingredient?.name?.toLowerCase().includes(lowerSearch) ||
@@ -54,17 +71,24 @@ export default function InventoryTransactionManagement() {
     }
 
     // Apply filters
+
     filterCriteria.forEach((filter) => {
       if (filter.field === "transactionType" && typeof filter.value === "string") {
         const isInbound = filter.value === "true";
+
         filtered = filtered.filter((transaction) => transaction.transactionType === isInbound);
       }
+
       if (filter.field === "quantity" && typeof filter.value === "object") {
         const range = filter.value as { from: number | undefined; to: number | undefined };
+
         filtered = filtered.filter((transaction) => {
           const quantity = transaction.quantity || 0;
+
           if (range.from !== undefined && quantity < range.from) return false;
+
           if (range.to !== undefined && quantity > range.to) return false;
+
           return true;
         });
       }
@@ -74,58 +98,80 @@ export default function InventoryTransactionManagement() {
   }, [reversedTransactions, searchTerm, filterCriteria]);
 
   // Sorting
+
   const { sortedData, getSortProps } = useSortable<InventoryTransaction>(filteredTransactions);
 
   // Pagination
+
   const pagination = usePagination({
     totalCount: sortedData.length,
+
     pageSize,
+
     initialPage: 1,
   });
 
   // Current page data
+
   const currentPageData = useMemo(() => {
     return sortedData.slice(pagination.startIndex, pagination.endIndex + 1);
   }, [sortedData, pagination.startIndex, pagination.endIndex]);
 
   // Reset pagination when filters change
+
   useEffect(() => {
     pagination.setPage(1);
   }, [searchTerm, filterCriteria]);
 
   // Filter options
+
   const filterOptions = useMemo(
     () => [
       {
         label: "Transaction Type",
+
         value: "transactionType",
+
         type: "select" as const,
+
         selectOptions: [
           { value: "true", label: "Inbound (Add)" },
+
           { value: "false", label: "Outbound (Remove)" },
         ],
       },
+
       {
         label: "Quantity",
+
         value: "quantity",
+
         type: "numberRange" as const,
+
         numberRangeConfig: {
           fromPlaceholder: "Min quantity",
+
           toPlaceholder: "Max quantity",
+
           min: 0,
+
           step: 1,
         },
       },
     ],
+
     []
   );
 
   // Search options
+
   const searchOptions = useMemo(
     () => [
       { value: "ingredient", label: "Ingredient" },
+
       { value: "note", label: "Note" },
     ],
+
     []
   );
 
@@ -158,6 +204,7 @@ export default function InventoryTransactionManagement() {
               <TouchableOpacity onPress={() => router.back()} className="mr-2">
                 <MaterialIcons name="arrow-back" size={24} color="#FF6D00" />
               </TouchableOpacity>
+
               <View className="flex-1">
                 <Text className="text-2xl font-bold text-[#000000] dark:text-white">
                   Inventory Transaction Management
@@ -168,6 +215,7 @@ export default function InventoryTransactionManagement() {
                 </Text>
               </View>
             </View>
+
             <ReloadButton onRefresh={() => refetch()} />
           </View>
         </View>
@@ -176,36 +224,44 @@ export default function InventoryTransactionManagement() {
 
         <View className="flex-1 px-6 pt-4">
           {/* Search and Filter */}
+
           <View className="mb-4 gap-3">
             <SearchBar
-              searchOptions={searchOptions}
+              searchOptions={[]}
               onSearchChange={setSearchTerm}
               placeholder="Search by ingredient or note..."
+              limitedFields={false}
               resetPagination={pagination.reset}
             />
+
             <Filter
               filterOptions={filterOptions}
               onFilterChange={(criteria) => {
                 setFilterCriteria(criteria);
+
                 pagination.setPage(1);
               }}
             />
           </View>
 
           {/* Table Header with Sort */}
+
           <View className="mb-2 flex-row items-center border-b border-gray-200 pb-2 dark:border-gray-700">
             <View className="flex-1">
               <SortButton {...getSortProps("ingredient")} label="Ingredient" />
             </View>
+
             <View className="w-32">
               <SortButton {...getSortProps("quantity")} label="Quantity" />
             </View>
+
             <View className="w-32">
               <SortButton {...getSortProps("createAt")} label="Date" />
             </View>
           </View>
 
           {/* Transactions FlatList */}
+
           {isLoading ? (
             <View className="flex-1 items-center justify-center py-12">
               <ActivityIndicator size="large" color="#FF6D00" />
@@ -276,6 +332,7 @@ export default function InventoryTransactionManagement() {
                   <Text className="text-sm text-gray-600 dark:text-gray-300">
                     {getPageInfo(pagination)}
                   </Text>
+
                   <View className="flex-row gap-2">
                     <Button
                       variant="outline"
@@ -284,6 +341,7 @@ export default function InventoryTransactionManagement() {
                       disabled={pagination.currentPage === 1}>
                       <MaterialIcons name="chevron-left" size={20} />
                     </Button>
+
                     <Button
                       variant="outline"
                       size="sm"
@@ -301,3 +359,4 @@ export default function InventoryTransactionManagement() {
     </SafeAreaView>
   );
 }
+
