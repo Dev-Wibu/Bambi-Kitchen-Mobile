@@ -9,17 +9,32 @@ import { formatMoney } from "@/utils/currency";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Image, Linking, Pressable, ScrollView, TextInput, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  Linking,
+  Pressable,
+  ScrollView,
+  TextInput,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
-type PaymentMethod = "MOMO" | "VNPAY";
+type PaymentMethod = "CASH" | "MOMO" | "VNPAY";
 
 export default function CartScreen() {
   const router = useRouter();
   const { user } = useAuth();
-  const { items, removeItem, updateQuantity, updateItemNote, clear, getTotal, fixMissingDishTemplates } =
-    useCartStore();
+  const {
+    items,
+    removeItem,
+    updateQuantity,
+    updateItemNote,
+    clear,
+    getTotal,
+    fixMissingDishTemplates,
+  } = useCartStore();
   const createOrder = useCreateOrder();
 
   // Load dish templates to fix any missing ones in cart items
@@ -37,7 +52,7 @@ export default function CartScreen() {
   }, [dishTemplatesRaw, fixMissingDishTemplates]);
 
   const [selectingPayment, setSelectingPayment] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>("MOMO");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>("CASH");
   const [note, setNote] = useState<string | undefined>(undefined);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [editingNoteFor, setEditingNoteFor] = useState<string | null>(null);
@@ -74,7 +89,7 @@ export default function CartScreen() {
   const toggleExpanded = (id: string) => setExpanded((e) => ({ ...e, [id]: !e[id] }));
 
   // Navigate to dish detail page when user clicks on a cart item to review/edit
-  const handleItemClick = (item: typeof items[0]) => {
+  const handleItemClick = (item: (typeof items)[0]) => {
     // For custom dishes (has recipe), navigate to customize page
     if (item.recipe && item.recipe.length > 0) {
       // If it's based on a dish, go to that dish detail to customize
@@ -134,11 +149,20 @@ export default function CartScreen() {
       } catch {}
 
       // If payment method requires external flow (MOMO/VNPAY), backend may return a redirect URL
+      // For CASH payment, just create order and wait for staff confirmation
       if (
-        paymentMethod &&
-        typeof resp === "string" &&
-        resp.startsWith("http")
+        paymentMethod === "CASH" ||
+        (typeof resp === "string" && resp === "CASH_PAYMENT_SUCCESS")
       ) {
+        // Cash payment: order created, waiting for staff confirmation
+        Toast.show({
+          type: "success",
+          text1: "Order placed successfully",
+          text2: "Waiting for staff confirmation",
+        });
+        clear();
+        router.replace("/(tabs)/order");
+      } else if (paymentMethod && typeof resp === "string" && resp.startsWith("http")) {
         // Open external payment page (will return via callback to backend)
         try {
           await Linking.openURL(resp);
@@ -161,7 +185,7 @@ export default function CartScreen() {
           router.replace("/(tabs)/order");
         }
       } else {
-        // Cash or no useful redirect URL provided
+        // Other cases: no useful redirect URL provided
         Toast.show({ type: "success", text1: "Order placed" });
         clear();
         router.replace("/(tabs)/order");
@@ -251,9 +275,7 @@ export default function CartScreen() {
                 className="overflow-hidden rounded-2xl bg-white shadow-sm dark:bg-gray-800">
                 <View className="flex-row p-3">
                   {/* Clickable dish image and name section */}
-                  <Pressable
-                    onPress={() => handleItemClick(item)}
-                    className="flex-row flex-1">
+                  <Pressable onPress={() => handleItemClick(item)} className="flex-1 flex-row">
                     <View className="h-16 w-16 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700">
                       {item.imageUrl ? (
                         <Image
@@ -281,7 +303,9 @@ export default function CartScreen() {
                       </View>
                       {/* Hint text to indicate clickability */}
                       <Text className="text-xs text-gray-500">
-                        {item.recipe && item.recipe.length > 0 ? "Tap to customize again" : "Tap to view details"}
+                        {item.recipe && item.recipe.length > 0
+                          ? "Tap to customize again"
+                          : "Tap to view details"}
                       </Text>
                     </View>
                   </Pressable>
@@ -371,7 +395,7 @@ export default function CartScreen() {
                           multiline
                           numberOfLines={2}
                           className="text-xs text-[#000000] dark:text-white"
-                          style={{ minHeight: 40, textAlignVertical: 'top' }}
+                          style={{ minHeight: 40, textAlignVertical: "top" }}
                         />
                         <Pressable
                           onPress={() => setEditingNoteFor(null)}
@@ -410,7 +434,7 @@ export default function CartScreen() {
               multiline
               numberOfLines={3}
               className="px-4 py-3 text-sm text-[#000000] dark:text-white"
-              style={{ minHeight: 80, textAlignVertical: 'top' }}
+              style={{ minHeight: 80, textAlignVertical: "top" }}
             />
           </View>
         </View>
@@ -557,31 +581,39 @@ export default function CartScreen() {
             <Text className="mb-2 text-center text-base font-semibold text-[#000000] dark:text-white">
               Select Payment Method
             </Text>
-            {(["MOMO", "VNPAY"] as PaymentMethod[]).map((method) => (
-              <Pressable
-                key={method}
-                onPress={() => {
-                  setPaymentMethod(method);
-                  setSelectingPayment(false);
-                }}
-                className={`mb-2 flex-row items-center justify-between rounded-xl border px-4 py-3 ${
-                  paymentMethod === method
-                    ? "border-[#FF6D00] bg-[#FF6D00]/10"
-                    : "border-gray-200 dark:border-gray-700"
-                }`}>
-                <View className="flex-row items-center gap-3">
-                  <MaterialIcons name="payments" size={20} color="#FF6D00" />
-                  <Text className="text-base text-[#000000] dark:text-white">{method}</Text>
-                </View>
-                <MaterialIcons
-                  name={
-                    paymentMethod === method ? "radio-button-checked" : "radio-button-unchecked"
-                  }
-                  size={22}
-                  color={paymentMethod === method ? "#FF6D00" : "#9CA3AF"}
-                />
-              </Pressable>
-            ))}
+            {(["CASH", "MOMO", "VNPAY"] as PaymentMethod[]).map((method) => {
+              const getPaymentIcon = (m: PaymentMethod) => {
+                if (m === "CASH") return "money";
+                if (m === "MOMO") return "account-balance-wallet";
+                return "credit-card";
+              };
+
+              return (
+                <Pressable
+                  key={method}
+                  onPress={() => {
+                    setPaymentMethod(method);
+                    setSelectingPayment(false);
+                  }}
+                  className={`mb-2 flex-row items-center justify-between rounded-xl border px-4 py-3 ${
+                    paymentMethod === method
+                      ? "border-[#FF6D00] bg-[#FF6D00]/10"
+                      : "border-gray-200 dark:border-gray-700"
+                  }`}>
+                  <View className="flex-row items-center gap-3">
+                    <MaterialIcons name={getPaymentIcon(method) as any} size={20} color="#FF6D00" />
+                    <Text className="text-base text-[#000000] dark:text-white">{method}</Text>
+                  </View>
+                  <MaterialIcons
+                    name={
+                      paymentMethod === method ? "radio-button-checked" : "radio-button-unchecked"
+                    }
+                    size={22}
+                    color={paymentMethod === method ? "#FF6D00" : "#9CA3AF"}
+                  />
+                </Pressable>
+              );
+            })}
             <View className="h-4" />
           </View>
         </View>

@@ -51,7 +51,7 @@ fetchClient.use({
   async onResponse({ response }) {
     // Log API response
     const clonedResponse = response.clone();
-    
+
     try {
       const data = await clonedResponse.json();
       console.log("✅ API Response:", {

@@ -150,19 +150,29 @@ export default function HomeTab() {
           </View>
         </View>
 
-        {/* Search Bar */}
-
-        <Pressable
-          onPress={() => router.push("/(tabs)/menu")}
-          className="mb-6 flex-row items-center gap-3 rounded-lg bg-gray-100 p-4 dark:bg-gray-800">
-          <MaterialIcons name="search" size={24} color="#9CA3AF" />
-
-          <Text className="flex-1 text-base text-gray-500 dark:text-gray-400">
-            Search dishes...
-          </Text>
-
-          <MaterialIcons name="tune" size={24} color="#000000" className="dark:text-white" />
-        </Pressable>
+        {/* Search Bar - Improved Design */}
+        <View className="mb-6">
+          <Pressable
+            onPress={() => router.push("/(tabs)/menu")}
+            className="flex-row items-center gap-3 rounded-2xl bg-gradient-to-r from-orange-50 to-orange-100 p-4 shadow-sm dark:from-gray-800 dark:to-gray-800">
+            <View className="flex-1 flex-row items-center gap-3">
+              <View className="rounded-full bg-white p-2 dark:bg-gray-700">
+                <MaterialIcons name="search" size={20} color="#FF6D00" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-sm font-medium text-[#000000] dark:text-white">
+                  Search for dishes
+                </Text>
+                <Text className="text-xs text-gray-500 dark:text-gray-400">
+                  Browse our menu to find your favorite
+                </Text>
+              </View>
+            </View>
+            <View className="rounded-full bg-[#FF6D00] p-2">
+              <MaterialIcons name="arrow-forward" size={20} color="#FFFFFF" />
+            </View>
+          </Pressable>
+        </View>
 
         {/* Ingredient Categories */}
 
@@ -311,4 +321,3 @@ export default function HomeTab() {
     </SafeAreaView>
   );
 }
-

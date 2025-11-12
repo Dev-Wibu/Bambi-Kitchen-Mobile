@@ -476,7 +476,10 @@ export default function DishDetail() {
                   added.forEach((item) => {
                     const ing = ingredientsRaw?.find((i: any) => i.id === item.ingredientId);
                     if (ing) {
-                      addedIngredientsCost += (ing.pricePerUnit || 0) * item.quantity;
+                      // For GRAM unit, pricePerUnit is per 1g, so multiply by quantity (200g default)
+                      // For other units (KILOGRAM, LITER, PCS), pricePerUnit is already correct
+                      const priceMultiplier = ing.unit === "GRAM" ? item.quantity : 1;
+                      addedIngredientsCost += (ing.pricePerUnit || 0) * priceMultiplier;
                     }
                   });
                   const totalPrice = basePrice + addedIngredientsCost;

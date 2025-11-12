@@ -1,9 +1,9 @@
 import { Text } from "@/components/ui/text";
-import { MaterialIcons } from "@expo/vector-icons";
-import { ActivityIndicator, Pressable, View } from "react-native";
-import { formatMoney } from "@/utils/currency";
 import { $api } from "@/libs/api";
+import { formatMoney } from "@/utils/currency";
+import { MaterialIcons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
+import { ActivityIndicator, Pressable, View } from "react-native";
 
 interface OrderDetailItemProps {
   detail: any;
@@ -20,7 +20,7 @@ export default function OrderDetailItem({ detail, ingNameById }: OrderDetailItem
     "/api/recipe/by-dish/{id}",
     {
       params: { path: { id: dishId || 0 } },
-      enabled: !!dishId && showRecipe,
+      enabled: dishId !== undefined && dishId !== null && dishId > 0 && showRecipe,
     }
   );
 
@@ -29,7 +29,7 @@ export default function OrderDetailItem({ detail, ingNameById }: OrderDetailItem
     // The response might be wrapped or direct
     const data = (recipeData as any)?.data ?? recipeData;
     if (!data) return [];
-    
+
     // Extract ingredients array from the response
     const ingredients = (data as any)?.ingredients ?? [];
     return Array.isArray(ingredients) ? ingredients : [];
@@ -43,15 +43,11 @@ export default function OrderDetailItem({ detail, ingNameById }: OrderDetailItem
             {detail.dish?.name || "Custom Dish"}
           </Text>
           {detail.size && (
-            <Text className="text-sm text-gray-600 dark:text-gray-400">
-              Size: {detail.size}
-            </Text>
+            <Text className="text-sm text-gray-600 dark:text-gray-400">Size: {detail.size}</Text>
           )}
         </View>
         <View className="items-end">
-          <Text className="font-bold text-[#FF6D00]">
-            {formatMoney(detail.dish?.price || 0)}
-          </Text>
+          <Text className="font-bold text-[#FF6D00]">{formatMoney(detail.dish?.price || 0)}</Text>
         </View>
       </View>
 
@@ -72,11 +68,9 @@ export default function OrderDetailItem({ detail, ingNameById }: OrderDetailItem
       )}
 
       {/* Recipe toggle button */}
-      {dishId && (
+      {dishId !== undefined && dishId !== null && dishId > 0 && (
         <View className="mt-3">
-          <Pressable
-            onPress={() => setShowRecipe(!showRecipe)}
-            className="flex-row items-center">
+          <Pressable onPress={() => setShowRecipe(!showRecipe)} className="flex-row items-center">
             <MaterialIcons
               name={showRecipe ? "expand-less" : "expand-more"}
               size={20}
@@ -109,9 +103,11 @@ export default function OrderDetailItem({ detail, ingNameById }: OrderDetailItem
                             {ingredientName}
                           </Text>
                         </View>
-                        {item.quantity && (
-                          <Text className="text-xs text-gray-500">{item.quantity}g</Text>
-                        )}
+                        {item.quantity !== undefined &&
+                          item.quantity !== null &&
+                          item.quantity > 0 && (
+                            <Text className="text-xs text-gray-500">{item.quantity}g</Text>
+                          )}
                       </View>
                     );
                   })}

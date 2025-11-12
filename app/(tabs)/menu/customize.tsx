@@ -82,6 +82,28 @@ export default function CustomizeBowlScreen() {
     setSelectedTemplate(template);
   };
 
+  // Convert unit to short form for display
+  const getShortUnit = (unit?: string): string => {
+    if (!unit) return "g";
+    const normalized = unit.toUpperCase();
+    switch (normalized) {
+      case "GRAM":
+        return "g";
+      case "KILOGRAM":
+        return "kg";
+      case "LITER":
+        return "l";
+      case "MILLILITER":
+        return "ml";
+      case "PCS":
+      case "PIECE":
+      case "PIECES":
+        return "pcs";
+      default:
+        return unit.toLowerCase().slice(0, 3); // Fallback: first 3 chars
+    }
+  };
+
   // Deterministic role mapping by category name (VN diacritics tolerant)
   type Role = "CARB" | "PROTEIN" | "VEGETABLE" | "OTHER";
   const normalizeVN = (s?: string) =>
@@ -154,13 +176,17 @@ export default function CustomizeBowlScreen() {
       return;
     }
 
+    // Get ingredient unit to determine default quantity
+    const ingredientUnit = ingredient.unit?.toUpperCase() || "GRAM";
+    const defaultQuantity = ingredientUnit === "GRAM" ? 200 : 1;
+
     setSelectedByCategory({
       ...selectedByCategory,
       [categoryId]: [
         ...current,
         {
           ingredientId: ingredient.id!,
-          quantity: 200, // Default to 200g (2 portions) - updated from 100g per BE requirement
+          quantity: defaultQuantity, // 200 for GRAM, 1 for others
           sourceType: "ADDON",
         },
       ],
@@ -168,13 +194,26 @@ export default function CustomizeBowlScreen() {
   };
 
   // Update ingredient quantity
-  const updateIngredientQuantity = (categoryId: number, ingredientId: number, newQuantity: number) => {
+  const updateIngredientQuantity = (
+    categoryId: number,
+    ingredientId: number,
+    newQuantity: number
+  ) => {
     const current = selectedByCategory[categoryId] || [];
+    // Get ingredient unit to determine min/max/step
+    const ingredient = ingredientsRaw?.find((i: any) => i.id === ingredientId);
+    const unit = ingredient?.unit?.toUpperCase() || "GRAM";
+
+    // For GRAM: min 200, max 1000, step 200
+    // For others: min 1, max 100, step 1
+    const minQty = unit === "GRAM" ? 200 : 1;
+    const maxQty = unit === "GRAM" ? 1000 : 100;
+
     setSelectedByCategory({
       ...selectedByCategory,
       [categoryId]: current.map((item) =>
         item.ingredientId === ingredientId
-          ? { ...item, quantity: Math.max(200, Math.min(1000, newQuantity)) } // Min 200g, max 1000g (increments of 200g as per BE requirement)
+          ? { ...item, quantity: Math.max(minQty, Math.min(maxQty, newQuantity)) }
           : item
       ),
     });
@@ -184,7 +223,11 @@ export default function CustomizeBowlScreen() {
   const getIngredientQuantity = (categoryId: number, ingredientId: number): number => {
     const current = selectedByCategory[categoryId] || [];
     const item = current.find((item) => item.ingredientId === ingredientId);
-    return item?.quantity || 200; // Default 200g per BE requirement
+    // Get ingredient unit to determine default
+    const ingredient = ingredientsRaw?.find((i: any) => i.id === ingredientId);
+    const unit = ingredient?.unit?.toUpperCase() || "GRAM";
+    const defaultQuantity = unit === "GRAM" ? 200 : 1;
+    return item?.quantity || defaultQuantity;
   };
 
   // Check if ingredient is selected
@@ -195,7 +238,7 @@ export default function CustomizeBowlScreen() {
 
   // Calculate total price
   // Formula for CUSTOM dish (no base): SUM(ingredient costs) × priceRatio = finalPrice
-  // As per BE requirement: "Adding the price of a custom dish is adding the total of the ingredients 
+  // As per BE requirement: "Adding the price of a custom dish is adding the total of the ingredients
   // and multiplying it by the price ratio to get the final price"
   const calculateTotal = () => {
     // Calculate ingredient costs
@@ -203,14 +246,18 @@ export default function CustomizeBowlScreen() {
     Object.values(selectedByCategory).forEach((items) => {
       items.forEach((item) => {
         const ing = ingredientsRaw?.find((i: any) => i.id === item.ingredientId);
-        if (ing) ingredientCosts += (ing.pricePerUnit || 0) * item.quantity;
+        if (ing) {
+          // For GRAM unit, pricePerUnit is per 1g, so multiply by quantity (200g default)
+          // For other units (KILOGRAM, LITER, PCS), pricePerUnit is already correct
+          ingredientCosts += (ing.pricePerUnit || 0) * (item.quantity || 1);
+        }
       });
     });
-    
+
     // Apply priceRatio to ingredient total for custom bowls (no base price for 100% custom)
     const priceRatio = selectedTemplate?.priceRatio || 1;
     const finalPrice = Math.round(ingredientCosts * priceRatio);
-    
+
     return finalPrice;
   };
 
@@ -424,6 +471,8 @@ export default function CustomizeBowlScreen() {
                     {items.map((ingredient: any) => {
                       const picked = isIngredientSelected(cat.id!, ingredient.id);
                       const reachLimit = !picked && Number.isFinite(max) && selectedInRole >= max;
+                      const step = ingredient.unit === "GRAM" ? 200 : 1;
+
                       return (
                         <Pressable
                           key={ingredient.id}
@@ -453,10 +502,10 @@ export default function CustomizeBowlScreen() {
                           </Text>
                           {ingredient.pricePerUnit ? (
                             <Text className="mt-1 text-xs text-gray-600">
-                              +{ingredient.pricePerUnit}
+                              {ingredient.pricePerUnit * step}đ
                             </Text>
                           ) : null}
-                          
+
                           {/* Quantity controls - shown when ingredient is selected */}
                           {picked ? (
                             <View className="mt-2 flex-row items-center justify-between">
@@ -464,19 +513,32 @@ export default function CustomizeBowlScreen() {
                                 onPress={(e) => {
                                   e.stopPropagation();
                                   const currentQty = getIngredientQuantity(cat.id!, ingredient.id);
-                                  updateIngredientQuantity(cat.id!, ingredient.id, currentQty - 200);
+                                  const unit = ingredient.unit?.toUpperCase() || "GRAM";
+                                  const step = unit === "GRAM" ? 200 : 1;
+                                  updateIngredientQuantity(
+                                    cat.id!,
+                                    ingredient.id,
+                                    currentQty - step
+                                  );
                                 }}
                                 className="h-6 w-6 items-center justify-center rounded-full bg-gray-200">
                                 <MaterialIcons name="remove" size={12} color="#000000" />
                               </Pressable>
                               <Text className="text-xs font-semibold text-[#FF6D00]">
-                                {getIngredientQuantity(cat.id!, ingredient.id)}g
+                                {getIngredientQuantity(cat.id!, ingredient.id)}
+                                {getShortUnit(ingredient.unit)}
                               </Text>
                               <Pressable
                                 onPress={(e) => {
                                   e.stopPropagation();
                                   const currentQty = getIngredientQuantity(cat.id!, ingredient.id);
-                                  updateIngredientQuantity(cat.id!, ingredient.id, currentQty + 200);
+                                  const unit = ingredient.unit?.toUpperCase() || "GRAM";
+                                  const step = unit === "GRAM" ? 200 : 1;
+                                  updateIngredientQuantity(
+                                    cat.id!,
+                                    ingredient.id,
+                                    currentQty + step
+                                  );
                                 }}
                                 className="h-6 w-6 items-center justify-center rounded-full bg-gray-200">
                                 <MaterialIcons name="add" size={12} color="#000000" />

@@ -93,6 +93,7 @@ export default function TabsLayout() {
     // Hide profile edit screen from tab bar
 
     "profile/edit",
+    "order/components/FeedbackModal",
   ];
 
   return (
@@ -176,4 +177,3 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
-

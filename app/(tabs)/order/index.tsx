@@ -1,12 +1,13 @@
 import { Text } from "@/components/ui/text";
+import { useOrdersByUserId } from "@/services/orderService";
+import { useAuthStore } from "@/stores/authStore";
+import { formatMoney } from "@/utils/currency";
 import { MaterialIcons } from "@expo/vector-icons";
 import { format } from "date-fns";
+import { useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAuthStore } from "@/stores/authStore";
-import { useOrdersByUserId } from "@/services/orderService";
-import { formatMoney } from "@/utils/currency";
-import { useMemo, useState } from "react";
+import FeedbackModal from "./components/FeedbackModal";
 import OrderDetailModal from "./components/OrderDetailModal";
 
 export default function OrderTab() {
@@ -14,6 +15,7 @@ export default function OrderTab() {
   const userId = user?.userId;
   const [refreshing, setRefreshing] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+  const [feedbackOrderId, setFeedbackOrderId] = useState<number | null>(null);
 
   // Fetch orders from API
   const {
@@ -28,7 +30,7 @@ export default function OrderTab() {
     // API returns Orders[] directly, not wrapped in { data: [...] }
     const ordersList = ordersResponse?.data ?? ordersResponse ?? [];
     if (!Array.isArray(ordersList)) return [];
-    
+
     // Sort by createAt descending (newest first)
     return [...ordersList].sort((a, b) => {
       const dateA = new Date(a.createAt || 0).getTime();
@@ -77,6 +79,18 @@ export default function OrderTab() {
     setSelectedOrderId(null);
   };
 
+  const handleGiveFeedback = (orderId: number) => {
+    setFeedbackOrderId(orderId);
+  };
+
+  const handleCloseFeedback = () => {
+    setFeedbackOrderId(null);
+  };
+
+  const handleFeedbackSuccess = () => {
+    refetch();
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">
       <ScrollView
@@ -120,7 +134,9 @@ export default function OrderTab() {
                     </View>
                   </View>
                   <Text className="text-sm text-[#757575]">
-                    {order.createAt ? format(new Date(order.createAt), "MMM dd, yyyy • hh:mm a") : "Date unavailable"}
+                    {order.createAt
+                      ? format(new Date(order.createAt), "MMM dd, yyyy • hh:mm a")
+                      : "Date unavailable"}
                   </Text>
                 </View>
 
@@ -142,27 +158,39 @@ export default function OrderTab() {
                     </View>
                   )}
 
-                  {order.ranking && order.status === "COMPLETED" && (
-                    <View className="mb-3">
-                      <Text className="mb-1 text-xs font-semibold text-[#757575] dark:text-gray-400">
-                        Your Rating:
-                      </Text>
-                      <View className="flex-row gap-1">{renderStars(order.ranking)}</View>
-                    </View>
-                  )}
+                  {order.ranking !== undefined &&
+                    order.ranking !== null &&
+                    order.status === "COMPLETED" && (
+                      <View className="mb-3">
+                        <Text className="mb-1 text-xs font-semibold text-[#757575] dark:text-gray-400">
+                          Your Rating:
+                        </Text>
+                        <View className="flex-row gap-1">{renderStars(order.ranking)}</View>
+                      </View>
+                    )}
 
                   {/* Action Buttons */}
                   <View className="mt-3 flex-row gap-2">
-                    <Pressable 
+                    <Pressable
                       className="flex-1 items-center rounded-lg bg-[#FF6D00] py-3"
                       onPress={() => handleViewDetails(order.id!)}>
                       <Text className="font-semibold text-white">View Details</Text>
                     </Pressable>
-                    {order.status === "COMPLETED" && (
-                      <Pressable className="flex-1 items-center rounded-lg border border-[#FF6D00] py-3">
-                        <Text className="font-semibold text-[#FF6D00]">Reorder</Text>
-                      </Pressable>
-                    )}
+                    {order.status === "COMPLETED" &&
+                      (order.ranking === undefined || order.ranking === null) && (
+                        <Pressable
+                          className="flex-1 items-center rounded-lg border border-[#FF6D00] bg-[#FF6D00] py-3"
+                          onPress={() => handleGiveFeedback(order.id!)}>
+                          <Text className="font-semibold text-white">Give Feedback</Text>
+                        </Pressable>
+                      )}
+                    {order.status === "COMPLETED" &&
+                      order.ranking !== undefined &&
+                      order.ranking !== null && (
+                        <Pressable className="flex-1 items-center rounded-lg border border-[#FF6D00] py-3">
+                          <Text className="font-semibold text-[#FF6D00]">Reorder</Text>
+                        </Pressable>
+                      )}
                   </View>
                 </View>
               </View>
@@ -183,9 +211,15 @@ export default function OrderTab() {
 
       {/* Order Detail Modal */}
       {selectedOrderId && (
-        <OrderDetailModal
-          orderId={selectedOrderId}
-          onClose={handleCloseDetails}
+        <OrderDetailModal orderId={selectedOrderId} onClose={handleCloseDetails} />
+      )}
+
+      {/* Feedback Modal */}
+      {feedbackOrderId && (
+        <FeedbackModal
+          orderId={feedbackOrderId}
+          onClose={handleCloseFeedback}
+          onSuccess={handleFeedbackSuccess}
         />
       )}
     </SafeAreaView>

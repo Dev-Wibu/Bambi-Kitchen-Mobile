@@ -10,10 +10,10 @@
  */
 export const formatMoney = (cents: number): string => {
   // Convert cents to major unit (divide by 100)
-  const amount = cents / 100;
-  
+  const amount = cents;
+
   // Format with thousand separators and no decimals (VND doesn't use decimals)
-  return `${amount.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} VND`;
+  return `${amount.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} VND`;
 };
 
 /**
@@ -23,7 +23,7 @@ export const formatMoney = (cents: number): string => {
  */
 export const formatMoneyShort = (cents: number): string => {
   const amount = cents / 100;
-  return `${amount.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}đ`;
+  return `${amount.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}đ`;
 };
 
 /**
@@ -33,7 +33,7 @@ export const formatMoneyShort = (cents: number): string => {
  */
 export const parseMoney = (vndString: string): number => {
   // Remove all non-digit characters except decimal point
-  const cleaned = vndString.replace(/[^\d.]/g, '');
+  const cleaned = vndString.replace(/[^\d.]/g, "");
   const amount = parseFloat(cleaned) || 0;
   // Convert to cents
   return Math.round(amount * 100);

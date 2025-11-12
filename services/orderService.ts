@@ -12,7 +12,7 @@ import { useMutation } from "@tanstack/react-query";
 /**
  * Hook for creating a new order
  * Uses POST /api/order endpoint
- * 
+ *
  * NOTE: This endpoint returns a plain text URL (payment redirect) instead of JSON,
  * so we use the raw fetchClient and parse as text to avoid JSON parse errors.
  */
@@ -23,11 +23,11 @@ export const useCreateOrder = () => {
         body: variables.body,
         parseAs: "text", // Parse response as text instead of JSON
       });
-      
+
       if (response.error) {
         throw new Error(response.error as any);
       }
-      
+
       return response.data; // This will be the payment URL as a string
     },
   });
@@ -301,6 +301,14 @@ type BuildOrderPayloadInput = {
 export const transformCartToMakeOrderRequest = (
   input: BuildOrderPayloadInput
 ): MakeOrderRequest => {
+  // Default dish template (size M) for items that don't have a template
+  const defaultTemplate = {
+    size: "M" as const,
+    name: "Medium",
+    priceRatio: 1.0,
+    quantityRatio: 1.0,
+  };
+
   const orderItems: OrderItemDTO[] = input.items.map((ci) => {
     // Determine if recipe array exists (customization) and whether dishId is present
 
@@ -312,7 +320,10 @@ export const transformCartToMakeOrderRequest = (
       note: ci.note,
     } as any;
 
-    // Case A: plain preset dish (has dishId and no recipe) -> send dishId (+ dishTemplate if size selected)
+    // Ensure every item has a dishTemplate (use default if not provided)
+    const dishTemplate = ci.dishTemplate || defaultTemplate;
+
+    // Case A: plain preset dish (has dishId and no recipe) -> send dishId + dishTemplate
 
     if (ci.dishId && ci.dishId > 0 && !hasRecipe) {
       return {
@@ -320,9 +331,9 @@ export const transformCartToMakeOrderRequest = (
 
         dishId: ci.dishId,
 
-        // include template if user selected a size for a preset dish
+        // Always include dishTemplate (required by backend)
 
-        dishTemplate: ci.dishTemplate as any | undefined,
+        dishTemplate: dishTemplate as any,
       } as OrderItemDTO;
     }
 
@@ -356,9 +367,11 @@ export const transformCartToMakeOrderRequest = (
 
       recipe,
 
-      dishTemplate: ci.dishTemplate as any | undefined,
+      // Always include dishTemplate (required by backend)
 
-      size: (ci.dishTemplate as any)?.size ?? undefined,
+      dishTemplate: dishTemplate as any,
+
+      size: (dishTemplate as any)?.size ?? undefined,
     } as any;
 
     return out;

@@ -1,0 +1,472 @@
+import { Text } from "@/components/ui/text";
+import { $api } from "@/libs/api";
+import { useDishTemplates } from "@/services/dishService";
+import { useIngredientCategories } from "@/services/ingredientCategoryService";
+import { useIngredients } from "@/services/ingredientService";
+import { useCartStore } from "@/stores/cartStore";
+import { formatMoney } from "@/utils/currency";
+import { MaterialIcons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useMemo, useState } from "react";
+import { ActivityIndicator, Image, Pressable, ScrollView, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
+
+type RecipeItem = {
+  ingredientId: number;
+  quantity: number;
+  sourceType: "BASE" | "ADDON" | "REMOVED";
+};
+
+export default function CustomizeDefaultBowl() {
+  const params = useLocalSearchParams<{ id?: string | string[] }>();
+  const router = useRouter();
+  const addItem = useCartStore((s) => s.addItem);
+
+  // Parse dish ID from params
+  const dishId = useMemo(() => {
+    const v = Array.isArray(params.id) ? params.id[0] : params.id;
+    const n = v ? Number(v) : NaN;
+    return Number.isFinite(n) && n > 0 ? n : undefined;
+  }, [params.id]);
+
+  // Fetch the base dish
+  const { data: dish, isLoading: loadingDish } = $api.useQuery("get", "/api/dish/{id}", {
+    params: { path: { id: (dishId as number) ?? 0 } },
+    enabled: !!dishId,
+  });
+
+  // Fetch recipe for the dish
+  const { data: recipeRaw, isLoading: loadingRecipe } = $api.useQuery(
+    "get",
+    "/api/recipe/by-dish/{id}",
+    {
+      params: { path: { id: (dishId as number) ?? 0 } },
+      enabled: !!dishId,
+    }
+  );
+
+  // Fetch dish templates, categories, and ingredients
+  const { data: templatesRaw, isLoading: loadingTemplates } = useDishTemplates();
+  const { data: categoriesRaw, isLoading: loadingCategories } = useIngredientCategories();
+  const { data: ingredientsRaw, isLoading: loadingIngredients } = useIngredients();
+
+  const isLoading =
+    loadingDish || loadingRecipe || loadingTemplates || loadingCategories || loadingIngredients;
+
+  // Selected template (size: S, M, L)
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+
+  // Selected ingredients {categoryId: RecipeItem[]}
+  const [selectedByCategory, setSelectedByCategory] = useState<{ [key: number]: RecipeItem[] }>({});
+
+  const [quantity, setQuantity] = useState(1);
+
+  // Normalize size helper
+  const normalizeSize = (s?: string) => (s ? String(s).trim().toUpperCase() : "");
+
+  // Sort templates: S, M, L
+  const templates = useMemo(() => {
+    if (!templatesRaw) return [];
+    return [...templatesRaw].sort((a, b) => {
+      const order: { [key: string]: number } = { S: 1, M: 2, L: 3 };
+      return (order[normalizeSize(a.size)] || 99) - (order[normalizeSize(b.size)] || 99);
+    });
+  }, [templatesRaw]);
+
+  // Auto-select default size (M)
+  useEffect(() => {
+    if (!selectedTemplate && templates.length > 0) {
+      const preferred = templates.find((t: any) => normalizeSize(t.size) === "M") || templates[0];
+      setSelectedTemplate(preferred);
+    }
+  }, [templates, selectedTemplate]);
+
+  // Filter unique categories
+  const categories = useMemo(() => {
+    if (!categoriesRaw) return [];
+    const seen = new Set<string>();
+    return categoriesRaw.filter((cat: any) => {
+      const name = (cat.name || "").toLowerCase().trim();
+      if (seen.has(name)) return false;
+      seen.add(name);
+      return true;
+    });
+  }, [categoriesRaw]);
+
+  // Get ingredients for a category
+  const getIngredientsByCategory = (categoryId: number) => {
+    return (
+      ingredientsRaw?.filter(
+        (ing: any) => ing?.category?.id === categoryId && ing?.active !== false
+      ) || []
+    );
+  };
+
+  // Extract base recipe from API response
+  const baseRecipe = useMemo(() => {
+    if (!recipeRaw) return [];
+    try {
+      if (Array.isArray(recipeRaw)) {
+        const first = recipeRaw.find((r) => Array.isArray(r?.ingredients)) || recipeRaw[0];
+        return first?.ingredients || [];
+      }
+      const raw = recipeRaw as any;
+      return raw?.ingredients || raw?.items || raw?.content || raw?.result || [];
+    } catch {
+      return [];
+    }
+  }, [recipeRaw]);
+
+  // Pre-fill selected ingredients from base recipe
+  useEffect(() => {
+    if (!baseRecipe || baseRecipe.length === 0) return;
+    if (Object.keys(selectedByCategory).length > 0) return; // Already initialized
+
+    const categoryMap: { [key: number]: RecipeItem[] } = {};
+
+    baseRecipe.forEach((ing: any) => {
+      const ingredientId = ing?.id || ing?.ingredientId || ing?.ingredient?.id;
+      const categoryId = ing?.category?.id || ing?.ingredient?.category?.id;
+      const quantity = ing?.neededQuantity || ing?.quantity || 200; // Default 200g
+
+      if (ingredientId && categoryId) {
+        if (!categoryMap[categoryId]) categoryMap[categoryId] = [];
+        categoryMap[categoryId].push({
+          ingredientId,
+          quantity,
+          sourceType: "BASE",
+        });
+      }
+    });
+
+    setSelectedByCategory(categoryMap);
+  }, [baseRecipe, selectedByCategory]);
+
+  // Convert unit to short form
+  const getShortUnit = (unit?: string): string => {
+    if (!unit) return "g";
+    const normalized = unit.toUpperCase();
+    switch (normalized) {
+      case "GRAM":
+        return "g";
+      case "KILOGRAM":
+        return "kg";
+      case "LITER":
+        return "l";
+      case "MILLILITER":
+        return "ml";
+      case "PCS":
+      case "PIECE":
+      case "PIECES":
+        return "pcs";
+      default:
+        return unit.toLowerCase();
+    }
+  };
+
+  // Calculate total price (base dish price + added ingredients)
+  const calculatedPrice = useMemo(() => {
+    if (!dish) return 0;
+
+    const basePrice = dish.price || 0;
+    const templateRatio = selectedTemplate?.priceRatio || 1.0;
+
+    // Calculate added ingredient costs
+    let ingredientCosts = 0;
+    Object.values(selectedByCategory).forEach((items) => {
+      items.forEach((item) => {
+        const ing = ingredientsRaw?.find((i: any) => i.id === item.ingredientId);
+        if (ing) {
+          // For GRAM unit, multiply by quantity; for other units, just use pricePerUnit
+          const priceMultiplier = ing.unit === "GRAM" ? item.quantity : 1;
+          ingredientCosts += (ing.pricePerUnit || 0) * priceMultiplier;
+        }
+      });
+    });
+
+    return Math.round((basePrice * templateRatio + ingredientCosts) * quantity);
+  }, [dish, selectedTemplate, selectedByCategory, ingredientsRaw, quantity]);
+
+  // Handle template selection
+  const handleSelectTemplate = (template: any) => {
+    setSelectedTemplate(template);
+  };
+
+  // Toggle ingredient selection
+  const toggleIngredient = (categoryId: number, ingredientId: number, defaultQuantity: number) => {
+    setSelectedByCategory((prev) => {
+      const categoryItems = prev[categoryId] || [];
+      const existing = categoryItems.find((item) => item.ingredientId === ingredientId);
+
+      if (existing) {
+        // Remove ingredient
+        return {
+          ...prev,
+          [categoryId]: categoryItems.filter((item) => item.ingredientId !== ingredientId),
+        };
+      } else {
+        // Add ingredient as ADDON
+        return {
+          ...prev,
+          [categoryId]: [
+            ...categoryItems,
+            {
+              ingredientId,
+              quantity: defaultQuantity,
+              sourceType: "ADDON" as const,
+            },
+          ],
+        };
+      }
+    });
+  };
+
+  // Check if ingredient is selected
+  const isIngredientSelected = (categoryId: number, ingredientId: number) => {
+    return (selectedByCategory[categoryId] || []).some((item) => item.ingredientId === ingredientId);
+  };
+
+  // Handle add to cart
+  const handleAddToCart = () => {
+    if (!dish) return;
+    if (!selectedTemplate) {
+      Toast.show({ type: "error", text1: "Please select a size" });
+      return;
+    }
+
+    // Flatten selected ingredients into recipe array
+    const recipe: RecipeItem[] = [];
+    Object.values(selectedByCategory).forEach((items) => {
+      recipe.push(...items);
+    });
+
+    if (recipe.length === 0) {
+      Toast.show({ type: "error", text1: "Please select at least one ingredient" });
+      return;
+    }
+
+    addItem({
+      dishId: 0, // Custom dish, no preset dishId
+      basedOnId: dish.id, // Based on this dish
+      name: `Custom ${dish.name}`,
+      price: calculatedPrice,
+      quantity,
+      imageUrl: dish.imageUrl,
+      dishTemplate: selectedTemplate,
+      recipe,
+    });
+
+    Toast.show({
+      type: "success",
+      text1: "Added to cart",
+      text2: `${quantity}x Custom ${dish.name}`,
+    });
+
+    router.back();
+  };
+
+  if (isLoading) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-white dark:bg-gray-900">
+        <ActivityIndicator size="large" color="#FF6D00" />
+        <Text className="mt-4 text-sm text-gray-500">Loading...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (!dishId || !dish) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-white dark:bg-gray-900">
+        <Text className="text-lg">Dish not found</Text>
+        <Pressable onPress={() => router.back()} className="mt-4 rounded-xl bg-[#FF6D00] px-4 py-2">
+          <Text className="text-white">Go back</Text>
+        </Pressable>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">
+      {/* Header */}
+      <View className="flex-row items-center border-b border-gray-200 px-4 py-3 dark:border-gray-700">
+        <Pressable onPress={() => router.back()} className="mr-3">
+          <MaterialIcons name="arrow-back" size={24} color="#000000" />
+        </Pressable>
+        <Text className="flex-1 text-lg font-bold text-[#000000] dark:text-white">
+          Customize {dish.name}
+        </Text>
+      </View>
+
+      <ScrollView className="flex-1">
+        {/* Dish Image */}
+        <View className="items-center bg-white py-6 dark:bg-gray-900">
+          {dish?.imageUrl && dish.imageUrl.startsWith("http") ? (
+            <Image
+              source={{ uri: dish.imageUrl }}
+              style={{ width: 360, height: 260, borderRadius: 16 }}
+              resizeMode="cover"
+            />
+          ) : (
+            <View className="h-64 w-[360px] items-center justify-center rounded-2xl bg-gray-100 dark:bg-gray-800">
+              <MaterialIcons name="restaurant-menu" size={48} color="#FF6D00" />
+            </View>
+          )}
+        </View>
+
+        {/* Dish Info */}
+        <View className="px-6 pb-4">
+          <Text className="text-2xl font-bold text-[#000000] dark:text-white">{dish.name}</Text>
+          {dish.description && (
+            <Text className="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-300">
+              {dish.description}
+            </Text>
+          )}
+        </View>
+
+        {/* Size Selection */}
+        <View className="px-6 pb-4">
+          <Text className="mb-3 text-base font-bold text-[#000000] dark:text-white">Select Size</Text>
+          <View className="flex-row gap-3">
+            {templates.map((t: any) => {
+              const isSelected = selectedTemplate?.size === t.size;
+              return (
+                <Pressable
+                  key={t.size}
+                  onPress={() => handleSelectTemplate(t)}
+                  className={`flex-1 rounded-xl border-2 p-4 ${
+                    isSelected
+                      ? "border-[#FF6D00] bg-orange-50 dark:bg-orange-900/20"
+                      : "border-gray-300 dark:border-gray-700"
+                  }`}>
+                  <Text
+                    className={`text-center text-lg font-bold ${
+                      isSelected ? "text-[#FF6D00]" : "text-[#000000] dark:text-white"
+                    }`}>
+                    {t.size}
+                  </Text>
+                  <Text className="mt-1 text-center text-xs text-gray-600 dark:text-gray-400">
+                    {t.name}
+                  </Text>
+                  {t.priceRatio !== 1.0 && (
+                    <Text className="mt-1 text-center text-xs font-semibold text-[#FF6D00]">
+                      {t.priceRatio}x price
+                    </Text>
+                  )}
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* Ingredients by Category */}
+        <View className="px-6 pb-32">
+          <Text className="mb-4 text-base font-bold text-[#000000] dark:text-white">
+            Customize Ingredients
+          </Text>
+
+          {categories.map((category: any) => {
+            const ingredients = getIngredientsByCategory(category.id);
+            if (ingredients.length === 0) return null;
+
+            return (
+              <View key={category.id} className="mb-6">
+                <Text className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  {category.name}
+                </Text>
+                <View className="gap-3">
+                  {ingredients.map((ing: any) => {
+                    const isSelected = isIngredientSelected(category.id, ing.id);
+                    const defaultQuantity = ing.unit === "GRAM" ? 200 : 1;
+                    const priceMultiplier = ing.unit === "GRAM" ? defaultQuantity : 1;
+                    const displayPrice = (ing.pricePerUnit || 0) * priceMultiplier;
+
+                    return (
+                      <Pressable
+                        key={ing.id}
+                        onPress={() => toggleIngredient(category.id, ing.id, defaultQuantity)}
+                        className={`flex-row items-center gap-3 rounded-xl border p-3 ${
+                          isSelected
+                            ? "border-[#FF6D00] bg-orange-50 dark:bg-orange-900/20"
+                            : "border-gray-200 dark:border-gray-700"
+                        }`}>
+                        {/* Ingredient Image */}
+                        {ing.imgUrl && ing.imgUrl.startsWith("http") ? (
+                          <Image
+                            source={{ uri: ing.imgUrl }}
+                            style={{ width: 50, height: 50, borderRadius: 8 }}
+                            resizeMode="cover"
+                          />
+                        ) : (
+                          <View className="h-[50px] w-[50px] items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
+                            <MaterialIcons name="restaurant" size={24} color="#FF6D00" />
+                          </View>
+                        )}
+
+                        {/* Ingredient Info */}
+                        <View className="flex-1">
+                          <Text
+                            className={`text-base font-semibold ${
+                              isSelected ? "text-[#FF6D00]" : "text-[#000000] dark:text-white"
+                            }`}>
+                            {ing.name}
+                          </Text>
+                          <Text className="text-xs text-gray-600 dark:text-gray-400">
+                            {defaultQuantity}
+                            {getShortUnit(ing.unit)} · {formatMoney(displayPrice)}
+                          </Text>
+                        </View>
+
+                        {/* Checkbox */}
+                        <View
+                          className={`h-6 w-6 items-center justify-center rounded-full border-2 ${
+                            isSelected
+                              ? "border-[#FF6D00] bg-[#FF6D00]"
+                              : "border-gray-300 dark:border-gray-600"
+                          }`}>
+                          {isSelected && <MaterialIcons name="check" size={16} color="white" />}
+                        </View>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      </ScrollView>
+
+      {/* Bottom Bar */}
+      <View className="absolute bottom-0 left-0 right-0 border-t border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
+        <View className="flex-row items-center justify-between">
+          {/* Quantity Control */}
+          <View className="flex-row items-center gap-3">
+            <Pressable
+              onPress={() => setQuantity(Math.max(1, quantity - 1))}
+              className="h-10 w-10 items-center justify-center rounded-full border border-gray-300 dark:border-gray-600">
+              <MaterialIcons name="remove" size={20} color="#000000" />
+            </Pressable>
+            <Text className="text-lg font-semibold text-[#000000] dark:text-white">{quantity}</Text>
+            <Pressable
+              onPress={() => setQuantity(quantity + 1)}
+              className="h-10 w-10 items-center justify-center rounded-full border border-gray-300 dark:border-gray-600">
+              <MaterialIcons name="add" size={20} color="#000000" />
+            </Pressable>
+          </View>
+
+          {/* Price and Add Button */}
+          <View className="flex-row items-center gap-3">
+            <Text className="text-xl font-bold text-[#FF6D00]">
+              {formatMoney(calculatedPrice)}
+            </Text>
+            <Pressable
+              onPress={handleAddToCart}
+              className="rounded-full bg-[#FF6D00] px-6 py-3">
+              <Text className="font-semibold text-white">Add to Cart</Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </SafeAreaView>
+  );
+}
