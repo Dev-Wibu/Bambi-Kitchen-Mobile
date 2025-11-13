@@ -28,7 +28,7 @@ export default function OrderTab() {
 
   const orders = useMemo(() => {
     // API returns Orders[] directly, not wrapped in { data: [...] }
-    const ordersList = ordersResponse?.data ?? ordersResponse ?? [];
+    const ordersList = ordersResponse ?? [];
     if (!Array.isArray(ordersList)) return [];
 
     // Sort by createAt descending (newest first)
@@ -158,14 +158,18 @@ export default function OrderTab() {
                     </View>
                   )}
 
+                  {/* Show rating if already given feedback */}
                   {order.ranking !== undefined &&
                     order.ranking !== null &&
-                    order.status === "COMPLETED" && (
+                    (order.status === "COMPLETED" || order.status === "PAID") && (
                       <View className="mb-3">
                         <Text className="mb-1 text-xs font-semibold text-[#757575] dark:text-gray-400">
                           Your Rating:
                         </Text>
                         <View className="flex-row gap-1">{renderStars(order.ranking)}</View>
+                        <Text className="text-sm text-[#000000] dark:text-white">
+                          {order.comment}
+                        </Text>
                       </View>
                     )}
 
@@ -176,21 +180,14 @@ export default function OrderTab() {
                       onPress={() => handleViewDetails(order.id!)}>
                       <Text className="font-semibold text-white">View Details</Text>
                     </Pressable>
-                    {order.status === "COMPLETED" &&
-                      (order.ranking === undefined || order.ranking === null) && (
-                        <Pressable
-                          className="flex-1 items-center rounded-lg border border-[#FF6D00] bg-[#FF6D00] py-3"
-                          onPress={() => handleGiveFeedback(order.id!)}>
-                          <Text className="font-semibold text-white">Give Feedback</Text>
-                        </Pressable>
-                      )}
-                    {order.status === "COMPLETED" &&
-                      order.ranking !== undefined &&
-                      order.ranking !== null && (
-                        <Pressable className="flex-1 items-center rounded-lg border border-[#FF6D00] py-3">
-                          <Text className="font-semibold text-[#FF6D00]">Reorder</Text>
-                        </Pressable>
-                      )}
+                    {/* Show feedback button for PAID or COMPLETED status if no ranking yet */}
+                    {(order.status === "PAID" || order.status === "COMPLETED") && (
+                      <Pressable
+                        className="flex-1 items-center rounded-lg border border-[#FF6D00] bg-[#FF6D00] py-3"
+                        onPress={() => handleGiveFeedback(order.id!)}>
+                        <Text className="font-semibold text-white">Give Feedback</Text>
+                      </Pressable>
+                    )}
                   </View>
                 </View>
               </View>

@@ -16,14 +16,14 @@ export default function OrderDetailModal({ orderId, onClose }: OrderDetailModalP
   const { data: ingredientsRaw } = $api.useQuery("get", "/api/ingredient");
 
   const details = useMemo(() => {
-    const detailsList = orderDetails?.data ?? orderDetails ?? [];
+    const detailsList = orderDetails ?? [];
     return Array.isArray(detailsList) ? detailsList : [];
   }, [orderDetails]);
 
   // Create a map of ingredient names for quick lookup
   const ingNameById = useMemo(() => {
     const map = new Map<number, string>();
-    (ingredientsRaw?.data ?? ingredientsRaw ?? []).forEach((i: any) => {
+    (ingredientsRaw ?? []).forEach((i: any) => {
       map.set(i.id, i.name);
     });
     return map;
