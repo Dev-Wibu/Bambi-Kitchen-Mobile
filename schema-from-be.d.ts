@@ -252,6 +252,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/notification/send-to-users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["sendNotificationToManyUsers"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/notification/send-to-exact": {
         parameters: {
             query?: never;
@@ -316,22 +332,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/mail/send-order-mail": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["sendOrderMail"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/inventory-transaction": {
         parameters: {
             query?: never;
@@ -342,6 +342,22 @@ export interface paths {
         get: operations["findAll_2"];
         put?: never;
         post: operations["save_3"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/gemini/calculate-calories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["calculateCalories"];
         delete?: never;
         options?: never;
         head?: never;
@@ -720,6 +736,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/nutrition/{ingredientId}/ingredient": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getNutritionByIngredientId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/notification/{id}": {
         parameters: {
             query?: never;
@@ -768,22 +800,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/mail/calculate-calories": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["calculateCalories"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/ingredient/{id}": {
         parameters: {
             query?: never;
@@ -824,6 +840,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["findByName"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ingredient/active": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["findAllActive"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1298,17 +1330,10 @@ export interface components {
             /** Format: int32 */
             userId?: number;
         };
-        DishInfo: {
-            name?: string;
-            /** Format: int32 */
-            price?: number;
-            ingredients?: {
-                [key: string]: number;
-            };
-        };
-        SendOrderEvent: {
-            email?: string;
-            dishes?: components["schemas"]["DishInfo"][];
+        NotificationsSendingManyRequest: {
+            title?: string;
+            message?: string;
+            userIds?: number[];
         };
         IngredientCreateRequest: {
             name: string;
@@ -1322,6 +1347,11 @@ export interface components {
             pricePerUnit?: number;
             /** Format: binary */
             file?: string;
+        };
+        DishNutritionResponseObject: {
+            /** Format: int32 */
+            dishId?: number;
+            response?: unknown;
         };
         ChatRequest: {
             message?: string;
@@ -1354,13 +1384,13 @@ export interface components {
             password: string;
         };
         ApplicationContext: {
+            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             parent?: unknown;
             id?: string;
             displayName?: string;
-            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
-            applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
+            applicationName?: string;
             environment?: components["schemas"]["Environment"];
             beanDefinitionNames?: string[];
             /** Format: int32 */
@@ -1482,29 +1512,29 @@ export interface components {
         HttpStatusCode: {
             error?: boolean;
             is1xxInformational?: boolean;
-            is2xxSuccessful?: boolean;
-            is5xxServerError?: boolean;
             is3xxRedirection?: boolean;
             is4xxClientError?: boolean;
+            is2xxSuccessful?: boolean;
+            is5xxServerError?: boolean;
         };
         JspConfigDescriptor: {
-            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
             taglibs?: components["schemas"]["TaglibDescriptor"][];
+            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
             buffer?: string;
             defaultContentType?: string;
             urlPatterns?: string[];
-            isXml?: string;
-            elIgnored?: string;
-            pageEncoding?: string;
-            includeCodas?: string[];
             includePreludes?: string[];
+            elIgnored?: string;
+            includeCodas?: string[];
+            pageEncoding?: string;
+            errorOnELNotFound?: string;
+            scriptingInvalid?: string;
+            isXml?: string;
             errorOnUndeclaredNamespace?: string;
             trimDirectiveWhitespaces?: string;
             deferredSyntaxAllowedAsLiteral?: string;
-            scriptingInvalid?: string;
-            errorOnELNotFound?: string;
         };
         RedirectView: {
             applicationContext?: components["schemas"]["ApplicationContext"];
@@ -1532,10 +1562,10 @@ export interface components {
             attributes?: {
                 [key: string]: string;
             };
+            attributesCSV?: string;
             attributesMap?: {
                 [key: string]: unknown;
             };
-            attributesCSV?: string;
         };
         ServletContext: {
             classLoader?: {
@@ -1560,34 +1590,34 @@ export interface components {
             /** Format: int32 */
             minorVersion?: number;
             attributeNames?: unknown;
-            contextPath?: string;
-            initParameterNames?: unknown;
             virtualServerName?: string;
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            contextPath?: string;
+            initParameterNames?: unknown;
             sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             /** Format: int32 */
             sessionTimeout?: number;
-            jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            servletContextName?: string;
-            /** Format: int32 */
-            effectiveMajorVersion?: number;
-            /** Format: int32 */
-            effectiveMinorVersion?: number;
-            filterRegistrations?: {
-                [key: string]: components["schemas"]["FilterRegistration"];
-            };
-            responseCharacterEncoding?: string;
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            requestCharacterEncoding?: string;
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             servletRegistrations?: {
                 [key: string]: components["schemas"]["ServletRegistration"];
             };
+            /** Format: int32 */
+            effectiveMajorVersion?: number;
+            filterRegistrations?: {
+                [key: string]: components["schemas"]["FilterRegistration"];
+            };
+            /** Format: int32 */
+            effectiveMinorVersion?: number;
+            servletContextName?: string;
+            jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
             serverInfo?: string;
+            responseCharacterEncoding?: string;
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            requestCharacterEncoding?: string;
         };
         ServletRegistration: {
-            runAsRole?: string;
             mappings?: string[];
+            runAsRole?: string;
             name?: string;
             className?: string;
             initParameters?: {
@@ -1595,6 +1625,9 @@ export interface components {
             };
         };
         SessionCookieConfig: {
+            domain?: string;
+            /** Format: int32 */
+            maxAge?: number;
             name?: string;
             path?: string;
             attributes?: {
@@ -1602,11 +1635,8 @@ export interface components {
             };
             /** @deprecated */
             comment?: string;
-            domain?: string;
-            /** Format: int32 */
-            maxAge?: number;
-            httpOnly?: boolean;
             secure?: boolean;
+            httpOnly?: boolean;
         };
         TaglibDescriptor: {
             taglibURI?: string;
@@ -1695,10 +1725,6 @@ export interface components {
             totalCalories?: number;
             notes?: string;
             size?: string;
-        };
-        DishNutritionRequest: {
-            name: string;
-            ingredients: components["schemas"]["Ingredient"][];
         };
     };
     responses: never;
@@ -2408,6 +2434,30 @@ export interface operations {
             };
         };
     };
+    sendNotificationToManyUsers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NotificationsSendingManyRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+        };
+    };
     sendNotificationToTheExactDevice: {
         parameters: {
             query?: never;
@@ -2503,28 +2553,6 @@ export interface operations {
             };
         };
     };
-    sendOrderMail: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SendOrderEvent"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
     findAll_2: {
         parameters: {
             query?: never;
@@ -2565,6 +2593,30 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["InventoryTransaction"];
+                };
+            };
+        };
+    };
+    calculateCalories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": number[];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DishNutritionResponseObject"][];
                 };
             };
         };
@@ -3091,6 +3143,28 @@ export interface operations {
             };
         };
     };
+    getNutritionByIngredientId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ingredientId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Nutrition"];
+                };
+            };
+        };
+    };
     getNotificationById: {
         parameters: {
             query?: never;
@@ -3173,33 +3247,6 @@ export interface operations {
                 };
                 content: {
                     "*/*": string;
-                };
-            };
-        };
-    };
-    calculateCalories: {
-        parameters: {
-            query: {
-                q: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DishNutritionRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": Record<string, never>;
-                    "text/html": string;
                 };
             };
         };
@@ -3288,6 +3335,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["Ingredient"];
+                };
+            };
+        };
+    };
+    findAllActive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Ingredient"][];
                 };
             };
         };
