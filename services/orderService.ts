@@ -24,8 +24,8 @@ export const useCreateOrder = () => {
         parseAs: "text", // Parse response as text instead of JSON
       });
 
-      if (response.error) {
-        throw new Error(response.error as any);
+      if ("error" in response && response.error) {
+        throw new Error(response || "Failed to create order");
       }
 
       return response.data; // This will be the payment URL as a string
