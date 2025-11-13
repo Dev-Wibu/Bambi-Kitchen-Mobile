@@ -5,22 +5,69 @@ import type { MakeOrderRequest, OrderItemDTO, RecipeItemDTO } from "@/interfaces
 import { $api, fetchClient } from "@/libs/api";
 
 import type { CartItem } from "@/stores/cartStore";
+
 import { useMutation } from "@tanstack/react-query";
 
 // ==================== ORDER API HOOKS ====================
 
 /**
+
+
+
  * Hook for creating a new order
+
+
+
  * Uses POST /api/order endpoint
+
+
+
  *
+
+
+
  * NOTE: This endpoint returns a plain text URL (payment redirect) instead of JSON,
+
+
+
  * so we use the raw fetchClient and parse as text to avoid JSON parse errors.
+
+
+
  */
+
 export const useCreateOrder = () => {
   return useMutation({
     mutationFn: async (variables: { body: MakeOrderRequest }) => {
+      // Debug: Log full payload being sent to backend
+
+      if (__DEV__) {
+        console.log(
+          "🚀 [OrderService] Creating order with payload:",
+
+          JSON.stringify(variables.body, null, 2)
+        );
+
+        // Debug: Log price and imageUrl for each item
+
+        console.log("🔍 [OrderService] Items price/imageUrl check:");
+
+        variables.body.items?.forEach((item: any, idx) => {
+          console.log(
+            `  Item ${idx}: price=${item.price}, imageUrl=${item.imageUrl?.substring(0, 50)}...`
+          );
+        });
+
+        console.log(
+          "🔍 [OrderService] First item details:",
+
+          JSON.stringify(variables.body.items?.[0], null, 2)
+        );
+      }
+
       const response = await fetchClient.POST("/api/order", {
         body: variables.body,
+
         parseAs: "text", // Parse response as text instead of JSON
       });
 
@@ -37,11 +84,47 @@ export const useCreateOrder = () => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * Hook for updating an existing order
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * Uses PUT /api/order endpoint
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -55,11 +138,47 @@ export const useUpdateOrder = () => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * Hook for adding feedback to an order
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * Uses PUT /api/order/feedback endpoint
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -73,11 +192,47 @@ export const useFeedbackOrder = () => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * Hook for confirming an order (test endpoint)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * Uses GET /api/test/order/confirm/{id} endpoint
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -91,11 +246,47 @@ export const useConfirmOrder = () => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * Hook for canceling an order (test endpoint)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * Uses GET /api/test/order/cancel/{orderId} endpoint
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -111,11 +302,47 @@ export const useCancelOrder = () => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * Hook for getting all orders
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * Uses GET /api/order endpoint
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -129,11 +356,47 @@ export const useOrders = () => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * Hook for getting order by ID
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * Uses GET /api/order/{id} endpoint
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -146,12 +409,23 @@ export const useOrderById = (id: number) => {
 };
 
 /**
+
+
+
  * Hook for getting orders by user ID
+
+
+
  * Uses GET /api/order/user/{userId} endpoint
+
+
+
  */
+
 export const useOrdersByUserId = (userId: number, options?: { enabled?: boolean }) => {
   return $api.useQuery("get", "/api/order/user/{userId}", {
     params: { path: { userId } },
+
     ...options,
   });
 };
@@ -160,11 +434,47 @@ export const useOrdersByUserId = (userId: number, options?: { enabled?: boolean 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * Hook for getting feedbacks
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * Uses GET /api/order/getFeedbacks endpoint
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -180,11 +490,47 @@ export const useFeedbacks = () => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * Hook for getting all order details
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * Uses GET /api/order-detail endpoint
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -198,11 +544,47 @@ export const useOrderDetails = () => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * Hook for getting order detail by ID
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * Uses GET /api/order-detail/{detailId} endpoint
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -218,11 +600,47 @@ export const useOrderDetailById = (detailId: number) => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * Hook for getting order details by order ID
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * Uses GET /api/order-detail/by-order/{orderId} endpoint
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -240,7 +658,31 @@ export const useOrderDetailsByOrderId = (orderId: number) => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * Convert cart total (cents) to decimal number expected by backend (e.g., 12345 -> 123.45)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -254,9 +696,27 @@ export const computeCartTotalDecimal = (items: CartItem[]): number => {
 
 /**
 
+
+
+
+
+
+
  * Return total in minor currency unit (cents) as integer.
 
+
+
+
+
+
+
  * Payment gateways often expect integer amounts (e.g., VND) so use this for payment payloads.
+
+
+
+
+
+
 
  */
 
@@ -267,9 +727,9 @@ export const computeCartTotalMinorUnit = (items: CartItem[]): number => {
 };
 
 type BuildOrderPayloadInput = {
-  accountId: number;
+  accountId?: number; // Optional for guest orders (staff counter orders)
 
-  paymentMethod: "MOMO" | "VNPAY" | string;
+  paymentMethod: "MOMO" | "VNPAY" | "CASH" | string;
 
   note?: string;
 
@@ -280,7 +740,31 @@ type BuildOrderPayloadInput = {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * Transform CartItems into MakeOrderRequest payload
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -288,11 +772,47 @@ type BuildOrderPayloadInput = {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * - Preset dish (dishId>0 and no recipe/template) -> send dishId + quantity
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * - Custom bowl (has recipe or template) -> omit dishId, include recipe[], and optional size from template
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -302,10 +822,14 @@ export const transformCartToMakeOrderRequest = (
   input: BuildOrderPayloadInput
 ): MakeOrderRequest => {
   // Default dish template (size M) for items that don't have a template
+
   const defaultTemplate = {
     size: "M" as const,
+
     name: "Medium",
+
     priceRatio: 1.0,
+
     quantityRatio: 1.0,
   };
 
@@ -321,6 +845,7 @@ export const transformCartToMakeOrderRequest = (
     } as any;
 
     // Ensure every item has a dishTemplate (use default if not provided)
+
     const dishTemplate = ci.dishTemplate || defaultTemplate;
 
     // Case A: plain preset dish (has dishId and no recipe) -> send dishId + dishTemplate
@@ -372,13 +897,21 @@ export const transformCartToMakeOrderRequest = (
       dishTemplate: dishTemplate as any,
 
       size: (dishTemplate as any)?.size ?? undefined,
+
+      // Backend requirement: send calculated price and imageUrl for custom dishes
+
+      price: ci.price ?? undefined,
+
+      imageUrl: ci.imageUrl ?? undefined,
     } as any;
 
     return out;
   });
 
   const payload: MakeOrderRequest = {
-    accountId: input.accountId as any,
+    // Only include accountId if provided (omit for guest orders)
+
+    ...(input.accountId && { accountId: input.accountId as any }),
 
     paymentMethod: input.paymentMethod?.toUpperCase() as any,
 
@@ -400,7 +933,31 @@ export const transformCartToMakeOrderRequest = (
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * Hook for updating order with automatic toast notifications
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -422,7 +979,31 @@ export const useUpdateOrderWithToast = () => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
  * Hook for adding feedback with automatic toast notifications
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -439,3 +1020,4 @@ export const useFeedbackOrderWithToast = () => {
     errorMessage: "Unable to submit feedback",
   });
 };
+
