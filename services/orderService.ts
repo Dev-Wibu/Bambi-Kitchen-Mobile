@@ -71,8 +71,23 @@ export const useCreateOrder = () => {
         parseAs: "text", // Parse response as text instead of JSON
       });
 
-      if (response.error) {
-        throw new Error(response.error as any);
+      // Debug: Log full response for 422 errors
+      if (__DEV__) {
+        console.log("📡 [OrderService] Response:", {
+          status: (response as any).response?.status,
+          statusText: (response as any).response?.statusText,
+          data: response.data,
+          error: response.error,
+        });
+      }
+
+      if ("error" in response && response.error) {
+        // Try to parse error details
+        const errorDetails = typeof response.error === "string" 
+          ? response.error 
+          : JSON.stringify(response.error);
+        console.error("❌ [OrderService] Backend error:", errorDetails);
+        throw new Error(errorDetails || "Failed to create order");
       }
 
       return response.data; // This will be the payment URL as a string
@@ -883,6 +898,10 @@ export const transformCartToMakeOrderRequest = (
 
     const out: OrderItemDTO = {
       ...base,
+
+      // Backend requires dishId for custom dishes based on existing dishes
+      // Use basedOnId as dishId when customizing from an existing dish
+      dishId: ci.basedOnId ?? ci.dishId ?? undefined,
 
       // include basedOnId when customizing from an existing dish
 

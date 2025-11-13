@@ -95,7 +95,7 @@ export default function EditProfileScreen() {
       });
 
       queryClient.invalidateQueries({ queryKey: ["get", "/api/user/me"] });
-      router.back();
+      router.push("/(tabs)/profile");
     } catch (e: any) {
       let msg = "Update failed";
       if (e?.response?.data?.message) {
@@ -122,7 +122,7 @@ export default function EditProfileScreen() {
       <View className="flex-1">
         <View className="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
           <View className="flex-row items-center">
-            <TouchableOpacity onPress={() => router.back()} className="mr-4">
+            <TouchableOpacity onPress={() => router.push("/(tabs)/profile")} className="mr-4">
               <MaterialIcons name="arrow-back" size={24} color="#000000" />
             </TouchableOpacity>
             <View>
@@ -185,7 +185,9 @@ export default function EditProfileScreen() {
               )}
             </Button>
 
-            <Button className="w-full bg-gray-300 active:bg-gray-400" onPress={() => router.back()}>
+            <Button
+              className="w-full bg-gray-300 active:bg-gray-400"
+              onPress={() => router.push("/(tabs)/profile")}>
               <Text className="text-lg font-bold text-[#000000]">Cancel</Text>
             </Button>
           </View>

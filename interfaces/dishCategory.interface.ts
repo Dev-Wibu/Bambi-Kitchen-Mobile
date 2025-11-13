@@ -1,10 +1,14 @@
-import type { components } from "@/schema-from-be";
+// NOTE: DishCategory is not available in the backend schema
+// These types are commented out as they don't exist in the API
+// If you need dish categories, please add them to the backend first
 
-// DishCategory type from BE schema
-export type DishCategory = components["schemas"]["DishCategory"];
+// import type { components } from "@/schema-from-be";
 
-// DishCategory create request from BE schema
-export type DishCategoryCreateRequest = components["schemas"]["DishCategoryCreateRequest"];
+// // DishCategory type from BE schema
+// export type DishCategory = components["schemas"]["DishCategory"];
 
-// DishCategory update request from BE schema
-export type DishCategoryUpdateRequest = components["schemas"]["DishCategoryUpdateRequest"];
+// // DishCategory create request from BE schema
+// export type DishCategoryCreateRequest = components["schemas"]["DishCategoryCreateRequest"];
+
+// // DishCategory update request from BE schema
+// export type DishCategoryUpdateRequest = components["schemas"]["DishCategoryUpdateRequest"];

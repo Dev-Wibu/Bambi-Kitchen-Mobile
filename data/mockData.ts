@@ -24,7 +24,9 @@ import type { components } from "@/schema-from-be";
 
 export type Dish = components["schemas"]["Dish"];
 
-export type DishCategory = components["schemas"]["DishCategory"];
+// NOTE: DishCategory is not available in the backend schema
+// Commenting out to avoid TypeScript errors
+// export type DishCategory = components["schemas"]["DishCategory"];
 
 export type DishTemplate = components["schemas"]["DishTemplate"];
 
@@ -38,6 +40,9 @@ export type Notification = components["schemas"]["Notification"];
 
 export type Orders = components["schemas"]["Orders"];
 
+// NOTE: Mock Dish Categories are commented out because DishCategory type doesn't exist in backend
+// If you need dish categories, please add them to the backend API first
+/*
 // Mock Dish Categories
 
 export const mockDishCategories: DishCategory[] = [
@@ -81,6 +86,7 @@ export const mockDishCategories: DishCategory[] = [
     description: "Sweet treats",
   },
 ];
+*/
 
 // Mock Dish Templates
 
