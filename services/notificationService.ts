@@ -139,6 +139,58 @@ export const useUpdateNotificationWithToast = () => {
   });
 };
 
+/**
+ * Hook for sending notification to user with automatic toast notifications
+ */
+export const useSendNotificationToUserWithToast = () => {
+  const sendMutation = useSendNotificationToUser();
+
+  return useMutationHandler({
+    mutationFn: (variables: any) => sendMutation.mutateAsync(variables),
+    successMessage: "Gửi thông báo thành công",
+    errorMessage: "Không thể gửi thông báo",
+  });
+};
+
+/**
+ * Hook for sending notification to device with automatic toast notifications
+ */
+export const useSendNotificationToDeviceWithToast = () => {
+  const sendMutation = useSendNotificationToDevice();
+
+  return useMutationHandler({
+    mutationFn: (variables: any) => sendMutation.mutateAsync(variables),
+    successMessage: "Gửi thông báo đến thiết bị thành công",
+    errorMessage: "Không thể gửi thông báo đến thiết bị",
+  });
+};
+
+/**
+ * Hook for sending notification to all users with automatic toast notifications
+ */
+export const useSendNotificationToAllWithToast = () => {
+  const sendMutation = useSendNotificationToAll();
+
+  return useMutationHandler({
+    mutationFn: (variables: any) => sendMutation.mutateAsync(variables),
+    successMessage: "Gửi thông báo đến tất cả người dùng thành công",
+    errorMessage: "Không thể gửi thông báo đến tất cả người dùng",
+  });
+};
+
+/**
+ * Hook for registering device token with automatic toast notifications
+ */
+export const useRegisterDeviceTokenWithToast = () => {
+  const registerMutation = useRegisterDeviceToken();
+
+  return useMutationHandler({
+    mutationFn: (variables: any) => registerMutation.mutateAsync(variables),
+    successMessage: "Đăng ký thiết bị thành công",
+    errorMessage: "Không thể đăng ký thiết bị",
+  });
+};
+
 // ==================== TRANSFORM FUNCTIONS ====================
 
 /**

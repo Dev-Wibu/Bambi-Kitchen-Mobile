@@ -20,6 +20,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/order/{id}/prepare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["prepareOrder"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/order/{id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["completeOrder"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/order/feedback": {
         parameters: {
             query?: never;
@@ -30,6 +62,22 @@ export interface paths {
         get?: never;
         put: operations["feedback"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/nutrition": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["findNutritionById"];
+        put: operations["updateNutrition"];
+        post: operations["createNutrition"];
         delete?: never;
         options?: never;
         head?: never;
@@ -140,7 +188,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/dish-category": {
+    "/api/account": {
         parameters: {
             query?: never;
             header?: never;
@@ -150,22 +198,6 @@ export interface paths {
         get: operations["findAll_1"];
         put: operations["update_3"];
         post: operations["save_2"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/account": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["findAll_2"];
-        put: operations["update_4"];
-        post: operations["save_3"];
         delete?: never;
         options?: never;
         head?: never;
@@ -307,9 +339,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["findAll_3"];
+        get: operations["findAll_2"];
         put?: never;
-        post: operations["save_4"];
+        post: operations["save_3"];
         delete?: never;
         options?: never;
         head?: never;
@@ -339,7 +371,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["findAll_4"];
+        get: operations["findAll_3"];
         put?: never;
         post: operations["create"];
         delete?: never;
@@ -519,7 +551,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["findAll_5"];
+        get: operations["findAll_4"];
         put?: never;
         post?: never;
         delete?: never;
@@ -568,22 +600,6 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getTotalRevenueToAccount"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/payment/test-payment": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["testPayment"];
         put?: never;
         post?: never;
         delete?: never;
@@ -744,6 +760,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["sendOTP"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/mail/calculate-calories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["calculateCalories"];
         put?: never;
         post?: never;
         delete?: never;
@@ -932,22 +964,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/dish-category/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["findById_3"];
-        put?: never;
-        post?: never;
-        delete: operations["delete_3"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/admin/payments/total-revenue": {
         parameters: {
             query?: never;
@@ -1019,10 +1035,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["findById_4"];
+        get: operations["findById_3"];
         put?: never;
         post?: never;
-        delete: operations["delete_4"];
+        delete: operations["delete_3"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1063,7 +1079,7 @@ export interface components {
             /** Format: double */
             totalPrice?: number;
             /** @enum {string} */
-            status?: "PENDING" | "COMPLETED" | "PAID" | "CANCELLED";
+            status?: "PENDING" | "PREPARING" | "COMPLETED" | "PAID" | "CANCELLED";
             /** Format: int32 */
             userId?: number;
             /** Format: int32 */
@@ -1072,31 +1088,6 @@ export interface components {
             /** Format: int32 */
             ranking?: number;
             comment?: string;
-        };
-        Account: {
-            /** Format: int32 */
-            id?: number;
-            name: string;
-            /** @enum {string} */
-            role: "ADMIN" | "STAFF" | "USER";
-            /** Format: date-time */
-            createAt?: string;
-            /** Format: date-time */
-            updateAt?: string;
-            password?: string;
-            mail: string;
-            phone?: string;
-            active?: boolean;
-        };
-        Notification: {
-            /** Format: int32 */
-            id?: number;
-            title?: string;
-            message?: string;
-            /** Format: date-time */
-            createdAt?: string;
-            account?: components["schemas"]["Account"];
-            read?: boolean;
         };
         Ingredient: {
             /** Format: int32 */
@@ -1126,6 +1117,55 @@ export interface components {
             description?: string;
             /** Format: int32 */
             priority?: number;
+        };
+        Nutrition: {
+            /** Format: int32 */
+            id?: number;
+            ingredient?: components["schemas"]["Ingredient"];
+            /** Format: int32 */
+            calories?: number;
+            /** Format: float */
+            protein?: number;
+            /** Format: float */
+            carb?: number;
+            /** Format: float */
+            fiber?: number;
+            /** Format: float */
+            iron?: number;
+            /** Format: float */
+            sodium?: number;
+            /** Format: float */
+            calcium?: number;
+            /** Format: float */
+            sugar?: number;
+            /** Format: float */
+            sat_fat?: number;
+            per_unit?: string;
+        };
+        Account: {
+            /** Format: int32 */
+            id?: number;
+            name: string;
+            /** @enum {string} */
+            role: "ADMIN" | "STAFF" | "USER";
+            /** Format: date-time */
+            createAt?: string;
+            /** Format: date-time */
+            updateAt?: string;
+            password?: string;
+            mail: string;
+            phone?: string;
+            active?: boolean;
+        };
+        Notification: {
+            /** Format: int32 */
+            id?: number;
+            title?: string;
+            message?: string;
+            /** Format: date-time */
+            createdAt?: string;
+            account?: components["schemas"]["Account"];
+            read?: boolean;
         };
         InventoryTransaction: {
             /** Format: int32 */
@@ -1191,18 +1231,6 @@ export interface components {
             usedQuantity?: number;
             public?: boolean;
             active?: boolean;
-        };
-        DishCategoryUpdateRequest: {
-            /** Format: int32 */
-            id: number;
-            name: string;
-            description?: string;
-        };
-        DishCategory: {
-            /** Format: int32 */
-            id?: number;
-            name: string;
-            description?: string;
         };
         AccountUpdateRequest: {
             /** Format: int32 */
@@ -1318,10 +1346,6 @@ export interface components {
             public?: boolean;
             active?: boolean;
         };
-        DishCategoryCreateRequest: {
-            name: string;
-            description?: string;
-        };
         AccountCreateRequest: {
             name: string;
             mail: string;
@@ -1334,13 +1358,13 @@ export interface components {
             id?: string;
             displayName?: string;
             autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
+            applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
-            applicationName?: string;
             environment?: components["schemas"]["Environment"];
+            beanDefinitionNames?: string[];
             /** Format: int32 */
             beanDefinitionCount?: number;
-            beanDefinitionNames?: string[];
             parentBeanFactory?: components["schemas"]["BeanFactory"];
             classLoader?: {
                 name?: string;
@@ -1445,8 +1469,8 @@ export interface components {
             activeProfiles?: string[];
         };
         FilterRegistration: {
-            servletNameMappings?: string[];
             urlPatternMappings?: string[];
+            servletNameMappings?: string[];
             name?: string;
             className?: string;
             initParameters?: {
@@ -1457,11 +1481,11 @@ export interface components {
         HttpStatus: "100 CONTINUE" | "101 SWITCHING_PROTOCOLS" | "102 PROCESSING" | "103 EARLY_HINTS" | "103 CHECKPOINT" | "200 OK" | "201 CREATED" | "202 ACCEPTED" | "203 NON_AUTHORITATIVE_INFORMATION" | "204 NO_CONTENT" | "205 RESET_CONTENT" | "206 PARTIAL_CONTENT" | "207 MULTI_STATUS" | "208 ALREADY_REPORTED" | "226 IM_USED" | "300 MULTIPLE_CHOICES" | "301 MOVED_PERMANENTLY" | "302 FOUND" | "302 MOVED_TEMPORARILY" | "303 SEE_OTHER" | "304 NOT_MODIFIED" | "305 USE_PROXY" | "307 TEMPORARY_REDIRECT" | "308 PERMANENT_REDIRECT" | "400 BAD_REQUEST" | "401 UNAUTHORIZED" | "402 PAYMENT_REQUIRED" | "403 FORBIDDEN" | "404 NOT_FOUND" | "405 METHOD_NOT_ALLOWED" | "406 NOT_ACCEPTABLE" | "407 PROXY_AUTHENTICATION_REQUIRED" | "408 REQUEST_TIMEOUT" | "409 CONFLICT" | "410 GONE" | "411 LENGTH_REQUIRED" | "412 PRECONDITION_FAILED" | "413 PAYLOAD_TOO_LARGE" | "413 REQUEST_ENTITY_TOO_LARGE" | "414 URI_TOO_LONG" | "414 REQUEST_URI_TOO_LONG" | "415 UNSUPPORTED_MEDIA_TYPE" | "416 REQUESTED_RANGE_NOT_SATISFIABLE" | "417 EXPECTATION_FAILED" | "418 I_AM_A_TEAPOT" | "419 INSUFFICIENT_SPACE_ON_RESOURCE" | "420 METHOD_FAILURE" | "421 DESTINATION_LOCKED" | "422 UNPROCESSABLE_ENTITY" | "423 LOCKED" | "424 FAILED_DEPENDENCY" | "425 TOO_EARLY" | "426 UPGRADE_REQUIRED" | "428 PRECONDITION_REQUIRED" | "429 TOO_MANY_REQUESTS" | "431 REQUEST_HEADER_FIELDS_TOO_LARGE" | "451 UNAVAILABLE_FOR_LEGAL_REASONS" | "500 INTERNAL_SERVER_ERROR" | "501 NOT_IMPLEMENTED" | "502 BAD_GATEWAY" | "503 SERVICE_UNAVAILABLE" | "504 GATEWAY_TIMEOUT" | "505 HTTP_VERSION_NOT_SUPPORTED" | "506 VARIANT_ALSO_NEGOTIATES" | "507 INSUFFICIENT_STORAGE" | "508 LOOP_DETECTED" | "509 BANDWIDTH_LIMIT_EXCEEDED" | "510 NOT_EXTENDED" | "511 NETWORK_AUTHENTICATION_REQUIRED";
         HttpStatusCode: {
             error?: boolean;
-            is5xxServerError?: boolean;
-            is4xxClientError?: boolean;
-            is2xxSuccessful?: boolean;
             is1xxInformational?: boolean;
+            is2xxSuccessful?: boolean;
+            is5xxServerError?: boolean;
             is3xxRedirection?: boolean;
+            is4xxClientError?: boolean;
         };
         JspConfigDescriptor: {
             jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
@@ -1469,18 +1493,18 @@ export interface components {
         };
         JspPropertyGroupDescriptor: {
             buffer?: string;
-            isXml?: string;
-            urlPatterns?: string[];
             defaultContentType?: string;
-            scriptingInvalid?: string;
-            errorOnELNotFound?: string;
-            errorOnUndeclaredNamespace?: string;
-            deferredSyntaxAllowedAsLiteral?: string;
-            trimDirectiveWhitespaces?: string;
-            includeCodas?: string[];
+            urlPatterns?: string[];
+            isXml?: string;
             elIgnored?: string;
             pageEncoding?: string;
+            includeCodas?: string[];
             includePreludes?: string[];
+            errorOnUndeclaredNamespace?: string;
+            trimDirectiveWhitespaces?: string;
+            deferredSyntaxAllowedAsLiteral?: string;
+            scriptingInvalid?: string;
+            errorOnELNotFound?: string;
         };
         RedirectView: {
             applicationContext?: components["schemas"]["ApplicationContext"];
@@ -1538,32 +1562,32 @@ export interface components {
             attributeNames?: unknown;
             contextPath?: string;
             initParameterNames?: unknown;
+            virtualServerName?: string;
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             /** Format: int32 */
             sessionTimeout?: number;
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
-            virtualServerName?: string;
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            servletRegistrations?: {
-                [key: string]: components["schemas"]["ServletRegistration"];
-            };
+            jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
             servletContextName?: string;
+            /** Format: int32 */
+            effectiveMajorVersion?: number;
+            /** Format: int32 */
+            effectiveMinorVersion?: number;
             filterRegistrations?: {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
-            /** Format: int32 */
-            effectiveMajorVersion?: number;
-            jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            /** Format: int32 */
-            effectiveMinorVersion?: number;
-            serverInfo?: string;
-            requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            requestCharacterEncoding?: string;
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            servletRegistrations?: {
+                [key: string]: components["schemas"]["ServletRegistration"];
+            };
+            serverInfo?: string;
         };
         ServletRegistration: {
-            mappings?: string[];
             runAsRole?: string;
+            mappings?: string[];
             name?: string;
             className?: string;
             initParameters?: {
@@ -1581,12 +1605,12 @@ export interface components {
             domain?: string;
             /** Format: int32 */
             maxAge?: number;
-            secure?: boolean;
             httpOnly?: boolean;
+            secure?: boolean;
         };
         TaglibDescriptor: {
-            taglibLocation?: string;
             taglibURI?: string;
+            taglibLocation?: string;
         };
         UserDTO: {
             /** Format: int32 */
@@ -1672,6 +1696,10 @@ export interface components {
             notes?: string;
             size?: string;
         };
+        DishNutritionRequest: {
+            name: string;
+            ingredients: components["schemas"]["Ingredient"][];
+        };
     };
     responses: never;
     parameters: never;
@@ -1749,6 +1777,50 @@ export interface operations {
             };
         };
     };
+    prepareOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Orders"];
+                };
+            };
+        };
+    };
+    completeOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Orders"];
+                };
+            };
+        };
+    };
     feedback: {
         parameters: {
             query?: never;
@@ -1769,6 +1841,76 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["Orders"];
+                };
+            };
+        };
+    };
+    findNutritionById: {
+        parameters: {
+            query: {
+                id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Nutrition"];
+                };
+            };
+        };
+    };
+    updateNutrition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Nutrition"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Nutrition"];
+                };
+            };
+        };
+    };
+    createNutrition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Nutrition"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Nutrition"];
                 };
             };
         };
@@ -2141,80 +2283,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["DishCategory"][];
-                };
-            };
-        };
-    };
-    update_3: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DishCategoryUpdateRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["DishCategory"];
-                };
-            };
-        };
-    };
-    save_2: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DishCategoryCreateRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["DishCategory"];
-                };
-            };
-        };
-    };
-    findAll_2: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
                     "*/*": components["schemas"]["Account"][];
                 };
             };
         };
     };
-    update_4: {
+    update_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -2238,7 +2312,7 @@ export interface operations {
             };
         };
     };
-    save_3: {
+    save_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -2451,7 +2525,7 @@ export interface operations {
             };
         };
     };
-    findAll_3: {
+    findAll_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -2471,7 +2545,7 @@ export interface operations {
             };
         };
     };
-    save_4: {
+    save_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -2519,7 +2593,7 @@ export interface operations {
             };
         };
     };
-    findAll_4: {
+    findAll_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -2781,7 +2855,7 @@ export interface operations {
             };
         };
     };
-    findAll_5: {
+    findAll_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -2841,9 +2915,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": string;
-                };
+                content?: never;
             };
         };
     };
@@ -2869,28 +2941,6 @@ export interface operations {
             };
         };
     };
-    testPayment: {
-        parameters: {
-            query: {
-                paymentMethodName: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": string;
-                };
-            };
-        };
-    };
     handleMomoReturn: {
         parameters: {
             query: {
@@ -2909,11 +2959,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": {
-                        [key: string]: unknown;
-                    };
-                };
+                content?: never;
             };
         };
     };
@@ -3127,6 +3173,33 @@ export interface operations {
                 };
                 content: {
                     "*/*": string;
+                };
+            };
+        };
+    };
+    calculateCalories: {
+        parameters: {
+            query: {
+                q: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DishNutritionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": Record<string, never>;
+                    "text/html": string;
                 };
             };
         };
@@ -3433,50 +3506,6 @@ export interface operations {
             };
         };
     };
-    findById_3: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["DishCategory"];
-                };
-            };
-        };
-    };
-    delete_3: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": string;
-                };
-            };
-        };
-    };
     getAll: {
         parameters: {
             query?: never;
@@ -3557,7 +3586,7 @@ export interface operations {
             };
         };
     };
-    findById_4: {
+    findById_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -3579,7 +3608,7 @@ export interface operations {
             };
         };
     };
-    delete_4: {
+    delete_3: {
         parameters: {
             query?: never;
             header?: never;
