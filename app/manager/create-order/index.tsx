@@ -130,6 +130,8 @@ export default function CreateOrderMenuScreen() {
           </Pressable>
         </View>
 
+        {/* Categories Filter */}
+
         {/* Featured Dishes */}
 
         {filteredDishes && filteredDishes.length > 0 && (
