@@ -72,7 +72,28 @@ export const useCreateOrder = () => {
       });
 
       if ("error" in response && response.error) {
-        throw new Error(response || "Failed to create order");
+        // Backend returns plain text error message in response body
+        // Try to extract the actual error message from various possible locations
+        const responseData = (response as any).data;
+        const responseError = (response as any).error;
+
+        // For text responses, the error message is in response.data (the raw text)
+        const errorMessage =
+          responseData || // Plain text error message from backend
+          responseError?.message || // Structured error message
+          responseError?.detail || // Detailed error
+          responseError || // Raw error object
+          "Failed to create order";
+
+        // Create enhanced error with backend message
+        const error = new Error(
+          typeof errorMessage === "string" ? errorMessage : JSON.stringify(errorMessage)
+        ) as any;
+        error.status = (response as any).response?.status;
+        error.statusText = (response as any).response?.statusText;
+        error.rawError = responseError;
+
+        throw error;
       }
 
       return response.data; // This will be the payment URL as a string
@@ -859,6 +880,12 @@ export const transformCartToMakeOrderRequest = (
         // Always include dishTemplate (required by backend)
 
         dishTemplate: dishTemplate as any,
+
+        // Include price and imageUrl for all items (backend may require for validation)
+
+        price: ci.price ?? undefined,
+
+        imageUrl: ci.imageUrl ?? undefined,
       } as OrderItemDTO;
     }
 
@@ -1020,4 +1047,3 @@ export const useFeedbackOrderWithToast = () => {
     errorMessage: "Unable to submit feedback",
   });
 };
-

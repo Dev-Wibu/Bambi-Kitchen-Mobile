@@ -62,13 +62,27 @@ fetchClient.use({
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      console.log("✅ API Response:", {
-        status: response.status,
-        statusText: response.statusText,
-        url: response.url,
-        body: "(unable to parse JSON)",
-        timestamp: new Date().toISOString(),
-      });
+      // If JSON parse fails, try to get raw text for debugging
+      try {
+        const clonedResponse2 = response.clone();
+        const rawText = await clonedResponse2.text();
+        console.log("✅ API Response:", {
+          status: response.status,
+          statusText: response.statusText,
+          url: response.url,
+          body: "(unable to parse JSON)",
+          rawText: rawText, // Log full raw response for debugging
+          timestamp: new Date().toISOString(),
+        });
+      } catch (textError) {
+        console.log("✅ API Response:", {
+          status: response.status,
+          statusText: response.statusText,
+          url: response.url,
+          body: "(unable to parse JSON or text)",
+          timestamp: new Date().toISOString(),
+        });
+      }
     }
 
     return response;

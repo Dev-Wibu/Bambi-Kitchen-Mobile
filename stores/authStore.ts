@@ -38,6 +38,16 @@ export const useAuthStore = create<AuthState>()(
         // After rehydration, set loading to false
         if (state) {
           state.setIsLoading(false);
+
+          // CRITICAL FIX: Reset isLoggedIn to false on app restart
+          // User must actively log in again to set isLoggedIn = true
+          // This prevents auto-fetching notifications with potentially expired tokens
+          if (state.isLoggedIn) {
+            console.log(
+              "⚠️ Resetting isLoggedIn to false on app restart - user must re-authenticate"
+            );
+            state.setIsLoggedIn(false);
+          }
         }
       },
     }
