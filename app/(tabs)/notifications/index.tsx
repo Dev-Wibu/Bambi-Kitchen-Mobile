@@ -1,10 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { useAuth } from "@/hooks/useAuth";
-import {
-  useGetNotificationsByAccountId,
-  useMarkAsReadWithToast,
-} from "@/services/notificationService";
+import { useNotifications } from "@/contexts/NotificationContext";
 import { MaterialIcons } from "@expo/vector-icons";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -16,28 +12,27 @@ import Toast from "react-native-toast-message";
 
 export default function NotificationsPage() {
   const router = useRouter();
-  const { user } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
 
   const {
-    data: notifications,
+    notifications,
+    unreadCount,
     isLoading,
-    refetch,
-  } = useGetNotificationsByAccountId(user?.userId || 0);
-  const markAsReadMutation = useMarkAsReadWithToast();
+    refreshNotifications,
+    markAsRead,
+    markAllAsRead,
+    handleNotificationPress,
+  } = useNotifications();
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await refetch();
+    await refreshNotifications();
     setRefreshing(false);
   };
 
   const handleMarkAsRead = async (id: number) => {
     try {
-      await markAsReadMutation.mutateAsync({
-        params: { path: { id } },
-      });
-      refetch();
+      await markAsRead(id);
       Toast.show({
         type: "success",
         text1: "Đã đánh dấu đã đọc",
@@ -52,9 +47,7 @@ export default function NotificationsPage() {
   };
 
   const handleMarkAllAsRead = async () => {
-    const unreadNotifications = notifications?.filter((n) => !n.read) || [];
-
-    if (unreadNotifications.length === 0) {
+    if (unreadCount === 0) {
       Toast.show({
         type: "info",
         text1: "Tất cả thông báo đã được đọc",
@@ -63,15 +56,7 @@ export default function NotificationsPage() {
     }
 
     try {
-      // Mark all unread as read
-      await Promise.all(
-        unreadNotifications.map((n) =>
-          markAsReadMutation.mutateAsync({
-            params: { path: { id: n.id! } },
-          })
-        )
-      );
-      refetch();
+      await markAllAsRead();
       Toast.show({
         type: "success",
         text1: "Đã đánh dấu tất cả đã đọc",
@@ -84,35 +69,6 @@ export default function NotificationsPage() {
       });
     }
   };
-
-  const handleNotificationClick = (notification: any) => {
-    // Mark as read if unread
-    if (!notification.read) {
-      handleMarkAsRead(notification.id);
-    }
-
-    // Navigate based on notification data
-    if (notification.data) {
-      try {
-        const data =
-          typeof notification.data === "string" ? JSON.parse(notification.data) : notification.data;
-
-        // Handle different notification types
-        if (data.type === "order" && data.orderId) {
-          router.push(`/(tabs)/order`);
-        } else if (data.type === "dish" && data.dishId) {
-          router.push(`/(tabs)/menu`);
-        } else if (data.type === "profile") {
-          router.push(`/(tabs)/profile`);
-        }
-      } catch (error) {
-        // If data parsing fails, just stay on notifications page
-        console.log("Failed to parse notification data:", error);
-      }
-    }
-  };
-
-  const unreadCount = notifications?.filter((n) => !n.read).length || 0;
 
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">
@@ -168,7 +124,7 @@ export default function NotificationsPage() {
             {notifications.map((notification) => (
               <Pressable
                 key={notification.id}
-                onPress={() => handleNotificationClick(notification)}
+                onPress={() => handleNotificationPress(notification)}
                 className={`border-b border-gray-100 dark:border-gray-800 ${
                   !notification.read ? "bg-blue-50 dark:bg-blue-900/10" : ""
                 }`}>

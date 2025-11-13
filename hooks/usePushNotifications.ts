@@ -7,7 +7,6 @@ import {
 import { useAuthStore } from "@/stores/authStore";
 import * as Notifications from "expo-notifications";
 import { useEffect, useRef, useState } from "react";
-
 // ==================== TYPES ====================
 
 export interface PushNotificationHookResult {
@@ -78,20 +77,25 @@ export function usePushNotifications(): PushNotificationHookResult {
           platform: getPlatform(),
         };
 
-        // Note: The backend endpoint expects DeviceTokenRegisterRequest
-        // but the OpenAPI spec may be outdated. Using direct fetch for now.
-        const response = await fetch("https://bambi.kdz.asia/api/notification/device", {
+        // Use raw fetch instead of fetchClient because backend returns plain text
+        // Backend endpoint /api/notification/device returns "OK" as plain text, not JSON
+        const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/notification/device`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${useAuthStore.getState().token}`,
           },
-          credentials: "include",
           body: JSON.stringify(deviceTokenData),
         });
 
         if (!response.ok) {
-          throw new Error("Failed to register device token with backend");
+          const errorText = await response.text();
+          throw new Error(`Failed to register device token: ${errorText}`);
         }
+
+        // Backend returns plain text "OK", not JSON
+        const result = await response.text();
+        console.log("Backend response:", result);
 
         setIsRegistered(true);
         console.log("Device token registered successfully with backend");
@@ -121,7 +125,7 @@ export function usePushNotifications(): PushNotificationHookResult {
       console.log("Notification tapped:", response);
 
       // Handle navigation based on notification data
-      const data = response.notification.request.content.data;
+      // const data = response.notification.request.content.data;
 
       // TODO: Add navigation logic here based on notification type
       // For example:
@@ -146,6 +150,7 @@ export function usePushNotifications(): PushNotificationHookResult {
     if (user?.userId && !isRegistered && !isLoading) {
       registerToken();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.userId]);
 
   return {

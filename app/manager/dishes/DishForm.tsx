@@ -453,6 +453,16 @@ export default function DishForm({ visible, dish, onClose, onSuccess }: DishForm
     } catch (error) {
       console.log("Dish create/update error:", error);
 
+      console.log(
+        "Form data submitted:",
+        ingredients,
+        name,
+        price,
+        description,
+        isPublic,
+        active,
+        dishType
+      );
       const errorMessage = error instanceof Error ? error.message : "Please try again";
 
       Toast.show({
