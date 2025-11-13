@@ -1,11 +1,18 @@
 import { DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Text } from "@/components/ui/text";
-import { useNotifications } from "@/contexts/NotificationContext";
+import { useAuth } from "@/hooks/useAuth";
+import { useGetNotificationsByAccountId } from "@/services/notificationService";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Pressable, View } from "react-native";
 
 export function NotificationBell() {
-  const { unreadCount } = useNotifications();
+  const { user } = useAuth();
+
+  // Fetch notifications for current user
+  const { data: notifications } = useGetNotificationsByAccountId(user?.userId || 0);
+
+  // Count unread notifications
+  const unreadCount = notifications?.filter((n) => !n.read).length || 0;
 
   return (
     <DropdownMenuTrigger asChild>

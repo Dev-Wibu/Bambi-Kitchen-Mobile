@@ -2,20 +2,16 @@ import { $api } from "@/libs/api";
 
 // ==================== PAYMENT API HOOKS ====================
 
-// NOTE: /api/payment/test-payment endpoint doesn't exist in backend schema
-// Commenting out to avoid TypeScript errors
-/*
 /**
  * Hook for testing payment
  * Uses GET /api/payment/test-payment endpoint
- *\/
+ */
 export const useTestPayment = (paymentMethodName: string) => {
   return $api.useQuery("get", "/api/payment/test-payment", {
     params: { query: { paymentMethodName } },
     enabled: !!paymentMethodName,
   });
 };
-*/
 
 /**
  * Hook for handling VNPay return

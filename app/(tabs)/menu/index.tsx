@@ -2,6 +2,7 @@ import { Text } from "@/components/ui/text";
 
 import { $api } from "@/libs/api";
 
+import { useDishCategories } from "@/services/dishCategoryService";
 import { formatMoney } from "@/utils/currency";
 
 import { MaterialIcons } from "@expo/vector-icons";
@@ -25,6 +26,8 @@ export default function MenuTab() {
 
   // Fetch data from API (no mock)
 
+  const { data: categoriesAPI, isLoading: loadingCategories } = useDishCategories();
+
   const { data: dishTemplatesAPI, isLoading: loadingTemplates } = $api.useQuery(
     "get",
 
@@ -36,6 +39,8 @@ export default function MenuTab() {
   const { data: dishesAPI, isLoading: loadingDishes } = $api.useQuery("get", "/api/dish", {});
 
   // Use API dishes only (no mock fallback)
+
+  const categories = categoriesAPI || [];
 
   const dishTemplates = dishTemplatesAPI || [];
 
@@ -74,7 +79,7 @@ export default function MenuTab() {
     return matchesSearch;
   });
 
-  const isLoading = loadingTemplates || loadingDishes;
+  const isLoading = loadingCategories || loadingTemplates || loadingDishes;
 
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">

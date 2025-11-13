@@ -6,7 +6,8 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Text } from "@/components/ui/text";
-import { useNotifications } from "@/contexts/NotificationContext";
+import { useAuth } from "@/hooks/useAuth";
+import { useGetNotificationsByAccountId, useMarkAsRead } from "@/services/notificationService";
 import { MaterialIcons } from "@expo/vector-icons";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -19,7 +20,58 @@ interface NotificationDropdownProps {
 
 export function NotificationDropdown({ children }: NotificationDropdownProps) {
   const router = useRouter();
-  const { notifications, isLoading, handleNotificationPress } = useNotifications();
+  const { user } = useAuth();
+
+  const {
+    data: notifications,
+    isLoading,
+    refetch,
+  } = useGetNotificationsByAccountId(user?.userId || 0);
+  const markAsReadMutation = useMarkAsRead();
+
+  const handleMarkAsRead = async (id: number) => {
+    try {
+      await markAsReadMutation.mutateAsync({
+        params: { path: { id } },
+      });
+      refetch();
+    } catch (error) {
+      console.error("Failed to mark notification as read:", error);
+    }
+  };
+
+  const handleNotificationPress = (notification: any) => {
+    // Mark as read when clicked
+    if (!notification.read) {
+      handleMarkAsRead(notification.id);
+    }
+
+    // Navigate based on notification type/data
+    if (notification.data) {
+      try {
+        const data =
+          typeof notification.data === "string" ? JSON.parse(notification.data) : notification.data;
+
+        // Handle different notification types
+        if (data.type === "order" && data.orderId) {
+          router.push(`/(tabs)/order`);
+        } else if (data.type === "dish" && data.dishId) {
+          router.push(`/(tabs)/menu`);
+        } else if (data.type === "profile") {
+          router.push(`/(tabs)/profile`);
+        } else {
+          // Default: go to notifications page to see details
+          router.push("/(tabs)/notifications");
+        }
+      } catch (error) {
+        // If data parsing fails, just go to notifications page
+        router.push("/(tabs)/notifications");
+      }
+    } else {
+      // No specific data, go to notifications page
+      router.push("/(tabs)/notifications");
+    }
+  };
 
   const handleSeeMore = () => {
     router.push("/(tabs)/notifications");

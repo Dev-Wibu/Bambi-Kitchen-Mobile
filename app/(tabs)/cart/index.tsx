@@ -3,7 +3,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { $api } from "@/libs/api";
 import { useDishTemplates } from "@/services/dishService";
 import { useIngredients } from "@/services/ingredientService";
-import { processPayment } from "@/services/mobilePaymentService";
 import { transformCartToMakeOrderRequest, useCreateOrder } from "@/services/orderService";
 import { useCartStore } from "@/stores/cartStore";
 import { formatMoney } from "@/utils/currency";
@@ -13,6 +12,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Image,
+  Linking,
   Pressable,
   ScrollView,
   TextInput,
@@ -163,37 +163,16 @@ export default function CartScreen() {
         clear();
         router.replace("/(tabs)/order");
       } else if (paymentMethod && typeof resp === "string" && resp.startsWith("http")) {
-        // For Momo/VNPay: Use expo-web-browser for better mobile redirect handling
-        console.log("Opening payment URL with expo-web-browser:", resp);
-        
+        // Open external payment page (will return via callback to backend)
         try {
-          const paymentResult = await processPayment(resp);
-          
-          if (paymentResult.success) {
-            Toast.show({
-              type: "success",
-              text1: "Thanh toán thành công",
-              text2: `Đơn hàng #${paymentResult.orderId}`,
-            });
-            clear();
-            router.replace("/(tabs)/order");
-          } else {
-            // Payment failed or cancelled
-            Toast.show({
-              type: paymentResult.error?.includes("cancel") ? "info" : "error",
-              text1: paymentResult.error?.includes("cancel") ? "Thanh toán đã hủy" : "Thanh toán thất bại",
-              text2: paymentResult.error || "Vui lòng thử lại",
-            });
-            // Don't clear cart on failure so user can retry
-          }
+          await Linking.openURL(resp);
         } catch (err) {
-          console.error("Payment process failed", err);
-          Toast.show({
-            type: "error",
-            text1: "Lỗi thanh toán",
-            text2: "Không thể mở trang thanh toán",
-          });
+          console.error("Failed to open payment url", err);
+          Toast.show({ type: "info", text1: "Order created. Open payment URL failed." });
         }
+        // Order is created; keep cart cleared to avoid duplicates
+        clear();
+        router.replace("/(tabs)/order");
       } else if (resp && typeof resp === "object" && (resp as any).orderId) {
         // Backend returned an order object / orderId — show polling modal until payment is completed
         const oid = Number((resp as any).orderId);

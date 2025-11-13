@@ -2,6 +2,7 @@ import { Text } from "@/components/ui/text";
 
 import { $api } from "@/libs/api";
 
+import { useDishCategories } from "@/services/dishCategoryService";
 import { formatMoney } from "@/utils/currency";
 
 import { MaterialIcons } from "@expo/vector-icons";
@@ -14,12 +15,18 @@ import { ActivityIndicator, Image, Pressable, ScrollView, TextInput, View } from
 
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import Toast from "react-native-toast-message";
+
 export default function CreateOrderMenuScreen() {
   const [searchQuery, setSearchQuery] = useState("");
+
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 
   const router = useRouter();
 
   // Fetch data from API (no mock)
+
+  const { data: categoriesAPI, isLoading: loadingCategories } = useDishCategories();
 
   const { data: dishTemplatesAPI, isLoading: loadingTemplates } = $api.useQuery(
     "get",
@@ -33,13 +40,33 @@ export default function CreateOrderMenuScreen() {
 
   // Use API dishes only (no mock fallback)
 
+  const categories = categoriesAPI || [];
+
   const dishTemplates = dishTemplatesAPI || [];
 
   const dishes = dishesAPI || [];
 
+  const handleTemplatePress = (template: any) => {
+    Toast.show({
+      type: "info",
+
+      text1: template.name || "Dish Template",
+
+      text2: `Size: ${template.size} - Price Ratio: ${template.priceRatio}x`,
+    });
+  };
+
   const handleDishPress = (dish: any) => {
     // 🔄 CHANGED: Navigate to manager create-order routes instead of (tabs)
     if (dish?.id) router.push(`/manager/create-order/${dish.id}`);
+  };
+
+  const handleCategoryPress = (categoryId: number) => {
+    if (selectedCategory === categoryId) {
+      setSelectedCategory(null);
+    } else {
+      setSelectedCategory(categoryId);
+    }
   };
 
   const filteredDishes = dishes.filter((dish) => {
@@ -51,7 +78,7 @@ export default function CreateOrderMenuScreen() {
     return matchesSearch;
   });
 
-  const isLoading = loadingTemplates || loadingDishes;
+  const isLoading = loadingCategories || loadingTemplates || loadingDishes;
 
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">
@@ -129,6 +156,8 @@ export default function CreateOrderMenuScreen() {
             </View>
           </Pressable>
         </View>
+
+        {/* Categories Filter */}
 
         {/* Featured Dishes */}
 

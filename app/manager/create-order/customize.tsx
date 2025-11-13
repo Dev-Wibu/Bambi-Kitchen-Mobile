@@ -484,16 +484,17 @@ export default function CreateOrderCustomizeBowl() {
                                 ? "border-gray-200 opacity-50"
                                 : "border-gray-200 dark:border-gray-700"
                           }`}>
-                          {/* Ingredient Image */}
-                          {ingredient.imgUrl && ingredient.imgUrl.startsWith("http") ? (
+                          {ingredient.imgUrl ? (
                             <Image
                               source={{ uri: ingredient.imgUrl }}
                               style={{ width: "100%", height: 90, borderRadius: 10 }}
                               resizeMode="cover"
                             />
                           ) : (
-                            <View className="h-[90px] w-full items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
-                              <MaterialIcons name="restaurant" size={24} color="#FF6D00" />
+                            <View className="h-[90px] w-full items-center justify-center rounded-lg bg-gray-200">
+                              <Text className="text-xl font-bold text-gray-600">
+                                {ingredient.name?.charAt(0)}
+                              </Text>
                             </View>
                           )}
                           <Text className="mt-2 font-medium text-[#000000] dark:text-white">

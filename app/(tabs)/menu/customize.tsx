@@ -126,33 +126,14 @@ export default function CustomizeBowlScreen() {
     return "VEGETABLE";
   };
 
-  // Get max allowed parts from DishTemplate
+  // Enforce business rules: CARB=1 always; PROTEIN S/M/L = 2/3/4; VEGETABLE S/M/L = 3/4/5
   const maxForRole = (role: Role) => {
     if (!selectedTemplate) return Infinity;
-    // Use max values from DishTemplate
-    if (role === "CARB") return selectedTemplate.max_Carb ?? 1;
-    if (role === "PROTEIN") return selectedTemplate.max_Protein ?? 3;
-    if (role === "VEGETABLE") return selectedTemplate.max_Vegetable ?? 4;
+    const size = normalizeSize(selectedTemplate.size);
+    if (role === "CARB") return 1;
+    if (role === "PROTEIN") return size === "S" ? 2 : size === "M" ? 3 : 4;
+    if (role === "VEGETABLE") return size === "S" ? 3 : size === "M" ? 4 : 5;
     return Infinity;
-  };
-
-  // Calculate total parts for a role (200g = 1 part for GRAM ingredients)
-  const calculatePartsForRole = (role: Role): number => {
-    return categories.reduce((acc: number, c: any) => {
-      if (detectCategoryRole(c?.name) !== role) return acc;
-      const items = selectedByCategory[c.id!] || [];
-      return (
-        acc +
-        items.reduce((sum, item) => {
-          const ing = ingredientsRaw?.find((i: any) => i.id === item.ingredientId);
-          if (!ing) return sum;
-          // For GRAM: 200g = 1 part, 400g = 2 parts, etc.
-          // For others: each item = 1 part
-          const parts = ing.unit?.toUpperCase() === "GRAM" ? item.quantity / 200 : 1;
-          return sum + parts;
-        }, 0)
-      );
-    }, 0);
   };
 
   // Toggle ingredient selection inside a category with per-size limits
@@ -181,16 +162,16 @@ export default function CustomizeBowlScreen() {
     const cat = categories.find((c: any) => c.id === categoryId);
     const role = detectCategoryRole(cat?.name);
     const max = maxForRole(role);
-    const totalParts = calculatePartsForRole(role);
-
-    // When adding a new ingredient, count it as 1 part (200g for GRAM)
-    const newIngredientParts = ingredient.unit?.toUpperCase() === "GRAM" ? 1 : 1;
-
-    if (Number.isFinite(max) && totalParts + newIngredientParts > max) {
+    const totalForRole = categories.reduce((acc: number, c: any) => {
+      return (
+        acc + (detectCategoryRole(c?.name) === role ? (selectedByCategory[c.id!] || []).length : 0)
+      );
+    }, 0);
+    if (Number.isFinite(max) && totalForRole >= max) {
       Toast.show({
         type: "info",
         text1: "Đã đạt giới hạn",
-        text2: `Bạn đã chọn ${totalParts}/${max} phần cho nhóm ${role}. Không thể thêm nữa.`,
+        text2: `Bạn đã chọn tối đa ${max} mục cho nhóm ${role}. Hãy bỏ bớt để chọn thêm.`,
       });
       return;
     }
@@ -223,42 +204,17 @@ export default function CustomizeBowlScreen() {
     const ingredient = ingredientsRaw?.find((i: any) => i.id === ingredientId);
     const unit = ingredient?.unit?.toUpperCase() || "GRAM";
 
-    // For GRAM: min 200, max depends on role limit, step 200
+    // For GRAM: min 200, max 1000, step 200
     // For others: min 1, max 100, step 1
     const minQty = unit === "GRAM" ? 200 : 1;
-    const step = unit === "GRAM" ? 200 : 1;
-
-    // Calculate max based on role limit
-    const cat = categories.find((c: any) => c.id === categoryId);
-    const role = detectCategoryRole(cat?.name);
-    const maxParts = maxForRole(role);
-
-    // Calculate current parts for this role (excluding current ingredient)
-    const otherParts = categories.reduce((acc: number, c: any) => {
-      if (detectCategoryRole(c?.name) !== role) return acc;
-      const items = selectedByCategory[c.id!] || [];
-      return (
-        acc +
-        items.reduce((sum, item) => {
-          if (item.ingredientId === ingredientId) return sum; // Exclude current ingredient
-          const ing = ingredientsRaw?.find((i: any) => i.id === item.ingredientId);
-          if (!ing) return sum;
-          const parts = ing.unit?.toUpperCase() === "GRAM" ? item.quantity / 200 : 1;
-          return sum + parts;
-        }, 0)
-      );
-    }, 0);
-
-    // Max quantity for this ingredient = (maxParts - otherParts) * 200 for GRAM
-    const maxQtyForIngredient =
-      unit === "GRAM" ? Math.max(minQty, (maxParts - otherParts) * 200) : 100;
-
-    const clampedQty = Math.max(minQty, Math.min(maxQtyForIngredient, newQuantity));
+    const maxQty = unit === "GRAM" ? 1000 : 100;
 
     setSelectedByCategory({
       ...selectedByCategory,
       [categoryId]: current.map((item) =>
-        item.ingredientId === ingredientId ? { ...item, quantity: clampedQty } : item
+        item.ingredientId === ingredientId
+          ? { ...item, quantity: Math.max(minQty, Math.min(maxQty, newQuantity)) }
+          : item
       ),
     });
   };
@@ -325,15 +281,9 @@ export default function CustomizeBowlScreen() {
     };
     categories.forEach((c: any) => {
       const role = detectCategoryRole(c?.name);
-      const items = selectedByCategory[c.id!] || [];
-      const parts = items.reduce((sum, item) => {
-        const ing = ingredientsRaw?.find((i: any) => i.id === item.ingredientId);
-        if (!ing) return sum;
-        // For GRAM: 200g = 1 part
-        const itemParts = ing.unit?.toUpperCase() === "GRAM" ? item.quantity / 200 : 1;
-        return sum + itemParts;
-      }, 0);
-      countsByRole[role] += parts;
+      const count = (selectedByCategory[c.id!] || []).length;
+      // role is narrowed to Role; safe to index
+      countsByRole[role] += count;
     });
     const over: { role: "CARB" | "PROTEIN" | "VEGETABLE"; max: number; count: number } | null = ((
       r
@@ -349,7 +299,7 @@ export default function CustomizeBowlScreen() {
       Toast.show({
         type: "error",
         text1: "Vượt quá giới hạn",
-        text2: `Nhóm ${over.role} đã chọn ${over.count}/${over.max} phần. Hãy bỏ bớt trước khi thêm vào giỏ.`,
+        text2: `Nhóm ${over.role} đã chọn ${over.count}/${over.max}. Hãy bỏ bớt trước khi thêm vào giỏ.`,
       });
       return;
     }
@@ -408,7 +358,7 @@ export default function CustomizeBowlScreen() {
     <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">
       {/* Header */}
       <View className="flex-row items-center border-b border-gray-200 px-4 py-3 dark:border-gray-700">
-        <Pressable onPress={() => router.push("/(tabs)/menu")} className="mr-3">
+        <Pressable onPress={() => router.back()} className="mr-3">
           <MaterialIcons name="arrow-back" size={24} color="#000000" />
         </Pressable>
         <Text className="flex-1 text-lg font-bold text-[#000000] dark:text-white">
@@ -493,7 +443,14 @@ export default function CustomizeBowlScreen() {
           {sections.map(({ cat, items }) => {
             const role = detectCategoryRole(cat?.name);
             const max = maxForRole(role);
-            const selectedParts = calculatePartsForRole(role);
+            const selectedInRole = categories.reduce((acc: number, c: any) => {
+              return (
+                acc +
+                (detectCategoryRole(c?.name) === role
+                  ? (selectedByCategory[c.id!] || []).length
+                  : 0)
+              );
+            }, 0);
             return (
               <View key={cat.id} className="border-t border-gray-200 px-6 py-6">
                 <View className="mb-3 flex-row items-end justify-between">
@@ -503,7 +460,7 @@ export default function CustomizeBowlScreen() {
                     </Text>
                     {Number.isFinite(max) && (
                       <Text className="mt-1 text-xs text-gray-500">
-                        Chọn tối đa {max} phần • Đã chọn {selectedParts.toFixed(1)} phần
+                        Chọn tối đa {max} • Đã chọn {selectedInRole}
                       </Text>
                     )}
                   </View>
@@ -513,9 +470,7 @@ export default function CustomizeBowlScreen() {
                   <View className="flex-row gap-3">
                     {items.map((ingredient: any) => {
                       const picked = isIngredientSelected(cat.id!, ingredient.id);
-                      const newIngredientParts = ingredient.unit?.toUpperCase() === "GRAM" ? 1 : 1;
-                      const reachLimit =
-                        !picked && Number.isFinite(max) && selectedParts + newIngredientParts > max;
+                      const reachLimit = !picked && Number.isFinite(max) && selectedInRole >= max;
                       const step = ingredient.unit === "GRAM" ? 200 : 1;
 
                       return (
@@ -608,56 +563,6 @@ export default function CustomizeBowlScreen() {
             );
           })}
         </ScrollView>
-      )}
-
-      {/* Overview Section - List of selected ingredients */}
-      {selectedTemplate && Object.values(selectedByCategory).flat().length > 0 && (
-        <View className="border-t border-gray-200 bg-white px-6 py-3 dark:border-gray-700 dark:bg-gray-800">
-          <Text className="mb-2 text-sm font-bold text-[#FF6D00]">Selected:</Text>
-          <ScrollView className="max-h-32">
-            {categories.map((cat: any) => {
-              const selectedItems = selectedByCategory[cat.id!] || [];
-              if (selectedItems.length === 0) return null;
-
-              const role = detectCategoryRole(cat?.name);
-              const roleLabel =
-                role === "CARB"
-                  ? "Starch"
-                  : role === "PROTEIN"
-                    ? "Protein"
-                    : role === "VEGETABLE"
-                      ? "Green Vegetables"
-                      : "Side Dishes";
-
-              return selectedItems.map((item) => {
-                const ing = ingredientsRaw?.find((i: any) => i.id === item.ingredientId);
-                if (!ing) return null;
-
-                const priceMultiplier = ing.unit === "GRAM" ? item.quantity : 1;
-                const itemPrice = (ing.pricePerUnit || 0) * priceMultiplier;
-
-                return (
-                  <View
-                    key={`${cat.id}-${item.ingredientId}`}
-                    className="mb-1 flex-row items-center justify-between border-b border-gray-100 py-1 dark:border-gray-700">
-                    <View className="flex-1">
-                      <Text className="text-sm font-medium text-[#000000] dark:text-white">
-                        {ing.name}
-                      </Text>
-                      <Text className="text-xs text-gray-500 dark:text-gray-400">
-                        {roleLabel} • {item.quantity}
-                        {getShortUnit(ing.unit)}
-                      </Text>
-                    </View>
-                    <Text className="ml-2 text-sm font-semibold text-[#FF6D00]">
-                      +{formatMoney(itemPrice)}
-                    </Text>
-                  </View>
-                );
-              });
-            })}
-          </ScrollView>
-        </View>
       )}
 
       {/* Bottom Bar */}
