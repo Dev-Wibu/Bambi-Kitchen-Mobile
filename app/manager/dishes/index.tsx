@@ -15,6 +15,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, Image, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import DishForm from "./DishForm";
 
 export default function DishesManager() {
@@ -128,173 +129,174 @@ export default function DishesManager() {
 
   // Search options
   return (
-    <View className="flex-1 bg-white dark:bg-gray-900">
-      {/* Header */}
-      <View className="flex-row items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
-        <View className="flex-1 flex-row items-center gap-3">
-          <TouchableOpacity onPress={() => router.back()} className="mr-2">
-            <MaterialIcons name="arrow-back" size={24} color="#FF6D00" />
-          </TouchableOpacity>
-          <Text className="text-2xl font-bold text-[#FF6D00]">Dishes</Text>
-        </View>
-        <View className="flex-row gap-2">
-          <ReloadButton onRefresh={() => refetch()} />
-          <TouchableOpacity
-            onPress={() => {
-              setSelectedDish(null);
-              setModalVisible(true);
-            }}
-            style={{ backgroundColor: "#FF6D00", borderRadius: 24, padding: 8 }}>
-            <MaterialIcons name="add" size={28} color="#fff" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Search and Filter */}
-      <View className="border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
-        <SearchBar
-          searchOptions={[]}
-          onSearchChange={setSearchTerm}
-          placeholder="Search dishes..."
-          limitedFields={false}
-          resetPagination={() => pagination.setPage(1)}
-        />
-        <View className="mt-2">
-          <Filter filterOptions={filterOptions} onFilterChange={setFilterCriteria} />
-        </View>
-      </View>
-
-      {/* Sort Controls */}
-      <View className="border-b border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-900">
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center gap-2">
-            <Text className="text-sm font-medium text-gray-600 dark:text-gray-300">Sort by:</Text>
-            <SortButton {...getSortProps("name")} label="Name" />
-            <SortButton {...getSortProps("price")} label="Price" />
+    <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">
+      <View className="flex-1">
+        {/* Header */}
+        <View className="flex-row items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
+          <View className="flex-1 flex-row items-center gap-3">
+            <TouchableOpacity onPress={() => router.back()} className="mr-2">
+              <MaterialIcons name="arrow-back" size={24} color="#FF6D00" />
+            </TouchableOpacity>
+            <Text className="text-2xl font-bold text-[#FF6D00]">Dishes</Text>
           </View>
+          <View className="flex-row gap-2">
+            <ReloadButton onRefresh={() => refetch()} />
+            <TouchableOpacity
+              onPress={() => {
+                setSelectedDish(null);
+                setModalVisible(true);
+              }}
+              style={{ backgroundColor: "#FF6D00", borderRadius: 24, padding: 8 }}>
+              <MaterialIcons name="add" size={28} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        </View>
+        {/* Search and Filter */}
+        <View className="border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+          <SearchBar
+            searchOptions={[]}
+            onSearchChange={setSearchTerm}
+            placeholder="Search dishes..."
+            limitedFields={false}
+            resetPagination={() => pagination.setPage(1)}
+          />
+          <View className="mt-2">
+            <Filter filterOptions={filterOptions} onFilterChange={setFilterCriteria} />
+          </View>
+        </View>
 
-          {/* Status Filter Toggle */}
-          <View className="flex-row items-center gap-2">
-            <View className="flex-row rounded-lg border border-gray-300 dark:border-gray-600">
-              <TouchableOpacity
-                onPress={() => setStatusFilter(true)}
-                className={`border-x border-gray-300 px-3 py-1 dark:border-gray-600 ${
-                  statusFilter === true ? "bg-green-500" : "bg-transparent"
-                }`}>
-                <Text
-                  className={`text-xs font-medium ${
-                    statusFilter === true ? "text-white" : "text-gray-600 dark:text-gray-400"
-                  }`}>
-                  Active
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setStatusFilter(false)}
-                className={`rounded-r-lg px-3 py-1 ${
-                  statusFilter === false ? "bg-red-500" : "bg-transparent"
-                }`}>
-                <Text
-                  className={`text-xs font-medium ${
-                    statusFilter === false ? "text-white" : "text-gray-600 dark:text-gray-400"
-                  }`}>
-                  Inactive
-                </Text>
-              </TouchableOpacity>
+        {/* Sort Controls */}
+        <View className="border-b border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-900">
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center gap-2">
+              <Text className="text-sm font-medium text-gray-600 dark:text-gray-300">Sort by:</Text>
+              <SortButton {...getSortProps("name")} label="Name" />
+              <SortButton {...getSortProps("price")} label="Price" />
             </View>
-          </View>
-        </View>
-      </View>
 
-      {isLoading ? (
-        <ActivityIndicator color="#FF6D00" style={{ marginTop: 32 }} />
-      ) : isError ? (
-        <Text className="mt-8 text-center text-red-500">Failed to load dishes</Text>
-      ) : (
-        <View className="flex-1">
-          <FlatList
-            data={currentPageData}
-            keyExtractor={(item) => String(item.id)}
-            contentContainerStyle={{ padding: 16, paddingBottom: 80 }}
-            ListEmptyComponent={
-              <Text className="mt-8 text-center text-gray-400">No dishes found.</Text>
-            }
-            renderItem={({ item }) => (
-              <View className="mb-3 flex-row items-center rounded-lg border border-gray-200 bg-white p-3 dark:bg-gray-800">
-                {item.imageUrl ? (
-                  <Image
-                    source={{ uri: item.imageUrl }}
-                    style={{ width: 56, height: 56, borderRadius: 8, marginRight: 12 }}
-                  />
-                ) : (
-                  <View
-                    style={{
-                      width: 56,
-                      height: 56,
-                      borderRadius: 8,
-                      marginRight: 12,
-                      backgroundColor: "#eee",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}>
-                    <MaterialIcons name="restaurant-menu" size={28} color="#FF6D00" />
-                  </View>
-                )}
-                <View style={{ flex: 1 }}>
-                  <Text className="text-lg font-bold" numberOfLines={1}>
-                    {item.name}
+            {/* Status Filter Toggle */}
+            <View className="flex-row items-center gap-2">
+              <View className="flex-row rounded-lg border border-gray-300 dark:border-gray-600">
+                <TouchableOpacity
+                  onPress={() => setStatusFilter(true)}
+                  className={`border-x border-gray-300 px-3 py-1 dark:border-gray-600 ${
+                    statusFilter === true ? "bg-green-500" : "bg-transparent"
+                  }`}>
+                  <Text
+                    className={`text-xs font-medium ${
+                      statusFilter === true ? "text-white" : "text-gray-600 dark:text-gray-400"
+                    }`}>
+                    Active
                   </Text>
-                  <Text className="text-gray-700 dark:text-gray-300" numberOfLines={1}>
-                    Price: {item.price}
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setStatusFilter(false)}
+                  className={`rounded-r-lg px-3 py-1 ${
+                    statusFilter === false ? "bg-red-500" : "bg-transparent"
+                  }`}>
+                  <Text
+                    className={`text-xs font-medium ${
+                      statusFilter === false ? "text-white" : "text-gray-600 dark:text-gray-400"
+                    }`}>
+                    Inactive
                   </Text>
-                  <Text className="text-xs text-gray-500" numberOfLines={1}>
-                    {item.public ? "Public" : "Private"} | {item.active ? "Active" : "Inactive"}
-                  </Text>
-                </View>
-                <TouchableOpacity onPress={() => openModal(item)} style={{ marginLeft: 8 }}>
-                  <MaterialIcons name="edit" size={22} color="#FF6D00" />
                 </TouchableOpacity>
               </View>
-            )}
-          />
+            </View>
+          </View>
+        </View>
 
-          {/* Pagination Controls */}
-          {sortedData.length > 0 && (
-            <View className="border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
-              <View className="flex-row items-center justify-between">
-                <Text className="text-sm text-gray-600 dark:text-gray-300">
-                  {getPageInfo(pagination)}
-                </Text>
-                <View className="flex-row gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onPress={() => pagination.prevPage()}
-                    disabled={!pagination.hasPrevPage}>
-                    <Text>Previous</Text>
-                  </Button>
-                  <Text className="px-3 py-2 text-sm">
-                    Page {pagination.currentPage} of {pagination.totalPages}
+        {isLoading ? (
+          <ActivityIndicator color="#FF6D00" style={{ marginTop: 32 }} />
+        ) : isError ? (
+          <Text className="mt-8 text-center text-red-500">Failed to load dishes</Text>
+        ) : (
+          <View className="flex-1">
+            <FlatList
+              data={currentPageData}
+              keyExtractor={(item) => String(item.id)}
+              contentContainerStyle={{ padding: 16, paddingBottom: 80 }}
+              ListEmptyComponent={
+                <Text className="mt-8 text-center text-gray-400">No dishes found.</Text>
+              }
+              renderItem={({ item }) => (
+                <View className="mb-3 flex-row items-center rounded-lg border border-gray-200 bg-white p-3 dark:bg-gray-800">
+                  {item.imageUrl ? (
+                    <Image
+                      source={{ uri: item.imageUrl }}
+                      style={{ width: 56, height: 56, borderRadius: 8, marginRight: 12 }}
+                    />
+                  ) : (
+                    <View
+                      style={{
+                        width: 56,
+                        height: 56,
+                        borderRadius: 8,
+                        marginRight: 12,
+                        backgroundColor: "#eee",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}>
+                      <MaterialIcons name="restaurant-menu" size={28} color="#FF6D00" />
+                    </View>
+                  )}
+                  <View style={{ flex: 1 }}>
+                    <Text className="text-lg font-bold" numberOfLines={1}>
+                      {item.name}
+                    </Text>
+                    <Text className="text-gray-700 dark:text-gray-300" numberOfLines={1}>
+                      Price: {item.price}
+                    </Text>
+                    <Text className="text-xs text-gray-500" numberOfLines={1}>
+                      {item.public ? "Public" : "Private"} | {item.active ? "Active" : "Inactive"}
+                    </Text>
+                  </View>
+                  <TouchableOpacity onPress={() => openModal(item)} style={{ marginLeft: 8 }}>
+                    <MaterialIcons name="edit" size={22} color="#FF6D00" />
+                  </TouchableOpacity>
+                </View>
+              )}
+            />
+
+            {/* Pagination Controls */}
+            {sortedData.length > 0 && (
+              <View className="border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-sm text-gray-600 dark:text-gray-300">
+                    {getPageInfo(pagination)}
                   </Text>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onPress={() => pagination.nextPage()}
-                    disabled={!pagination.hasNextPage}>
-                    <Text>Next</Text>
-                  </Button>
+                  <View className="flex-row gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onPress={() => pagination.prevPage()}
+                      disabled={!pagination.hasPrevPage}>
+                      <Text>Previous</Text>
+                    </Button>
+                    <Text className="px-3 py-2 text-sm">
+                      Page {pagination.currentPage} of {pagination.totalPages}
+                    </Text>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onPress={() => pagination.nextPage()}
+                      disabled={!pagination.hasNextPage}>
+                      <Text>Next</Text>
+                    </Button>
+                  </View>
                 </View>
               </View>
-            </View>
-          )}
-        </View>
-      )}
+            )}
+          </View>
+        )}
 
-      <DishForm
-        visible={modalVisible}
-        dish={selectedDish}
-        onClose={() => setModalVisible(false)}
-        onSuccess={() => refetch()}
-      />
-    </View>
+        <DishForm
+          visible={modalVisible}
+          dish={selectedDish}
+          onClose={() => setModalVisible(false)}
+          onSuccess={() => refetch()}
+        />
+      </View>
+    </SafeAreaView>
   );
 }
