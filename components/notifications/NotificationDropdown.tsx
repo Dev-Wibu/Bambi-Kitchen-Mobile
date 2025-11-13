@@ -54,32 +54,35 @@ export function NotificationDropdown({ children }: NotificationDropdownProps) {
               <Text className="text-center text-muted-foreground">Chưa có thông báo nào</Text>
             </View>
           ) : (
-            recentNotifications.map((notification) => (
-              <DropdownMenuItem
-                key={notification.id}
-                onPress={() => handleNotificationPress(notification)}
-                className={!notification.read ? "bg-blue-50 dark:bg-blue-900/20" : ""}>
-                <View className="flex-row items-start gap-3 py-2">
-                  <View
-                    className={`mt-1 h-2 w-2 rounded-full ${notification.read ? "bg-gray-300" : "bg-blue-500"}`}
-                  />
-                  <View className="flex-1">
-                    <Text className="mb-1 font-semibold">{notification.title}</Text>
-                    <Text className="mb-2 text-sm text-muted-foreground" numberOfLines={2}>
-                      {notification.message}
-                    </Text>
-                    <Text className="text-xs text-muted-foreground">
-                      {notification.createdAt
-                        ? formatDistanceToNow(new Date(notification.createdAt), {
-                            addSuffix: true,
-                            locale: vi,
-                          })
-                        : "Mới"}
-                    </Text>
+            recentNotifications
+              .slice()
+              .reverse()
+              .map((notification) => (
+                <DropdownMenuItem
+                  key={notification.id}
+                  onPress={() => handleNotificationPress(notification)}
+                  className={!notification.read ? "bg-blue-50 dark:bg-blue-900/20" : ""}>
+                  <View className="flex-row items-start gap-3 py-2">
+                    <View
+                      className={`mt-1 h-2 w-2 rounded-full ${notification.read ? "bg-gray-300" : "bg-blue-500"}`}
+                    />
+                    <View className="flex-1">
+                      <Text className="mb-1 font-semibold">{notification.title}</Text>
+                      <Text className="mb-2 text-sm text-muted-foreground" numberOfLines={2}>
+                        {notification.message}
+                      </Text>
+                      <Text className="text-xs text-muted-foreground">
+                        {notification.createdAt
+                          ? formatDistanceToNow(new Date(notification.createdAt), {
+                              addSuffix: true,
+                              locale: vi,
+                            })
+                          : "Mới"}
+                      </Text>
+                    </View>
                   </View>
-                </View>
-              </DropdownMenuItem>
-            ))
+                </DropdownMenuItem>
+              ))
           )}
         </ScrollView>
 

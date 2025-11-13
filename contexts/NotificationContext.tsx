@@ -37,6 +37,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const [error, setError] = useState<string | null>(null);
 
   const user = useAuthStore((state) => state.user);
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const clearAuth = useAuthStore((state) => state.clearAuth);
   const router = useRouter();
 
   // Initialize push notifications
@@ -61,12 +63,21 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       setNotifications(data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load notifications";
+
+      // Check if error is 401 (unauthorized/expired token)
+      if (errorMessage.includes("Invalid or missing JWT token") || errorMessage.includes("401")) {
+        console.log("Token expired or invalid, clearing auth state");
+        clearAuth(); // Clear auth state to force re-login
+        setNotifications([]);
+        return;
+      }
+
       setError(errorMessage);
       console.error("Error loading notifications:", err);
     } finally {
       setIsLoading(false);
     }
-  }, [user?.userId]);
+  }, [user?.userId, clearAuth]);
 
   // Mark a notification as read
   const markAsRead = useCallback(async (notificationId: number) => {
@@ -127,18 +138,27 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   // Auto-refresh notifications when user changes
   useEffect(() => {
-    if (user?.userId) {
+    // Only fetch notifications if user is actually logged in
+    // This prevents fetching with old/expired tokens on app startup
+    if (user?.userId && isLoggedIn) {
       refreshNotifications();
+
+      // Set up polling to check for new notifications every 10 seconds
+      const pollInterval = setInterval(() => {
+        refreshNotifications();
+      }, 10000); // Poll every 10 seconds
+
+      return () => clearInterval(pollInterval);
     }
-  }, [user?.userId, refreshNotifications]);
+  }, [user?.userId, isLoggedIn, refreshNotifications]);
 
   // Refresh notifications when a new push notification is received
   useEffect(() => {
-    if (latestNotification) {
+    if (latestNotification && user?.userId && isLoggedIn) {
       console.log("New push notification received, refreshing list");
       refreshNotifications();
     }
-  }, [latestNotification, refreshNotifications]);
+  }, [latestNotification, user?.userId, isLoggedIn, refreshNotifications]);
 
   // Calculate unread count
   const unreadCount = notifications.filter((n) => !n.read).length;

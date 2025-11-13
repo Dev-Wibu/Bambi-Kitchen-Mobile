@@ -121,53 +121,56 @@ export default function NotificationsPage() {
           </View>
         ) : (
           <View className="pb-4">
-            {notifications.map((notification) => (
-              <Pressable
-                key={notification.id}
-                onPress={() => handleNotificationPress(notification)}
-                className={`border-b border-gray-100 dark:border-gray-800 ${
-                  !notification.read ? "bg-blue-50 dark:bg-blue-900/10" : ""
-                }`}>
-                <View className="px-6 py-4">
-                  <View className="mb-2 flex-row items-start justify-between gap-3">
-                    <View className="flex-1 flex-row items-start gap-3">
-                      <View
-                        className={`mt-1.5 h-2.5 w-2.5 rounded-full ${notification.read ? "bg-gray-300" : "bg-blue-500"}`}
-                      />
-                      <View className="flex-1">
-                        <Text className="mb-1 text-base font-semibold text-gray-900 dark:text-white">
-                          {notification.title}
-                        </Text>
-                        <Text className="mb-2 text-sm text-gray-600 dark:text-gray-300">
-                          {notification.message}
-                        </Text>
-                        <Text className="text-xs text-gray-400 dark:text-gray-500">
-                          {notification.createdAt
-                            ? formatDistanceToNow(new Date(notification.createdAt), {
-                                addSuffix: true,
-                                locale: vi,
-                              })
-                            : "Mới"}
-                        </Text>
+            {notifications
+              .slice()
+              .reverse()
+              .map((notification) => (
+                <Pressable
+                  key={notification.id}
+                  onPress={() => handleNotificationPress(notification)}
+                  className={`border-b border-gray-100 dark:border-gray-800 ${
+                    !notification.read ? "bg-blue-50 dark:bg-blue-900/10" : ""
+                  }`}>
+                  <View className="px-6 py-4">
+                    <View className="mb-2 flex-row items-start justify-between gap-3">
+                      <View className="flex-1 flex-row items-start gap-3">
+                        <View
+                          className={`mt-1.5 h-2.5 w-2.5 rounded-full ${notification.read ? "bg-gray-300" : "bg-blue-500"}`}
+                        />
+                        <View className="flex-1">
+                          <Text className="mb-1 text-base font-semibold text-gray-900 dark:text-white">
+                            {notification.title}
+                          </Text>
+                          <Text className="mb-2 text-sm text-gray-600 dark:text-gray-300">
+                            {notification.message}
+                          </Text>
+                          <Text className="text-xs text-gray-400 dark:text-gray-500">
+                            {notification.createdAt
+                              ? formatDistanceToNow(new Date(notification.createdAt), {
+                                  addSuffix: true,
+                                  locale: vi,
+                                })
+                              : "Mới"}
+                          </Text>
+                        </View>
                       </View>
                     </View>
-                  </View>
 
-                  {/* Actions */}
-                  {!notification.read && (
-                    <View className="mt-2 flex-row gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onPress={() => handleMarkAsRead(notification.id!)}
-                        className="flex-1 border-gray-300">
-                        <Text className="text-xs text-gray-700">Đánh dấu đã đọc</Text>
-                      </Button>
-                    </View>
-                  )}
-                </View>
-              </Pressable>
-            ))}
+                    {/* Actions */}
+                    {!notification.read && (
+                      <View className="mt-2 flex-row gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onPress={() => handleMarkAsRead(notification.id!)}
+                          className="flex-1 border-gray-300">
+                          <Text className="text-xs text-gray-700">Đánh dấu đã đọc</Text>
+                        </Button>
+                      </View>
+                    )}
+                  </View>
+                </Pressable>
+              ))}
           </View>
         )}
       </ScrollView>

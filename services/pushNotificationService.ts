@@ -52,7 +52,7 @@ export async function registerForPushNotificationsAsync(): Promise<string | null
   try {
     // Check if we're running on a physical device
     if (!Device.isDevice) {
-      console.warn("Push notifications require a physical device");
+      // Silently return null - caller will handle this gracefully
       return null;
     }
 

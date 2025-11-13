@@ -119,8 +119,10 @@ export async function markNotificationAsRead(notificationId: number): Promise<vo
     },
   });
 
-  if (!response.data) {
-    throw new Error(`Failed to mark notification as read: ${JSON.stringify(response)}`);
+  // Backend returns 200 OK with no response body for this endpoint
+  // Check for error response instead of checking for data
+  if ("error" in response && response.error) {
+    throw new Error(`Failed to mark notification as read: ${JSON.stringify(response.error)}`);
   }
 }
 
@@ -166,8 +168,9 @@ export async function getNotificationsByAccountId(
     },
   });
 
-  if (!response.data) {
-    throw new Error(`Failed to get notifications: ${JSON.stringify(response)}`);
+  // Check for errors (including 401 unauthorized)
+  if ("error" in response && response.error) {
+    throw new Error(`Failed to get notifications: ${JSON.stringify(response.error)}`);
   }
 
   return response.data || [];

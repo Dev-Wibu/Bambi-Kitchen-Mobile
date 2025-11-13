@@ -5,6 +5,7 @@ import {
   registerForPushNotificationsAsync,
 } from "@/services/pushNotificationService";
 import { useAuthStore } from "@/stores/authStore";
+import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { useEffect, useRef, useState } from "react";
 // ==================== TYPES ====================
@@ -57,6 +58,12 @@ export function usePushNotifications(): PushNotificationHookResult {
    */
   const registerToken = async () => {
     try {
+      // Skip registration if not on a physical device
+      if (!Device.isDevice) {
+        console.log("Skipping push notification registration - not on physical device");
+        return;
+      }
+
       setIsLoading(true);
       setError(null);
 
