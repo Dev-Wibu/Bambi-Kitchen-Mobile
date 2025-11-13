@@ -24,6 +24,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import Toast from "react-native-toast-message";
 
+import { ChatButton } from "@/components/chat";
+
 export default function HomeTab() {
   const { user } = useAuth();
 
@@ -318,6 +320,9 @@ export default function HomeTab() {
           </View>
         )}
       </ScrollView>
+
+      {/* Chat Button - Fixed position bottom-right */}
+      <ChatButton />
     </SafeAreaView>
   );
 }

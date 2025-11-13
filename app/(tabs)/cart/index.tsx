@@ -13,6 +13,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Image, Pressable, ScrollView, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
+import { AIReviewButton, AIReviewModal } from "@/components/gemini";
 
 type PaymentMethod = "CASH" | "MOMO" | "VNPAY";
 
@@ -51,6 +52,8 @@ export default function CartScreen() {
   const [editingNoteFor, setEditingNoteFor] = useState<string | null>(null);
   const [uiSubmitting, setUiSubmitting] = useState(false); // visual pending to ensure UX feedback
   const [pollingOrderId, setPollingOrderId] = useState<number | null>(null);
+  const [showAIReview, setShowAIReview] = useState(false);
+  const [aiReviewResult, setAIReviewResult] = useState<any>(null);
   const [errorState, setErrorState] = useState<{
     show: boolean;
     title: string;
@@ -67,6 +70,13 @@ export default function CartScreen() {
   // Recalculate subtotal whenever items change (fix for price not updating bug)
   const subtotal = useMemo(() => getTotal(), [items, getTotal]);
   const isEmpty = items.length === 0;
+
+  // Get dish IDs for AI review
+  const dishIdsForReview = useMemo(() => {
+    return items
+      .filter((item) => item.dishId && item.dishId > 0)
+      .map((item) => item.dishId!);
+  }, [items]);
 
   const increase = (id: string, qty: number) => updateQuantity(id, qty + 1);
   const decrease = (id: string, qty: number) => updateQuantity(id, Math.max(1, qty - 1));
@@ -526,6 +536,30 @@ export default function CartScreen() {
         />
       )}
 
+      {/* AI Review Section */}
+      {!isEmpty && dishIdsForReview.length > 0 && (
+        <View className="border-t border-gray-200 bg-white px-6 py-3 dark:border-gray-700 dark:bg-gray-800">
+          <AIReviewButton
+            dishIds={dishIdsForReview}
+            onReviewComplete={(results) => {
+              if (results && results.length > 0) {
+                setAIReviewResult(results[0]?.response);
+                setShowAIReview(true);
+              }
+            }}
+            onError={(error) => {
+              Toast.show({
+                type: "error",
+                text1: "AI Review Failed",
+                text2: error.message || "Could not get AI review",
+              });
+            }}
+            variant="outline"
+            size="default"
+          />
+        </View>
+      )}
+
       {/* Bottom Bar */}
       <View className="border-t border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
         <View className="flex-row items-center justify-between">
@@ -639,6 +673,28 @@ export default function CartScreen() {
               );
             })}
             <View className="h-4" />
+          </View>
+        </View>
+      )}
+
+      {/* AI Review Modal */}
+      {showAIReview && aiReviewResult && (
+        <View className="absolute inset-0 z-50 bg-black/50">
+          <Pressable className="flex-1" onPress={() => setShowAIReview(false)} />
+          <View className="max-h-[80%] rounded-t-2xl bg-white dark:bg-gray-900">
+            <AIReviewModal
+              review={aiReviewResult}
+              dishName="Your Cart"
+              onClose={() => setShowAIReview(false)}
+              onApplySuggestion={() => {
+                setShowAIReview(false);
+                Toast.show({
+                  type: "info",
+                  text1: "Suggestion noted",
+                  text2: "Add suggested ingredients manually",
+                });
+              }}
+            />
           </View>
         </View>
       )}

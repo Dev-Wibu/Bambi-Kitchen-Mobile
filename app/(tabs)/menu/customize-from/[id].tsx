@@ -1,6 +1,7 @@
+import { NutritionCalculator } from "@/components/nutrition/NutritionCalculator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Text } from "@/components/ui/text";
-import { $api } from "@/libs/api";
+import { $api, fetchClient } from "@/libs/api";
 import { useDishTemplates } from "@/services/dishService";
 import { useIngredientCategories } from "@/services/ingredientCategoryService";
 import { useIngredients } from "@/services/ingredientService";
@@ -60,6 +61,9 @@ export default function CustomizeDefaultBowl() {
 
   // Selected ingredients {categoryId: RecipeItem[]}
   const [selectedByCategory, setSelectedByCategory] = useState<{ [key: number]: RecipeItem[] }>({});
+
+  // Store nutrition data for ingredients: {ingredientId: Nutrition}
+  const [nutritionData, setNutritionData] = useState<{ [key: number]: any }>({});
 
   const [quantity, setQuantity] = useState(1);
   const [isBaseOpen, setIsBaseOpen] = useState(false);
@@ -220,6 +224,41 @@ export default function CustomizeDefaultBowl() {
     }, 0);
   };
 
+  // Fetch nutrition data for an ingredient
+  const fetchNutritionForIngredient = async (ingredientId: number) => {
+    console.log("🔍 [NUTRITION] Fetching nutrition for ingredient ID:", ingredientId);
+    try {
+      console.log("🌐 [NUTRITION] Request path: /api/nutrition/{ingredientId}/ingredient");
+
+      // Use fetchClient to automatically include JWT token
+      const response = await fetchClient.GET("/api/nutrition/{ingredientId}/ingredient", {
+        params: {
+          path: {
+            ingredientId: ingredientId,
+          },
+        },
+      });
+
+      console.log("📡 [NUTRITION] Response status:", response.response.status);
+
+      if (response.data) {
+        console.log("✅ [NUTRITION] Data received:", JSON.stringify(response.data, null, 2));
+        setNutritionData((prev) => {
+          const newData = {
+            ...prev,
+            [ingredientId]: response.data,
+          };
+          console.log("💾 [NUTRITION] Updated nutritionData keys:", Object.keys(newData));
+          return newData;
+        });
+      } else {
+        console.warn("⚠️ [NUTRITION] No data received for ingredient:", ingredientId);
+      }
+    } catch (error) {
+      console.error("❌ [NUTRITION] Failed to fetch nutrition for ingredient", ingredientId, error);
+    }
+  };
+
   // Calculate total price (base dish price + added ingredients)
   const calculatedPrice = useMemo(() => {
     if (!dish) return 0;
@@ -369,6 +408,55 @@ export default function CustomizeDefaultBowl() {
       (item) => item.ingredientId === ingredientId
     );
   };
+
+  // Prepare data for NutritionCalculator component
+  const ingredientsForCalculator = useMemo(() => {
+    console.log("\n🧮 [CALCULATOR] Preparing ingredients for calculator...");
+    console.log("📦 [CALCULATOR] selectedByCategory:", selectedByCategory);
+    console.log("📊 [CALCULATOR] nutritionData keys:", Object.keys(nutritionData));
+
+    const result: any[] = [];
+    Object.values(selectedByCategory).forEach((items) => {
+      items.forEach((item) => {
+        console.log("🔍 [CALCULATOR] Checking ingredient ID:", item.ingredientId);
+        const nutrition = nutritionData[item.ingredientId];
+
+        if (nutrition) {
+          console.log("✅ [CALCULATOR] Found nutrition for ID:", item.ingredientId);
+          result.push({
+            ingredientId: item.ingredientId,
+            nutrition: nutrition,
+            quantity: item.quantity,
+          });
+        } else {
+          console.log("❌ [CALCULATOR] NO nutrition found for ID:", item.ingredientId);
+        }
+      });
+    });
+
+    console.log("📋 [CALCULATOR] Final result length:", result.length);
+    return result;
+  }, [selectedByCategory, nutritionData]);
+
+  // Auto-fetch missing nutrition data for selected ingredients
+  useEffect(() => {
+    const missingNutritionIds: number[] = [];
+
+    Object.values(selectedByCategory).forEach((items) => {
+      items.forEach((item) => {
+        if (!nutritionData[item.ingredientId]) {
+          missingNutritionIds.push(item.ingredientId);
+        }
+      });
+    });
+
+    if (missingNutritionIds.length > 0) {
+      console.log("🔄 [AUTO-FETCH] Missing nutrition for IDs:", missingNutritionIds);
+      missingNutritionIds.forEach((id) => {
+        fetchNutritionForIngredient(id);
+      });
+    }
+  }, [selectedByCategory, nutritionData]);
 
   // Handle add to cart
   const handleAddToCart = () => {
@@ -619,7 +707,14 @@ export default function CustomizeDefaultBowl() {
 
       {/* Overview Section - Collapsible List of ingredients with BASE and ADDON labels */}
       {selectedTemplate && Object.values(selectedByCategory).flat().length > 0 && (
-        <View className="border-t border-gray-200 bg-white px-6 py-12 dark:border-gray-700 dark:bg-gray-800">
+        <View className="mb-10 border-t border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-800">
+          {/* Nutrition Calculator */}
+          {ingredientsForCalculator.length > 0 && (
+            <View className="mb-4">
+              <NutritionCalculator ingredients={ingredientsForCalculator} />
+            </View>
+          )}
+
           {/* Base ingredients - Collapsible */}
           {Object.values(selectedByCategory)
             .flat()
@@ -754,6 +849,13 @@ export default function CustomizeDefaultBowl() {
 
       {/* Bottom Bar */}
       <View className="absolute bottom-0 left-0 right-0 border-t border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
+        {/* Nutrition Calculator */}
+        {ingredientsForCalculator.length > 0 && (
+          <View className="mb-4">
+            <NutritionCalculator ingredients={ingredientsForCalculator} />
+          </View>
+        )}
+
         <View className="flex-row items-center justify-between">
           {/* Quantity Control */}
           <View className="flex-row items-center gap-3">

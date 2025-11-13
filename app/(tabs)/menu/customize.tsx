@@ -1,4 +1,6 @@
+import { NutritionCalculator } from "@/components/nutrition";
 import { Text } from "@/components/ui/text";
+import { fetchClient } from "@/libs/api";
 import { useDishTemplates } from "@/services/dishService";
 import { useIngredientCategories } from "@/services/ingredientCategoryService";
 import { useIngredients } from "@/services/ingredientService";
@@ -26,6 +28,9 @@ export default function CustomizeBowlScreen() {
 
   // Selected ingredients {categoryId: RecipeItem[]}
   const [selectedByCategory, setSelectedByCategory] = useState<{ [key: number]: RecipeItem[] }>({});
+
+  // Store nutrition data for ingredients: {ingredientId: Nutrition}
+  const [nutritionData, setNutritionData] = useState<{ [key: number]: any }>({});
 
   const [quantity, setQuantity] = useState(1);
 
@@ -155,6 +160,41 @@ export default function CustomizeBowlScreen() {
     }, 0);
   };
 
+  // Fetch nutrition data for an ingredient
+  const fetchNutritionForIngredient = async (ingredientId: number) => {
+    console.log("🔍 [NUTRITION] Fetching nutrition for ingredient ID:", ingredientId);
+    try {
+      console.log("🌐 [NUTRITION] Request path: /api/nutrition/{ingredientId}/ingredient");
+
+      // Use fetchClient to automatically include JWT token
+      const response = await fetchClient.GET("/api/nutrition/{ingredientId}/ingredient", {
+        params: {
+          path: {
+            ingredientId: ingredientId,
+          },
+        },
+      });
+
+      console.log("📡 [NUTRITION] Response status:", response.response.status);
+
+      if (response.data) {
+        console.log("✅ [NUTRITION] Data received:", JSON.stringify(response.data, null, 2));
+        setNutritionData((prev) => {
+          const newData = {
+            ...prev,
+            [ingredientId]: response.data,
+          };
+          console.log("💾 [NUTRITION] Updated nutritionData keys:", Object.keys(newData));
+          return newData;
+        });
+      } else {
+        console.warn("⚠️ [NUTRITION] No data received for ingredient:", ingredientId);
+      }
+    } catch (error) {
+      console.error("❌ [NUTRITION] Failed to fetch nutrition for ingredient", ingredientId, error);
+    }
+  };
+
   // Toggle ingredient selection inside a category with per-size limits
   const toggleIngredient = (categoryId: number, ingredient: any) => {
     if (!selectedTemplate) {
@@ -210,6 +250,17 @@ export default function CustomizeBowlScreen() {
         },
       ],
     });
+
+    // Fetch nutrition data for this ingredient if not already fetched
+    console.log("🍽️ [INGREDIENT] Selected ingredient:", ingredient.name, "ID:", ingredient.id);
+    console.log("📊 [NUTRITION CHECK] Current nutritionData keys:", Object.keys(nutritionData));
+
+    if (!nutritionData[ingredient.id!]) {
+      console.log("🔄 [NUTRITION] Nutrition not cached, fetching for ID:", ingredient.id);
+      fetchNutritionForIngredient(ingredient.id!);
+    } else {
+      console.log("✓ [NUTRITION] Nutrition already cached for ID:", ingredient.id);
+    }
   };
 
   // Update ingredient quantity
@@ -223,10 +274,9 @@ export default function CustomizeBowlScreen() {
     const ingredient = ingredientsRaw?.find((i: any) => i.id === ingredientId);
     const unit = ingredient?.unit?.toUpperCase() || "GRAM";
 
-    // For GRAM: min 200, max depends on role limit, step 200
-    // For others: min 1, max 100, step 1
+    // For GRAM: min 200, max depends on role limit
+    // For others: min 1, max 100
     const minQty = unit === "GRAM" ? 200 : 1;
-    const step = unit === "GRAM" ? 200 : 1;
 
     // Calculate max based on role limit
     const cat = categories.find((c: any) => c.id === categoryId);
@@ -403,6 +453,57 @@ export default function CustomizeBowlScreen() {
       }))
       .filter((s) => s.items.length > 0);
   }, [categories, ingredientsRaw]);
+
+  // Prepare data for NutritionCalculator component
+  const ingredientsForCalculator = useMemo(() => {
+    console.log("\n🧮 [CALCULATOR] Preparing ingredients for calculator...");
+    console.log("📦 [CALCULATOR] selectedByCategory:", selectedByCategory);
+    console.log("📊 [CALCULATOR] nutritionData keys:", Object.keys(nutritionData));
+    console.log("📊 [CALCULATOR] nutritionData full:", nutritionData);
+
+    const result: any[] = [];
+    Object.values(selectedByCategory).forEach((items) => {
+      items.forEach((item) => {
+        console.log("🔍 [CALCULATOR] Checking ingredient ID:", item.ingredientId);
+        const nutrition = nutritionData[item.ingredientId];
+
+        if (nutrition) {
+          console.log("✅ [CALCULATOR] Found nutrition for ID:", item.ingredientId);
+          result.push({
+            ingredientId: item.ingredientId,
+            nutrition: nutrition,
+            quantity: item.quantity,
+          });
+        } else {
+          console.log("❌ [CALCULATOR] NO nutrition found for ID:", item.ingredientId);
+        }
+      });
+    });
+
+    console.log("📋 [CALCULATOR] Final result length:", result.length);
+    console.log("📋 [CALCULATOR] Final result:", result);
+    return result;
+  }, [selectedByCategory, nutritionData]);
+
+  // Auto-fetch missing nutrition data for selected ingredients
+  useEffect(() => {
+    const missingNutritionIds: number[] = [];
+
+    Object.values(selectedByCategory).forEach((items) => {
+      items.forEach((item) => {
+        if (!nutritionData[item.ingredientId]) {
+          missingNutritionIds.push(item.ingredientId);
+        }
+      });
+    });
+
+    if (missingNutritionIds.length > 0) {
+      console.log("🔄 [AUTO-FETCH] Missing nutrition for IDs:", missingNutritionIds);
+      missingNutritionIds.forEach((id) => {
+        fetchNutritionForIngredient(id);
+      });
+    }
+  }, [selectedByCategory, nutritionData]);
 
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-gray-900">
@@ -613,7 +714,14 @@ export default function CustomizeBowlScreen() {
       {/* Overview Section - List of selected ingredients */}
       {selectedTemplate && Object.values(selectedByCategory).flat().length > 0 && (
         <View className="border-t border-gray-200 bg-white px-6 py-3 dark:border-gray-700 dark:bg-gray-800">
+          {ingredientsForCalculator.length > 0 && (
+            <View className="mb-4">
+              <NutritionCalculator ingredients={ingredientsForCalculator} />
+            </View>
+          )}
           <Text className="mb-2 text-sm font-bold text-[#FF6D00]">Selected:</Text>
+          {/* Nutrition Calculator */}
+
           <ScrollView className="max-h-32">
             {categories.map((cat: any) => {
               const selectedItems = selectedByCategory[cat.id!] || [];
@@ -663,6 +771,21 @@ export default function CustomizeBowlScreen() {
       {/* Bottom Bar */}
       {selectedTemplate && (
         <View className="border-t border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
+          {/* Nutrition Calculator */}
+          {(() => {
+            console.log("\n🎨 [RENDER] Checking if should render NutritionCalculator...");
+            console.log(
+              "🎨 [RENDER] ingredientsForCalculator.length:",
+              ingredientsForCalculator.length
+            );
+            console.log("🎨 [RENDER] selectedTemplate:", selectedTemplate?.size);
+            return ingredientsForCalculator.length > 0;
+          })() && (
+            <View className="mb-4">
+              <NutritionCalculator ingredients={ingredientsForCalculator} />
+            </View>
+          )}
+
           <View className="mb-3 flex-row items-center justify-between">
             <Text className="text-sm text-gray-600 dark:text-gray-400">
               {selectedTemplate.size} Bowl • {Object.values(selectedByCategory).flat().length}{" "}
