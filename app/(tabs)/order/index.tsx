@@ -4,7 +4,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { formatMoney } from "@/utils/currency";
 import { MaterialIcons } from "@expo/vector-icons";
 import { format } from "date-fns";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import FeedbackModal from "./components/FeedbackModal";
@@ -44,6 +44,17 @@ export default function OrderTab() {
     await refetch();
     setRefreshing(false);
   };
+
+  // Auto-refresh orders every 10 seconds to detect status changes in real-time
+  useEffect(() => {
+    if (!userId) return;
+    
+    const pollInterval = setInterval(() => {
+      refetch();
+    }, 10000); // Poll every 10 seconds
+    
+    return () => clearInterval(pollInterval);
+  }, [userId, refetch]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -161,7 +172,7 @@ export default function OrderTab() {
                   {/* Show rating if already given feedback */}
                   {order.ranking !== undefined &&
                     order.ranking !== null &&
-                    (order.status === "COMPLETED" || order.status === "PAID") && (
+                    order.status === "COMPLETED" && (
                       <View className="mb-3">
                         <Text className="mb-1 text-xs font-semibold text-[#757575] dark:text-gray-400">
                           Your Rating:
@@ -180,8 +191,8 @@ export default function OrderTab() {
                       onPress={() => handleViewDetails(order.id!)}>
                       <Text className="font-semibold text-white">View Details</Text>
                     </Pressable>
-                    {/* Show feedback button for PAID or COMPLETED status if no ranking yet */}
-                    {(order.status === "PAID" || order.status === "COMPLETED") && (
+                    {/* Show feedback button only for COMPLETED status */}
+                    {order.status === "COMPLETED" && (
                       <Pressable
                         className="flex-1 items-center rounded-lg border border-[#FF6D00] bg-[#FF6D00] py-3"
                         onPress={() => handleGiveFeedback(order.id!)}>

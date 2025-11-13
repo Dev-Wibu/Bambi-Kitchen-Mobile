@@ -10,14 +10,7 @@ import { formatMoney } from "@/utils/currency";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Image,
-  Pressable,
-  ScrollView,
-  TextInput,
-  View,
-} from "react-native";
+import { ActivityIndicator, Image, Pressable, ScrollView, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
@@ -165,10 +158,10 @@ export default function CartScreen() {
       } else if (paymentMethod && typeof resp === "string" && resp.startsWith("http")) {
         // For Momo/VNPay: Use expo-web-browser for better mobile redirect handling
         console.log("Opening payment URL with expo-web-browser:", resp);
-        
+
         try {
           const paymentResult = await processPayment(resp);
-          
+
           if (paymentResult.success) {
             Toast.show({
               type: "success",
@@ -181,7 +174,9 @@ export default function CartScreen() {
             // Payment failed or cancelled
             Toast.show({
               type: paymentResult.error?.includes("cancel") ? "info" : "error",
-              text1: paymentResult.error?.includes("cancel") ? "Thanh toán đã hủy" : "Thanh toán thất bại",
+              text1: paymentResult.error?.includes("cancel")
+                ? "Thanh toán đã hủy"
+                : "Thanh toán thất bại",
               text2: paymentResult.error || "Vui lòng thử lại",
             });
             // Don't clear cart on failure so user can retry
@@ -214,34 +209,40 @@ export default function CartScreen() {
     } catch (e: any) {
       console.error("Place order failed", e);
 
-      // Enhanced error handling for JSON parse errors and backend debugging
+      // Enhanced error handling for backend errors
       let errorTitle = "Order Failed";
       let errorMessage = "Failed to place order";
       let rawResponse = "";
       let canRetry = true;
 
-      if (
+      // Check for 422 status (validation error, often ingredient shortage)
+      if (e?.status === 422) {
+        errorTitle = "Cannot Process Order";
+        // Extract meaningful error message from backend
+        errorMessage = e?.message || "Some ingredients may be out of stock";
+        canRetry = true;
+      } else if (
         e?.message?.includes("JSON Parse error") ||
         e?.message?.includes("Unexpected character")
       ) {
         errorTitle = "Backend Response Error";
         errorMessage = "Server returned invalid response format";
-        rawResponse = e?.response || e?.data || e?.message || "";
+        rawResponse = e?.rawError || e?.message || "";
         canRetry = true;
       } else if (e?.message?.includes("Network")) {
         errorTitle = "Network Error";
         errorMessage = "Check your internet connection";
         canRetry = true;
-      } else if (e?.response?.status === 400) {
+      } else if (e?.status === 400) {
         errorTitle = "Invalid Order";
-        errorMessage = e?.response?.data?.message || "Order data is invalid";
+        errorMessage = e?.message || "Order data is invalid";
         canRetry = false;
-      } else if (e?.response?.status === 401) {
+      } else if (e?.status === 401) {
         errorTitle = "Authentication Error";
         errorMessage = "Please log in again";
         canRetry = false;
       } else {
-        errorMessage = e?.message || e?.data?.message || "Unknown error occurred";
+        errorMessage = e?.message || "Unknown error occurred";
       }
 
       // Show detailed error modal instead of simple toast
@@ -249,15 +250,17 @@ export default function CartScreen() {
         show: true,
         title: errorTitle,
         message: errorMessage,
-        rawResponse: rawResponse ? rawResponse.substring(0, 200) : undefined,
+        rawResponse: rawResponse ? rawResponse.substring(0, 300) : undefined,
         canRetry,
       });
 
       // Also log for backend team debugging
       if (__DEV__) {
         console.log("Raw error object:", e);
-        if (rawResponse) {
-          console.log("Raw response excerpt:", rawResponse.substring(0, 500));
+        console.log("Error status:", e?.status);
+        console.log("Error message:", e?.message);
+        if (e?.rawError) {
+          console.log("Raw backend error:", e.rawError);
         }
       }
     } finally {
