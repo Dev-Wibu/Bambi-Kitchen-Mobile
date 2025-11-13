@@ -1,18 +1,18 @@
-import { useState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
+import { ChatError, ChatMessage, chatWithGemini } from "@/services/geminiChatService";
+import { MaterialIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect, useRef, useState } from "react";
 import {
-  View,
-  Pressable,
-  ScrollView,
-  TextInput,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
+  ScrollView,
+  TextInput,
+  View,
 } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
-import { Text } from "@/components/ui/text";
-import { Button } from "@/components/ui/button";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { chatWithGemini, ChatError, ChatMessage } from "@/services/geminiChatService";
 import Toast from "react-native-toast-message";
 
 const CHAT_HISTORY_STORAGE_KEY = "bambi-chat-history";
@@ -193,13 +193,9 @@ export default function ChatBox({ isOpen, onClose, onAssistantMessage }: ChatBox
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="absolute inset-0 z-50"
-    >
+      className="absolute inset-0 z-50">
       {/* Overlay */}
-      <Pressable
-        className="absolute inset-0 bg-black/50"
-        onPress={onClose}
-      />
+      <Pressable className="absolute inset-0 bg-black/50" onPress={onClose} />
 
       {/* Chat container */}
       <View className="absolute bottom-0 left-0 right-0 mx-4 mb-4 flex h-[600px] max-h-[80%] flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900">
@@ -220,11 +216,7 @@ export default function ChatBox({ isOpen, onClose, onAssistantMessage }: ChatBox
         </View>
 
         {/* Messages */}
-        <ScrollView
-          ref={scrollViewRef}
-          className="flex-1 p-4"
-          contentContainerClassName="gap-3"
-        >
+        <ScrollView ref={scrollViewRef} className="flex-1 p-4" contentContainerClassName="gap-3">
           {messages.map((message, index) => {
             const isUser = message.role === "user";
             const isError = message.isError || message.content.includes("⚠️");
@@ -232,8 +224,7 @@ export default function ChatBox({ isOpen, onClose, onAssistantMessage }: ChatBox
             return (
               <View
                 key={index}
-                className={`flex-row gap-2 ${isUser ? "justify-end" : "justify-start"}`}
-              >
+                className={`flex-row gap-2 ${isUser ? "justify-end" : "justify-start"}`}>
                 {!isUser && (
                   <View className="h-8 w-8 items-center justify-center rounded-full bg-orange-500">
                     <MaterialIcons name="smart-toy" size={16} color="white" />
@@ -247,8 +238,7 @@ export default function ChatBox({ isOpen, onClose, onAssistantMessage }: ChatBox
                       : isError
                         ? "border border-red-300 bg-red-50 dark:border-red-700 dark:bg-red-900/20"
                         : "bg-gray-100 dark:bg-gray-800"
-                  }`}
-                >
+                  }`}>
                   <Text
                     className={`text-sm ${
                       isUser
@@ -256,17 +246,13 @@ export default function ChatBox({ isOpen, onClose, onAssistantMessage }: ChatBox
                         : isError
                           ? "text-red-600 dark:text-red-400"
                           : "text-gray-900 dark:text-gray-100"
-                    }`}
-                  >
+                    }`}>
                     {message.content}
                   </Text>
                   <Text
                     className={`mt-1 text-xs ${
-                      isUser
-                        ? "text-white/70"
-                        : "text-gray-500 dark:text-gray-400"
-                    }`}
-                  >
+                      isUser ? "text-white/70" : "text-gray-500 dark:text-gray-400"
+                    }`}>
                     {message.timestamp.toLocaleTimeString("vi-VN", {
                       hour: "2-digit",
                       minute: "2-digit",
@@ -305,12 +291,7 @@ export default function ChatBox({ isOpen, onClose, onAssistantMessage }: ChatBox
                   Lỗi kết nối. Thử lại?
                 </Text>
               </View>
-              <Button
-                onPress={handleRetry}
-                variant="outline"
-                size="sm"
-                className="h-7 px-2"
-              >
+              <Button onPress={handleRetry} variant="outline" size="sm" className="h-7 px-2">
                 <MaterialIcons name="refresh" size={14} color="#EF4444" />
                 <Text className="ml-1 text-xs">Thử lại</Text>
               </Button>
@@ -333,19 +314,12 @@ export default function ChatBox({ isOpen, onClose, onAssistantMessage }: ChatBox
               onPress={() => handleSend()}
               disabled={!input.trim() || isLoading}
               className={`h-10 w-10 items-center justify-center rounded-full ${
-                !input.trim() || isLoading
-                  ? "bg-gray-300 dark:bg-gray-700"
-                  : "bg-orange-500"
-              }`}
-            >
+                !input.trim() || isLoading ? "bg-gray-300 dark:bg-gray-700" : "bg-orange-500"
+              }`}>
               {isLoading ? (
                 <ActivityIndicator size="small" color="white" />
               ) : (
-                <MaterialIcons
-                  name="send"
-                  size={20}
-                  color={!input.trim() ? "#9CA3AF" : "white"}
-                />
+                <MaterialIcons name="send" size={20} color={!input.trim() ? "#9CA3AF" : "white"} />
               )}
             </Pressable>
           </View>

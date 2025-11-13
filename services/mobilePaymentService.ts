@@ -1,4 +1,3 @@
-import { API_BASE_URL } from "@/libs/api";
 import * as WebBrowser from "expo-web-browser";
 
 /**
@@ -27,7 +26,7 @@ export const preparePaymentBrowser = () => {
 /**
  * Opens a payment URL (Momo/VNPay) in expo-web-browser
  * This allows proper redirect back to the mobile app
- * 
+ *
  * @param paymentUrl - The payment URL from backend
  * @param redirectUrl - The redirect URI for callback (should be fe://payment/callback)
  * @returns WebBrowser result
@@ -88,13 +87,11 @@ export const extractPaymentInfoFromUrl = (url: string): PaymentResult | null => 
 /**
  * Main payment function for Momo/VNPay
  * Opens payment in browser and handles the redirect
- * 
+ *
  * @param paymentUrl - The payment URL from createOrder response
  * @returns PaymentResult with success status and payment info
  */
-export const processPayment = async (
-  paymentUrl: string
-): Promise<PaymentResult> => {
+export const processPayment = async (paymentUrl: string): Promise<PaymentResult> => {
   try {
     // Step 1: Prepare WebBrowser
     preparePaymentBrowser();

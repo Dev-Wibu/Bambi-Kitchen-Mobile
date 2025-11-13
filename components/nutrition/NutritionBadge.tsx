@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Text } from "@/components/ui/text";
-import { View } from "react-native";
 import type { components } from "@/schema-from-be";
+import { View } from "react-native";
 
 type Nutrition = components["schemas"]["Nutrition"];
 
@@ -26,7 +26,7 @@ export function NutritionBadge({ nutrition, showCaloriesOnly = false }: Nutritio
   }
 
   return (
-    <View className="flex-row gap-2 flex-wrap">
+    <View className="flex-row flex-wrap gap-2">
       {nutrition.calories !== undefined && (
         <Badge variant="secondary" className="gap-1">
           <Text className="text-xs">🔥 {nutrition.calories} kcal</Text>

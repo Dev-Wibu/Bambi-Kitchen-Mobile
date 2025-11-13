@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
-import { Pressable, View } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
 import { Badge } from "@/components/ui/badge";
 import { Text } from "@/components/ui/text";
-import ChatBox from "./ChatBox";
 import { useAuth } from "@/hooks/useAuth";
+import { MaterialIcons } from "@expo/vector-icons";
+import { useEffect, useState } from "react";
+import { Pressable, View } from "react-native";
+import ChatBox from "./ChatBox";
 
 interface ChatButtonProps {
   className?: string;
@@ -18,7 +18,7 @@ export function ChatButton({ className }: ChatButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const { user } = useAuth();
-  
+
   // Only show chat button if user is authenticated
   const canUseChat = !!user;
 
@@ -59,8 +59,7 @@ export function ChatButton({ className }: ChatButtonProps) {
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.25,
             shadowRadius: 3.84,
-          }}
-        >
+          }}>
           <MaterialIcons name="chat" size={24} color="white" />
           {unreadCount > 0 && (
             <View className="absolute -right-1 -top-1">

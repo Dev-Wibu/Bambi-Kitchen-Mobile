@@ -1,7 +1,7 @@
 // Export components
 export { AIReviewButton } from "./AIReviewButton";
-export { AIReviewModal } from "./AIReviewModal";
 export { AIReviewCard } from "./AIReviewCard";
+export { AIReviewModal } from "./AIReviewModal";
 
 // Export shared types
 export interface GeminiResponseDto {

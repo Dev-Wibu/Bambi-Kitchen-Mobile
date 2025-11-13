@@ -121,8 +121,8 @@ export async function markNotificationAsRead(notificationId: number): Promise<vo
 
   // Backend returns 200 OK with no response body for this endpoint
   // Check for error response instead of checking for data
-  if ("error" in response && response.error) {
-    throw new Error(`Failed to mark notification as read: ${JSON.stringify(response.error)}`);
+  if (response.error) {
+    throw new Error(`Failed to mark notification as read: ${JSON.stringify(response)}`);
   }
 }
 
@@ -169,8 +169,8 @@ export async function getNotificationsByAccountId(
   });
 
   // Check for errors (including 401 unauthorized)
-  if ("error" in response && response.error) {
-    throw new Error(`Failed to get notifications: ${JSON.stringify(response.error)}`);
+  if (response.error) {
+    throw new Error(`Failed to get notifications: ${JSON.stringify(response)}`);
   }
 
   return response.data || [];

@@ -48,11 +48,11 @@ export default function OrderTab() {
   // Auto-refresh orders every 10 seconds to detect status changes in real-time
   useEffect(() => {
     if (!userId) return;
-    
+
     const pollInterval = setInterval(() => {
       refetch();
     }, 10000); // Poll every 10 seconds
-    
+
     return () => clearInterval(pollInterval);
   }, [userId, refetch]);
 

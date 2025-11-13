@@ -1,5 +1,5 @@
 import { Text } from "@/components/ui/text";
-import { extractPaymentInfoFromUrl, type PaymentResult } from "@/services/mobilePaymentService";
+import { extractPaymentInfoFromUrl } from "@/services/mobilePaymentService";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
@@ -66,7 +66,7 @@ export default function PaymentCallback() {
           text1: "Lỗi xử lý thanh toán",
           text2: error instanceof Error ? error.message : "Vui lòng thử lại",
         });
-        
+
         // Redirect to order screen on error
         setTimeout(() => {
           router.replace("/(tabs)/order");

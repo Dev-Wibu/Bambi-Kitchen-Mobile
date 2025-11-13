@@ -766,4 +766,3 @@ export default function DishForm({ visible, dish, onClose, onSuccess }: DishForm
     </Modal>
   );
 }
-

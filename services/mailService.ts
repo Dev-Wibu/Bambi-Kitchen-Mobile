@@ -26,11 +26,3 @@ export const useSendOTP = (email: string) => {
 export const useVerifyOTP = () => {
   return $api.useMutation("post", "/api/mail/verify-otp");
 };
-
-/**
- * Hook for sending order mail
- * Uses POST /api/mail/send-order-mail endpoint
- */
-export const useSendOrderMail = () => {
-  return $api.useMutation("post", "/api/mail/send-order-mail");
-};

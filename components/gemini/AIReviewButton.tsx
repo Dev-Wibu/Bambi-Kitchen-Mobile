@@ -1,8 +1,8 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { ActivityIndicator } from "react-native";
 import { useCalculateCalories } from "@/services/geminiService";
+import { useState } from "react";
+import { ActivityIndicator } from "react-native";
 
 interface AIReviewButtonProps {
   dishIds: number[];
@@ -16,12 +16,12 @@ interface AIReviewButtonProps {
  * Component button để trigger AI Review
  * Hiển thị loading state khi đang gọi API
  */
-export function AIReviewButton({ 
-  dishIds, 
+export function AIReviewButton({
+  dishIds,
   onReviewComplete,
   onError,
   variant = "default",
-  size = "default"
+  size = "default",
 }: AIReviewButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const calculateCalories = useCalculateCalories();
@@ -37,7 +37,7 @@ export function AIReviewButton({
       const result = await calculateCalories.mutateAsync({
         body: dishIds,
       });
-      
+
       onReviewComplete?.(result as any[]);
     } catch (error) {
       onError?.(error as Error);
@@ -52,8 +52,7 @@ export function AIReviewButton({
       size={size}
       onPress={handleReview}
       disabled={isLoading || !dishIds || dishIds.length === 0}
-      className="gap-2"
-    >
+      className="gap-2">
       {isLoading ? (
         <>
           <ActivityIndicator size="small" />

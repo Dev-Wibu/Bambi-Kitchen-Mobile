@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Text } from "@/components/ui/text";
-import { View } from "react-native";
 import type { components } from "@/schema-from-be";
+import { View } from "react-native";
 
 type Nutrition = components["schemas"]["Nutrition"];
 
@@ -15,9 +15,9 @@ interface NutritionSummaryCardProps {
  * Component hiển thị đầy đủ nutrition breakdown
  * Với bar chart cho % daily value
  */
-export function NutritionSummaryCard({ 
-  nutrition, 
-  showProgress = true 
+export function NutritionSummaryCard({
+  nutrition,
+  showProgress = true,
 }: NutritionSummaryCardProps) {
   if (!nutrition) return null;
 
@@ -44,34 +44,29 @@ export function NutritionSummaryCard({
       <CardHeader>
         <CardTitle>Nutrition Information</CardTitle>
         {nutrition.per_unit && (
-          <Text className="text-sm text-muted-foreground">
-            Per {nutrition.per_unit}
-          </Text>
+          <Text className="text-sm text-muted-foreground">Per {nutrition.per_unit}</Text>
         )}
       </CardHeader>
       <CardContent className="gap-3">
         {nutritionItems.map((item) => {
           const percentage = (item.value / item.max) * 100;
-          
+
           return (
             <View key={item.label} className="gap-1">
-              <View className="flex-row justify-between items-center">
+              <View className="flex-row items-center justify-between">
                 <Text className="text-sm font-medium">
                   {item.icon} {item.label}
                 </Text>
                 <Text className="text-sm font-semibold">
-                  {typeof item.value === 'number' ? item.value.toFixed(1) : item.value} {item.unit}
+                  {typeof item.value === "number" ? item.value.toFixed(1) : item.value} {item.unit}
                 </Text>
               </View>
               {showProgress && (
                 <View className="flex-row items-center gap-2">
                   <View className="flex-1">
-                    <Progress 
-                      value={percentage} 
-                      className="h-2"
-                    />
+                    <Progress value={percentage} className="h-2" />
                   </View>
-                  <Text className="text-xs text-muted-foreground w-12 text-right">
+                  <Text className="w-12 text-right text-xs text-muted-foreground">
                     {percentage.toFixed(0)}%
                   </Text>
                 </View>
