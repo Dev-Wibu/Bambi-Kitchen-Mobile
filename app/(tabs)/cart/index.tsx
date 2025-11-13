@@ -1,3 +1,4 @@
+import { AIReviewButton, AIReviewModal } from "@/components/gemini";
 import { Text } from "@/components/ui/text";
 import { useAuth } from "@/hooks/useAuth";
 import { $api } from "@/libs/api";
@@ -13,7 +14,6 @@ import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Image, Pressable, ScrollView, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
-import { AIReviewButton, AIReviewModal } from "@/components/gemini";
 
 type PaymentMethod = "CASH" | "MOMO" | "VNPAY";
 
@@ -67,15 +67,24 @@ export default function CartScreen() {
     canRetry: false,
   });
 
+  // Debug logging for AI Review state changes
+  useEffect(() => {
+    if (__DEV__) {
+      console.log("AI Review State Changed:", {
+        showAIReview,
+        hasReviewResult: !!aiReviewResult,
+        reviewResult: aiReviewResult,
+      });
+    }
+  }, [showAIReview, aiReviewResult]);
+
   // Recalculate subtotal whenever items change (fix for price not updating bug)
   const subtotal = useMemo(() => getTotal(), [items, getTotal]);
   const isEmpty = items.length === 0;
 
   // Get dish IDs for AI review
   const dishIdsForReview = useMemo(() => {
-    return items
-      .filter((item) => item.dishId && item.dishId > 0)
-      .map((item) => item.dishId!);
+    return items.filter((item) => item.dishId && item.dishId > 0).map((item) => item.dishId!);
   }, [items]);
 
   const increase = (id: string, qty: number) => updateQuantity(id, qty + 1);
@@ -542,9 +551,37 @@ export default function CartScreen() {
           <AIReviewButton
             dishIds={dishIdsForReview}
             onReviewComplete={(results) => {
-              if (results && results.length > 0) {
-                setAIReviewResult(results[0]?.response);
+              // Debug logging
+              if (__DEV__) {
+                console.log("AI Review results received:", JSON.stringify(results, null, 2));
+              }
+
+              // Handle both array and object responses
+              let reviewData = null;
+
+              if (Array.isArray(results)) {
+                // If results is array directly
+                reviewData = results[0]?.response;
+              } else if (results && typeof results === "object") {
+                // If results is wrapped object with data property
+                const dataArray = (results as any).data || results;
+                if (Array.isArray(dataArray) && dataArray.length > 0) {
+                  reviewData = dataArray[0]?.response;
+                } else {
+                  // Maybe results IS the response object
+                  reviewData = results;
+                }
+              }
+
+              if (reviewData) {
+                setAIReviewResult(reviewData);
                 setShowAIReview(true);
+              } else {
+                Toast.show({
+                  type: "info",
+                  text1: "No review data",
+                  text2: "Could not extract AI review",
+                });
               }
             }}
             onError={(error) => {
@@ -679,22 +716,29 @@ export default function CartScreen() {
 
       {/* AI Review Modal */}
       {showAIReview && aiReviewResult && (
-        <View className="absolute inset-0 z-50 bg-black/50">
-          <Pressable className="flex-1" onPress={() => setShowAIReview(false)} />
-          <View className="max-h-[80%] rounded-t-2xl bg-white dark:bg-gray-900">
-            <AIReviewModal
-              review={aiReviewResult}
-              dishName="Your Cart"
-              onClose={() => setShowAIReview(false)}
-              onApplySuggestion={() => {
-                setShowAIReview(false);
-                Toast.show({
-                  type: "info",
-                  text1: "Suggestion noted",
-                  text2: "Add suggested ingredients manually",
-                });
-              }}
-            />
+        <View className="absolute inset-0 z-50 flex items-center justify-center bg-black/50">
+          <View className="mt-auto h-full max-h-[90%] w-full rounded-t-2xl bg-white dark:bg-gray-900">
+            <View className="flex-row items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
+              <Text className="text-lg font-bold text-[#000000] dark:text-white">AI Review</Text>
+              <Pressable onPress={() => setShowAIReview(false)}>
+                <MaterialIcons name="close" size={24} color="#9CA3AF" />
+              </Pressable>
+            </View>
+            <ScrollView className="flex-1 px-4 py-4">
+              <AIReviewModal
+                review={aiReviewResult}
+                dishName="Your Cart"
+                onClose={() => setShowAIReview(false)}
+                onApplySuggestion={() => {
+                  setShowAIReview(false);
+                  Toast.show({
+                    type: "info",
+                    text1: "Suggestion noted",
+                    text2: "Add suggested ingredients manually",
+                  });
+                }}
+              />
+            </ScrollView>
           </View>
         </View>
       )}

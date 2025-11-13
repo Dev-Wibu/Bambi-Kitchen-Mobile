@@ -1,9 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Text } from "@/components/ui/text";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { View, ScrollView } from "react-native";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Text } from "@/components/ui/text";
+import { ScrollView, View } from "react-native";
 
 // Define the GeminiResponseDto type based on the expected structure
 interface GeminiResponseDto {
@@ -31,11 +31,11 @@ interface AIReviewModalProps {
  * Component modal hiển thị kết quả AI Review
  * Hiển thị score, title, roast text, nutrition totals, và suggestions
  */
-export function AIReviewModal({ 
-  review, 
+export function AIReviewModal({
+  review,
   dishName,
   onClose,
-  onApplySuggestion 
+  onApplySuggestion,
 }: AIReviewModalProps) {
   if (!review) return null;
 
@@ -55,13 +55,11 @@ export function AIReviewModal({
     <ScrollView className="flex-1">
       <Card className="m-4">
         <CardHeader>
-          <View className="flex-row justify-between items-start">
+          <View className="flex-row items-start justify-between">
             <View className="flex-1">
-              <Text className="text-xs text-muted-foreground mb-1">AI Review Results</Text>
+              <Text className="mb-1 text-xs text-muted-foreground">AI Review Results</Text>
               {dishName && (
-                <Text className="text-sm font-medium text-muted-foreground mb-2">
-                  {dishName}
-                </Text>
+                <Text className="mb-2 text-sm font-medium text-muted-foreground">{dishName}</Text>
               )}
               <CardTitle className="text-xl">{review.title}</CardTitle>
             </View>
@@ -69,27 +67,22 @@ export function AIReviewModal({
               <Text className="text-lg font-bold">{score}/10</Text>
             </Badge>
           </View>
-          
+
           <View className="mt-3">
-            <Progress 
-              value={scorePercentage} 
-              className={`h-3 ${getScoreColor()}`}
-            />
+            <Progress value={scorePercentage} className={`h-3 ${getScoreColor()}`} />
           </View>
         </CardHeader>
 
         <CardContent className="gap-4">
           {/* Roast Section */}
-          <View className="bg-muted/50 rounded-lg p-4">
-            <Text className="text-base leading-relaxed">
-              {review.roast}
-            </Text>
+          <View className="rounded-lg bg-muted/50 p-4">
+            <Text className="text-base leading-relaxed">{review.roast}</Text>
           </View>
 
           {/* Nutrition Totals */}
           {totals && (
             <View className="gap-2">
-              <Text className="font-semibold text-sm">Nutrition Summary</Text>
+              <Text className="text-sm font-semibold">Nutrition Summary</Text>
               <View className="flex-row flex-wrap gap-2">
                 <Badge variant="outline">
                   <Text className="text-xs">🔥 {totals.calories?.toFixed(0) || 0} kcal</Text>
@@ -112,22 +105,15 @@ export function AIReviewModal({
 
           {/* Suggestion Section */}
           {review.suggest && (
-            <View className="bg-primary/5 border border-primary/20 rounded-lg p-4 gap-3">
+            <View className="gap-3 rounded-lg border border-primary/20 bg-primary/5 p-4">
               <View className="flex-row items-center gap-2">
                 <Text className="text-lg">💡</Text>
-                <Text className="font-semibold text-sm">Suggestion</Text>
+                <Text className="text-sm font-semibold">Suggestion</Text>
               </View>
-              <Text className="text-sm leading-relaxed">
-                {review.suggest}
-              </Text>
+              <Text className="text-sm leading-relaxed">{review.suggest}</Text>
               {onApplySuggestion && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onPress={onApplySuggestion}
-                  className="mt-2"
-                >
-                  <Text>Apply Suggestion</Text>
+                <Button variant="outline" size="sm" onPress={onApplySuggestion} className="mt-2">
+                  <Text>Agree Suggestion</Text>
                 </Button>
               )}
             </View>
@@ -135,11 +121,7 @@ export function AIReviewModal({
 
           {/* Close Button */}
           {onClose && (
-            <Button 
-              variant="secondary" 
-              onPress={onClose}
-              className="mt-2"
-            >
+            <Button variant="secondary" onPress={onClose} className="mt-2">
               <Text>Close</Text>
             </Button>
           )}
